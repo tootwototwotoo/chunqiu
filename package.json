@@ -1,0 +1,15 @@
+{
+  "name": "chunqiu-lieguozhi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "春秋·列国志 —— 以春秋时期为背景的 HTML5 人生养成游戏（太阁立志传风格）",
+  "scripts": {
+    "start": "node serve.cjs",
+    "serve": "node serve.cjs",
+    "test": "node test/smoke.mjs && node test/history.mjs && node test/ui-smoke.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0"
+  },
+  "type": "module"
+}

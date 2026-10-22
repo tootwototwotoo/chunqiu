@@ -1,0 +1,165 @@
+// 交游：交谈、赠礼、师事、切磋
+import { NPC_MAP, ROLE_NAMES } from '../data/npcs.js';
+import { GOODS } from '../data/goods.js';
+import { STATES } from '../data/world.js';
+import { SKILL_DEFS } from '../data/defs.js';
+import { player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addLog,
+  addSkillExp, skillLevel, R, npcsHere } from '../state.js';
+import { ri, clamp, GIFT_TIER_NAMES } from '../util.js';
+import { biasName } from './debate.js';
+
+const GREET = {
+  0: ['{n}抬眼看了看你，未置一词。', '{n}正在会客，只向你略一点头。', '你在阶下候了片刻，{n}才命人传见。'],
+  1: ['{n}见你来了，命人看座。', '{n}放下手中的简册，与你说起近来的事。', '{n}笑道：「又是你。」'],
+  2: ['{n}起身相迎，执你的手入座。', '{n}道：「多日不见，甚是想念。」', '{n}命人奉上热羹，与你谈至日暮。'],
+  3: ['{n}见你至，屏退左右，与你密谈。', '{n}道：「天下事，唯君可与言。」', '{n}取出一卷密简，递与你。'],
+};
+
+export function affTier(aff) {
+  if (aff >= 100) return 5;
+  if (aff >= 75) return 4;
+  if (aff >= 52) return 3;
+  if (aff >= 32) return 2;
+  if (aff >= 15) return 1;
+  return 0;
+}
+export const affName = (aff) => GIFT_TIER_NAMES[affTier(aff)];
+
+const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
+
+export function talk(st, npcId) {
+  const def = NPC_MAP[npcId];
+  if (!def) return null;
+  meetNpc(st, npcId);
+  const r = rel(st, npcId);
+  const t = affTier(r.aff);
+  const line = R.pick(st, GREET[Math.min(3, t)]).replaceAll('{n}', def.name);
+  // 十日之内反复攀谈，交情不再增长
+  st.flags.lastTalk = st.flags.lastTalk ?? {};
+  const now = dayOf(st.time);
+  if (st.flags.lastTalk[npcId] && now - st.flags.lastTalk[npcId] < 10) {
+    return { def, r, aff: 0, line, extra: '（近日已叙，话说尽了。）', offer: null, repeated: true };
+  }
+  st.flags.lastTalk[npcId] = now;
+  let aff = 1;
+  const p = player(st);
+  if (R.chance(st, 0.18 + p.stats.mei / 400)) aff += 1;
+  if (def.bias === 'ming' && p.fame > 40) aff += 1;
+  addRel(st, npcId, aff);
+
+  // 闲谈所得
+  let extra = '';
+  if (r.aff >= 32 && R.chance(st, 0.35)) {
+    const pool = [
+      `「${R.pick(st, Object.values(STATES)).name}国近日多事，君宜留意。」`,
+      `「闻${R.pick(st, Object.values(NPC_MAP)).name}近日行踪不定，或可一见。」`,
+      '「市上物价，随时而变，贱取如珠玉，贵出如粪土。」',
+      '「为政不难，难在得人。」',
+      '「兵者不祥之器，不得已而用之。」',
+    ];
+    extra = R.pick(st, pool);
+    if (R.chance(st, 0.25)) addFame(st, 1);
+  }
+  // 高好感偶有请托
+  let offer = null;
+  if (r.aff >= 52 && R.chance(st, 0.18)) {
+    offer = {
+      money: 40 + ri(st, 0, 60),
+      text: `「有一事相托：${R.pick(st, ['为我送一封书简', '代我探望一位故人', '替我留意市上行情'])}。若成，当有薄谢。」`,
+    };
+  }
+  return { def, r, aff, line, extra, offer };
+}
+
+export function giftValue(def, goodId) {
+  const g = GOODS[goodId];
+  if (!g) return 0;
+  const match = def.pref === goodId;
+  return Math.round((g.base / 9) * (match ? 2.4 : 0.9));
+}
+
+export function giveGift(st, npcId, goodId) {
+  const def = NPC_MAP[npcId];
+  const inv = player(st).inventory[goodId] ?? 0;
+  if (inv <= 0) return { ok: false, msg: '你并无此物。' };
+  addGoods(st, goodId, -1);
+  meetNpc(st, npcId);
+  const v = giftValue(def, goodId);
+  addRel(st, npcId, v);
+  const r = rel(st, npcId);
+  const match = def.pref === goodId;
+  addLog(st, `赠${def.name}${GOODS[goodId].name}，好感+${v}。`, 'gain');
+  return {
+    ok: true, gain: v, aff: r.aff, match,
+    line: match ? `${def.name}接过${GOODS[goodId].name}，眼中掠过一丝喜色。` : `${def.name}道了声谢，将${GOODS[goodId].name}交给从人。`,
+  };
+}
+
+export function canTeach(st, npcId, skill) {
+  const def = NPC_MAP[npcId];
+  if (!def?.teach?.includes(skill)) return false;
+  return (def.skills?.[skill] ?? 0) >= 3;
+}
+
+export function learnFrom(st, npcId, skill) {
+  const def = NPC_MAP[npcId];
+  const r = rel(st, npcId);
+  if (r.aff < 25) return { ok: false, msg: `${def.name}与你尚未相熟，不便受业。` };
+  const cost = 25 + (def.skills?.[skill] ?? 3) * 8;
+  if (player(st).money < cost) return { ok: false, msg: `束脩需${cost}金，囊中不足。` };
+  if (player(st).stamina < 12) return { ok: false, msg: '精神不济，难以就学。' };
+  addMoney(st, -cost, true);
+  addStamina(st, -12);
+  const npcLv = def.skills?.[skill] ?? 3;
+  const myLv = skillLevel(st, skill);
+  const exp = 26 + npcLv * 7 + ri(st, 0, 12);
+  const res = addSkillExp(st, skill, exp);
+  addRel(st, npcId, 2);
+  const name = SKILL_DEFS[skill]?.name ?? skill;
+  addLog(st, `从${def.name}习${name}，技业精进。`, 'gain');
+  return {
+    ok: true, exp, leveled: res.leveled, lv: res.lv, npcLv,
+    line: `你执弟子礼，${def.name}为你讲授${name}要旨，自晨至昏。`,
+  };
+}
+
+export function npcDuelInfo(st, npcId) {
+  const def = NPC_MAP[npcId];
+  return {
+    id: npcId, name: def.name,
+    wu: def.stats.wu,
+    skill: def.skills.jianshu ?? Math.round(def.stats.wu / 14),
+  };
+}
+
+export function npcDebateInfo(st, npcId) {
+  const def = NPC_MAP[npcId];
+  return {
+    id: npcId, name: def.name, title: def.title, bias: def.bias,
+    stats: def.stats,
+    difficulty: 34 + def.stats.zhi * 0.4,
+    topic: `论${STATES[CITY_STATE(def.city)].name}国之政`,
+  };
+}
+
+import { CITY_MAP } from '../data/world.js';
+const CITY_STATE = (cityId) => CITY_MAP[cityId]?.state ?? 'zhou';
+
+export function teachInfo(st, npcId) {
+  const def = NPC_MAP[npcId];
+  return (def.teach ?? []).map(k => ({
+    key: k, name: SKILL_DEFS[k]?.name ?? k,
+    npcLv: def.skills?.[k] ?? 0,
+    myLv: skillLevel(st, k),
+    cost: 25 + (def.skills?.[k] ?? 3) * 8,
+    can: rel(st, npcId).aff >= 25,
+  }));
+}
+
+export function giftCandidates(st, npcId) {
+  const def = NPC_MAP[npcId];
+  return Object.keys(GOODS).map(g => ({
+    id: g, name: GOODS[g].name, have: player(st).inventory[g] ?? 0,
+    pref: def.pref === g, gain: giftValue(def, g),
+  }));
+}

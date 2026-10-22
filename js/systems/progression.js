@@ -1,0 +1,146 @@
+// 仕途、晋升、结局
+import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS } from '../data/defs.js';
+import { STATES, CITY_MAP } from '../data/world.js';
+import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R, rel } from '../state.js';
+import { ri, clamp, diffTier } from '../util.js';
+
+export function checkPromotion(st) {
+  const p = player(st);
+  if (!p.stateId) return null;
+  if (!['youxia', 'shuike', 'xuezhe'].includes(p.profession)) return null;
+  const next = RANKS[p.rank + 1];
+  if (next && p.merit >= next.merit) {
+    p.rank += 1;
+    addLog(st, `以功勋擢为${STATES[p.stateId].name}国${next.name}。`, 'big');
+    addFame(st, 4, true);
+    return { rank: next.name, pay: next.pay, state: STATES[p.stateId].name };
+  }
+  return null;
+}
+
+const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
+
+export function seekOffice(st, stateId) {
+  const p = player(st);
+  if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
+  if (p.fame < 8) return { ok: false, msg: '名声未著，国君不见。' };
+  const now = dayOf(st.time);
+  if (st.flags.lastOffice && now - st.flags.lastOffice < 10) return { ok: false, msg: '门吏挡驾：「君且待旬日再来。」' };
+  st.flags.lastOffice = now;
+  const roll = p.stats.zheng * 0.55 + p.stats.mei * 0.35 + p.fame * 0.5 + skillLevel(st, 'biancai') * 2 + R.int(st, 0, 18);
+  const prevState = p.stateId;
+  if (roll >= 52) {
+    p.stateId = stateId;
+    p.merit = Math.round(p.merit * 0.25);
+    p.rank = p.rank > 0 && prevState === stateId ? p.rank : 1;
+    addLog(st, `谒见${STATES[stateId].name}君，拜为士。`, 'big');
+    addFame(st, 3);
+    addRel(st, npcRulerOf(st, stateId), 8);
+    return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国士。`, state: stateId };
+  }
+  addStamina(st, -5);
+  return { ok: false, msg: '国君不见，门吏只让你在廊下候了半日。' };
+}
+
+export function npcRulerOf(st, stateId) {
+  const found = Object.values(st.npc).find(n => n.alive && n.city && CITY_MAP[n.city]?.state === stateId);
+  if (found) return found.id;
+  const rulers = Object.entries(st.npc).filter(([id, n]) => n.alive && n.city && CITY_MAP[n.city].state === stateId);
+  return rulers[0]?.[0] ?? null;
+}
+
+// 献策：提升本国势力
+export function advise(st) {
+  const p = player(st);
+  if (!p.stateId) return { ok: false, msg: '尚未出仕。' };
+  const now = dayOf(st.time);
+  if (st.flags.lastAdvise && now - st.flags.lastAdvise < 30) return { ok: false, msg: '朝议方毕，一月之内不宜再陈。' };
+  st.flags.lastAdvise = now;
+  const roll = p.stats.zhi * 0.5 + p.stats.zheng * 0.4 + skillLevel(st, 'quanmou') * 3 + R.int(st, 0, 15);
+  addStamina(st, -8);
+  if (roll >= 46) {
+    const gain = 1 + Math.floor(roll / 40);
+    st.world.power[p.stateId] = clamp((st.world.power[p.stateId] ?? 30) + gain, 5, 100);
+    addMerit(st, 8 + gain * 4, true);
+    addFame(st, 1, true);
+    addLog(st, `献策于朝，${STATES[p.stateId].name}国势增${gain}。`, 'gain');
+    return { ok: true, msg: `你的方略被采纳，${STATES[p.stateId].name}国势+${gain}，功勋+${8 + gain * 4}。` };
+  }
+  return { ok: false, msg: '执政摇头：「腐儒之见。」' };
+}
+
+// 从军出征（简化的战阵判定）
+export function joinCampaign(st) {
+  const p = player(st);
+  if (!p.stateId) return { ok: false, msg: '未仕于国，无从军之命。' };
+  addStamina(st, -18);
+  const skill = skillLevel(st, 'bingfa');
+  const roll = skill * 4 + p.stats.wu * 0.4 + p.stats.zhi * 0.3 + R.int(st, 0, 25);
+  const foeState = R.pick(st, Object.keys(STATES).filter(s => s !== p.stateId && s !== 'zhou'));
+  if (roll >= 52) {
+    const merit = 12 + Math.floor(roll / 3);
+    st.world.power[p.stateId] = clamp((st.world.power[p.stateId] ?? 30) + 2, 5, 100);
+    st.world.power[foeState] = clamp((st.world.power[foeState] ?? 30) - 1, 5, 100);
+    addMerit(st, merit);
+    addFame(st, 4);
+    addMoney(st, 30 + merit, true);
+    addLog(st, `从军伐${STATES[foeState].name}，有功。`, 'gain');
+    return { ok: true, msg: `你随军伐${STATES[foeState].name}，斩获颇多，功勋+${merit}，得赏${30 + merit}金。`, win: true };
+  }
+  const names = { jianshu: '剑术', bingfa: '兵法', sheshu: '射术' };
+  addLog(st, `从军不利，身被数创。`, 'war');
+  return { ok: true, msg: '战阵失利，你负伤而还，功勋未增。', win: false };
+}
+
+export function scoreOf(st) {
+  const p = player(st);
+  const skills = Object.values(p.skills).reduce((a, b) => a + b, 0);
+  return Math.round(
+    p.fame * 3 + p.merit * 0.6 + skills * 6 + p.money / 60 +
+    p.disciples * 4 + p.missions * 6 + p.alliances * 10 + p.shops.length * 8 +
+    (p.rank * 12)
+  );
+}
+
+export function computeEnding(st) {
+  const p = player(st);
+  const score = scoreOf(st);
+  const s = st.stats;
+  let rank = '', comment = '', epilogue = '';
+  if (p.profession === 'youxia') {
+    if (p.rank >= 7) { rank = '一国之相'; comment = '出将入相，权倾朝野。'; }
+    else if (p.rank >= 5) { rank = '柱国之臣'; comment = '位列上大夫，名重诸侯。'; }
+    else if (p.fame >= 60) { rank = '天下名侠'; comment = '一剑之任，重于九鼎。'; }
+    else if (p.fame >= 30) { rank = '一方游侠'; comment = '仗剑江湖，颇有侠名。'; }
+    else { rank = '无名剑客'; comment = '剑在匣中，名在风里。'; }
+    epilogue = `你一生交手${s.duels}次，胜${s.duelWins}次。`;
+  } else if (p.profession === 'shangren') {
+    const tier = MERCHANT_TIERS.filter(t => p.money >= t.need).pop();
+    rank = tier.name;
+    comment = p.money >= 16000 ? '三致千金，名显天下，世称陶朱。' : p.money >= 3500 ? '坐列贩卖，家累千金。' : '贩贱卖贵，聊以自足。';
+    epilogue = `你行商${s.trades}次，累计获利颇丰。`;
+  } else if (p.profession === 'shuike') {
+    if (p.missions >= 14) { rank = '天下辩士'; comment = '一怒而诸侯惧，安居而天下熄。'; }
+    else if (p.missions >= 9) { rank = '国士'; comment = '片言解纷，诸侯宾之。'; }
+    else if (p.missions >= 5) { rank = '上宾'; comment = '往来列国，诸侯待为上客。'; }
+    else { rank = '游士'; comment = '口舌之利，未逢其时。'; }
+    epilogue = `你游说${s.debates}次，成${s.debateWins}次，促成盟约${p.missions}次。`;
+  } else {
+    const tier = SCHOLAR_TIERS.filter(t => p.disciples >= t.need).pop();
+    rank = tier.name;
+    comment = p.disciples >= 28 ? '立一家之言，弟子遍天下，后世宗师之。' : p.disciples >= 8 ? '讲学授徒，门庭若市。' : '弦歌不辍，独善其身。';
+    epilogue = `你收徒${p.disciples}人，著书${p.works.length}篇。`;
+  }
+  return {
+    rank, comment, epilogue, score,
+    age: age(st),
+    stats: [
+      ['名声', p.fame], ['功勋', p.merit], ['金钱', p.money],
+      ['知己', Object.values(p.relations).filter(r => r.aff >= 52).length],
+      ['遍历', `${Math.min(16, new Set([p.homeCity, p.cityId]).size)}城`],
+      ['决斗胜', `${s.duelWins}/${s.duels}`],
+    ],
+    date: st.time,
+    title: `${p.name}·${careerTitle(st) || rank}`,
+  };
+}
