@@ -130,7 +130,7 @@ export function mountEnding(root, ending, st, app) {
       <div class="end-rank">${ending.rank}</div>
       <div class="end-quote">${ending.comment}<br><span style="color:#6d6052;font-size:13px">${ending.epilogue}</span></div>
       <div class="ending-stats">${stats}</div>
-      <div class="desc">${ending.title} · 评分 ${ending.score}</div>
+      <div class="desc">${esc(ending.title)} · 评分 ${ending.score}</div>
       <div class="divider"></div>
       <div class="btn-row" style="justify-content:flex-end">
         <button class="btn" data-act="title">回到标题</button>

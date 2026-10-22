@@ -32,6 +32,7 @@ await new Promise(r => setTimeout(r, 200));
 console.log('after start, screen has city:', doc.querySelector('#screen').textContent.includes('诸般行事'));
 console.log('modal open:', !!doc.querySelector('.modal'));
 
-const ok = text.includes('春秋') && doc.querySelector('#boot-error').style.display === 'none';
+const ok = text.includes('春秋') && doc.querySelector('#boot-error').style.display === 'none'
+  && doc.querySelector('#screen').textContent.includes('诸般行事') && errs.length === 0;
 console.log(ok ? '单文件版通过 ✓' : '单文件版失败 ✗');
 process.exit(ok ? 0 : 1);

@@ -179,13 +179,16 @@ app.nav('city');
 const { advanceDays } = await import('../js/systems/calendar.js');
 const res = advanceDays(app.st, 500, {});
 if (res.events.length) {
+  app.after(res);
+  ok(!!$('.modal'), '时间推进后展示事件弹窗');
   // 手动走事件队列
-  for (let i = 0; i < 10 && $('.modal'); i++) {
+  for (let i = 0; i < 40 && ($('.modal') || app.queue.length); i++) {
     if ($('.choice-btn')) { $('.choice-btn').click(); await wait(15); }
     const b = $('.modal-foot .btn') || $('.modal-close');
-    if (b) { b.click(); await wait(25); }
+    if (b) b.click();
+    await wait(60); // 下一事件在关闭弹窗后异步入场
   }
-  ok(true, '事件弹窗可关闭');
+  ok(!$('.modal') && app.queue.length === 0, '事件弹窗全部结算');
 }
 ok(app.st.log.length > 3, '纪事有记录');
 ok(errors.length === 0, '无运行时错误: ' + errors.slice(0, 3).join(' | '));

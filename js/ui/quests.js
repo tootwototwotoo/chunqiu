@@ -49,23 +49,23 @@ export function questCard(st, q, active, offer = false) {
   const rw = q.reward ?? {};
   return `<div class="quest ${q.status === 'done' ? 'done' : ''} ${urgent ? 'urgent' : ''}">
     <div class="q-top">
-      <h4>${q.title}</h4>
-      <span class="q-from">${q.giverName ?? ''}</span>
+      <h4>${esc(q.title)}</h4>
+      <span class="q-from">${esc(q.giverName ?? '')}</span>
     </div>
-    <div class="q-desc">${q.desc ?? ''}</div>
+    <div class="q-desc">${esc(q.desc ?? '')}</div>
     <div class="q-meta">
       ${q.targetCity ? `<span>目标 <b>${CITY_MAP[q.targetCity].name}</b></span>` : ''}
       ${route != null ? `<span>路程 <b>${route}日</b></span>` : ''}
       ${active ? `<span>余限 <b>${left}</b></span>` : ''}
-      ${offer && q.days ? `<span>限期 <b>${q.days}日</b></span>` : ''}
+      ${offer && q.days ? `<span>限期 <b>${esc(q.days)}日</b></span>` : ''}
       ${tooLate ? '<span style="color:#9c2b26">恐来不及</span>' : ''}
-      ${rw.money ? `<span>酬金 <b>${rw.money}</b></span>` : ''}
-      ${rw.fame ? `<span>名声 <b>+${rw.fame}</b></span>` : ''}
-      ${rw.merit ? `<span>功勋 <b>+${rw.merit}</b></span>` : ''}
+      ${rw.money ? `<span>酬金 <b>${esc(rw.money)}</b></span>` : ''}
+      ${rw.fame ? `<span>名声 <b>+${esc(rw.fame)}</b></span>` : ''}
+      ${rw.merit ? `<span>功勋 <b>+${esc(rw.merit)}</b></span>` : ''}
       ${q.status === 'done' ? '<span>已成</span>' : q.status === 'failed' ? '<span style="color:#9c2b26">已误</span>' : ''}
     </div>
-    ${offer ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-accept="${q.id}">领受</button></div>` : ''}
-    ${active ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost" data-abandon="${q.id}">放弃</button></div>` : ''}
+    ${offer ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-accept="${esc(q.id)}">领受</button></div>` : ''}
+    ${active ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost" data-abandon="${esc(q.id)}">放弃</button></div>` : ''}
   </div>`;
 }
 

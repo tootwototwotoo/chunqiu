@@ -25,6 +25,7 @@ export function travelTo(st, toCityId) {
   const res = advanceDays(st, plan.days, { travel: true });
   addStamina(st, -plan.stamina);
   st.player.cityId = toCityId;
+  st.player.visitedCities = [...new Set([...(st.player.visitedCities ?? [st.player.homeCity]), toCityId])];
   st.stats.travelDays += plan.days;
   const arr = checkArrivalQuests(st, toCityId);
   addLog(st, `行${plan.days}日，抵${CITY_MAP[toCityId].name}。${plan.cost ? `路费${plan.cost}金。` : ''}`);

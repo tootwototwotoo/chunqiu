@@ -4,7 +4,7 @@ import { ARGS, startDebate, debateChoose, settleDebate, biasName } from '../syst
 import { addSkillExp, addStamina, addHealth, player, skillLevel, addFame, addMoney, addLog, R } from '../state.js';
 import { advanceDays } from '../systems/calendar.js';
 import { onClick } from './common.js';
-import { clamp } from '../util.js';
+import { clamp, esc } from '../util.js';
 
 // ---------------- 修习 ----------------
 export function trainingModal(app, st, skillKey, opts = {}) {
@@ -141,13 +141,13 @@ function renderDuelBody(st, d) {
   return `
     <div class="combat-hp">
       <div class="side">
-        <div><b>${p.name}</b> <span style="color:#6d6052;font-size:12px">体力 ${p.hp}/${p.maxHp}</span></div>
+        <div><b>${esc(p.name)}</b> <span style="color:#6d6052;font-size:12px">体力 ${p.hp}/${p.maxHp}</span></div>
         <div class="hpbar"><i style="width:${(p.hp / p.maxHp) * 100}%"></i></div>
         <div style="font-size:11.5px;color:#6d6052;margin-top:3px">气势 ${'●'.repeat(p.qi)}${'○'.repeat(Math.max(0, p.maxQi - p.qi))}</div>
       </div>
       <div style="flex:0 0 auto;font-size:11px;color:#6d6052">第 ${d.round} 合</div>
       <div class="side right">
-        <div><b>${e.name}</b> <span style="color:#6d6052;font-size:12px">体力 ${e.hp}/${e.maxHp}</span></div>
+        <div><b>${esc(e.name)}</b> <span style="color:#6d6052;font-size:12px">体力 ${e.hp}/${e.maxHp}</span></div>
         <div class="hpbar"><i style="width:${(e.hp / e.maxHp) * 100}%;background:linear-gradient(90deg,#b4674f,#8a3b2e)"></i></div>
         <div style="font-size:11.5px;color:#6d6052;margin-top:3px">气势 ${'●'.repeat(e.qi)}${'○'.repeat(Math.max(0, e.maxQi - e.qi))}</div>
       </div>
@@ -165,7 +165,7 @@ function renderDuelBody(st, d) {
       <button class="move-btn ${disabledSpecial ? 'dim' : ''}" data-move="special" ${disableSpecial(disabledSpecial)}><b>绝招</b><small>${disabledSpecial ? '气势不足' : '耗气四'}</small></button>
     </div>
     <div class="combat-log">
-      ${d.log.slice(-14).map(l => `<p class="${l.includes('弃剑') || l.includes('倒地') ? 'hit' : ''}">${l}</p>`).join('')}
+      ${d.log.slice(-14).map(l => `<p class="${l.includes('弃剑') || l.includes('倒地') ? 'hit' : ''}">${esc(l)}</p>`).join('')}
     </div>`;
 }
 
@@ -213,7 +213,7 @@ function renderDebateBody(st, d, revealed) {
   const skill = skillLevel(st, 'biancai');
   const meters = `
     <div style="font-size:12.5px;color:#6d6052;display:flex;justify-content:space-between">
-      <span>${d.targetName}${d.targetTitle ? `（${d.targetTitle}）` : ''}</span>
+      <span>${esc(d.targetName)}${d.targetTitle ? `（${esc(d.targetTitle)}）` : ''}</span>
       <span>第 ${d.round} / ${d.maxRounds} 轮</span>
     </div>
     <div class="debate-meter"><i style="width:${d.meter}%"></i></div>
@@ -228,6 +228,6 @@ function renderDebateBody(st, d, revealed) {
     ${biasLine}
     <div class="debate-opts">${opts}</div>
     <div class="combat-log" style="margin-top:10px">
-      ${d.log.slice(-12).map(l => `<p>${l}</p>`).join('')}
+      ${d.log.slice(-12).map(l => `<p>${esc(l)}</p>`).join('')}
     </div>`;
 }

@@ -14,7 +14,7 @@ export function mount(root, st, app) {
   root.innerHTML = `
   <div class="cols" style="grid-template-columns:1fr 1fr">
     <div class="panel">
-      <h2>${esc(p.name)} <span class="sub">${age(st)}岁 · ${fullTitle(st)}</span></h2>
+      <h2>${esc(p.name)} <span class="sub">${age(st)}岁 · ${esc(fullTitle(st))}</span></h2>
       <div class="desc">${stateName(p.stateId) !== p.stateId && p.stateId ? `${STATES[p.stateId].name}国` : '尚未出仕'} · 身在${cityName(p.cityId)} · 名声 ${p.fame}</div>
       <div class="section-title">四维</div>
       <div class="stat-grid">
@@ -31,14 +31,14 @@ export function mount(root, st, app) {
       <div class="panel">
         <div class="section-title">生涯</div>
         <div class="kv">
-          <dt>身份</dt><dd>${fullTitle(st)}</dd>
+          <dt>身份</dt><dd>${esc(fullTitle(st))}</dd>
           <dt>金钱</dt><dd>${p.money} 金</dd>
           <dt>体力</dt><dd>${Math.round(p.stamina)} / ${p.staminaMax}</dd>
           <dt>健康</dt><dd>${p.health}</dd>
           <dt>行囊</dt><dd>${Object.values(p.inventory).reduce((a, b) => a + b, 0)} / ${p.caravan}</dd>
           ${p.profession === 'youxia' || p.profession === 'shuike' ? `<dt>功勋</dt><dd>${p.merit}</dd><dt>爵位</dt><dd>${RANKS[p.rank]?.name ?? '布衣'}</dd>` : ''}
           ${p.profession === 'shangren' ? `<dt>商队</dt><dd>${p.caravan}</dd><dt>商号</dt><dd>${p.shops.length}</dd>` : ''}
-          ${p.profession === 'xuezhe' ? `<dt>弟子</dt><dd>${p.disciples}</dd><dt>宗旨</dt><dd>${p.doctrine ?? '未立'}</dd><dt>著述</dt><dd>${p.works.length}</dd>` : ''}
+          ${p.profession === 'xuezhe' ? `<dt>弟子</dt><dd>${p.disciples}</dd><dt>宗旨</dt><dd>${esc(p.doctrine ?? '未立')}</dd><dt>著述</dt><dd>${p.works.length}</dd>` : ''}
         </div>
         <div class="divider"></div>
         <div class="section-title">行囊</div>
@@ -46,7 +46,7 @@ export function mount(root, st, app) {
           ${inv.map(([g, q]) => `<div style="display:flex;justify-content:space-between"><span>${GOODS[g].name}</span><b>${q}</b></div>`).join('')}
         </div>` : '<div class="empty">空空如也。</div>'}
         ${p.works.length ? `<div class="divider"></div><div class="section-title">著述</div>
-          <div style="font-size:13px">${p.works.map(w => `${w.title}（前${-w.year}年）`).join('、')}</div>` : ''}
+          <div style="font-size:13px">${p.works.map(w => `${esc(w.title)}（前${-w.year}年）`).join('、')}</div>` : ''}
       </div>
 
       <div class="panel">

@@ -3,11 +3,12 @@ import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_M
 import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
-import { TIMELINE } from './data/events.js';
+import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
 export const SAVE_KEY = 'chunqiu_lieguozhi_save_v1';
 export const START_YEAR = -722;
+const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 export function newGame({ name, gender = '男', profession = 'youxia', seed = Date.now(), era = 'early' }) {
   const prof = PROFESSIONS[profession];
@@ -25,6 +26,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       profession,
       cityId: startCity,
       homeCity: startCity,
+      visitedCities: [startCity],
       stateId: null,
       money: prof.start.money,
       fame: prof.start.fame,
@@ -54,7 +56,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
     },
     npc: buildNpcs(eraDef.year),
     quests: { active: [], done: [], board: null, boardDay: -99 },
-    events: { fired: TIMELINE.filter(t => t.year < eraDef.year).map(t => t.id), news: [] },
+    events: { fired: TIMELINE.filter(t => t.year < eraDef.year).map(t => t.id), news: [], pending: [] },
     log: [],
     stats: { travelDays: 0, duels: 0, duelWins: 0, debates: 0, debateWins: 0, trades: 0, profit: 0, quests: 0, trained: 0 },
     flags: {},
@@ -250,21 +252,119 @@ export function saveGame(st) {
   } catch (e) { console.error(e); return false; }
 }
 export function migrateState(st) {
-  if (!st || !st.world) return st;
+  const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const ensure = (condition) => { if (!condition) throw new Error('存档格式无效'); };
+  ensure(object(st) && object(st.player) && object(st.time) && object(st.world));
+  const p = st.player, t = st.time;
+  ensure(own(PROFESSIONS, p.profession) && own(CITY_MAP, p.cityId));
+  ensure(typeof p.name === 'string' && p.name.length > 0);
+  ensure(Number.isInteger(t.year) && Number.isInteger(t.month) && t.month >= 1 && t.month <= 12
+    && Number.isInteger(t.day) && t.day >= 1 && t.day <= 30);
+  ensure(st.version == null || st.version === 1);
+  const defaults = newGame({ name: p.name, profession: p.profession, seed: 1, era: st.era });
+  defaults.player.visitedCities = [p.homeCity ?? defaults.player.homeCity, p.cityId];
+  // 可选字段缺失时补齐；字段存在但类型损坏时拒绝，不能替换当前游戏。
+  const fill = (value, fallback) => {
+    for (const [key, def] of Object.entries(fallback)) {
+      if (key === 'seed') continue; // 天命允许字符串或数字
+      if (value[key] === undefined) value[key] = JSON.parse(JSON.stringify(def));
+      else if (Array.isArray(def)) ensure(Array.isArray(value[key]));
+      else if (object(def)) { ensure(object(value[key])); fill(value[key], def); }
+      else if (def !== null) {
+        ensure(typeof value[key] === typeof def);
+        if (typeof def === 'number') ensure(Number.isFinite(value[key]));
+      }
+    }
+  };
+  defaults.world.owner = {}; defaults.world.prices = {}; defaults.world.power = {};
+  defaults.npc = {};
+  defaults.events.fired = TIMELINE.filter(ev => ev.year < t.year || (ev.year === t.year && ev.month < t.month)).map(ev => ev.id);
+  fill(st, defaults);
+  const numericMap = (map, ids, min = -Infinity, max = Infinity) => {
+    ensure(object(map));
+    for (const [key, v] of Object.entries(map)) {
+      ensure((!ids || own(ids, key)) && Number.isFinite(v) && v >= min && v <= max);
+    }
+  };
+  ensure(own(CITY_MAP, p.homeCity) && (p.stateId === null || own(STATES, p.stateId)));
+  ensure(p.doctrine === null || typeof p.doctrine === 'string');
+  ensure(st.world.hegemon === '' || own(STATES, st.world.hegemon));
+  ensure(Number.isInteger(p.rank) && p.rank >= 0 && p.rank < RANKS.length);
+  numericMap(p.skills, defaults.player.skills, 0, SKILL_MAX);
+  numericMap(p.skillExp, defaults.player.skillExp, 0);
+  numericMap(p.stats, defaults.player.stats, 1, 100);
+  numericMap(p.inventory, GOODS, 0);
+  for (const key of ['cards', 'shops', 'visitedCities']) {
+    const ids = key === 'cards' ? NPC_MAP : CITY_MAP;
+    ensure(p[key].every(id => typeof id === 'string' && own(ids, id)));
+  }
+  // 旧档无法重建全部足迹，至少保留故乡与目前所在城市。
+  p.visitedCities = [...new Set([...p.visitedCities, p.homeCity, p.cityId])];
+  for (const w of p.works) ensure(object(w) && typeof w.title === 'string' && Number.isInteger(w.year));
+  for (const r of Object.values(p.relations)) {
+    ensure(object(r)); fill(r, { aff: 0, met: false, gifts: 0 });
+  }
+  for (const l of st.log) ensure(object(l) && typeof l.text === 'string' && typeof l.d === 'string'
+    && (l.kind == null || typeof l.kind === 'string'));
+  for (const q of ['active', 'done', 'offers']) {
+    st.quests[q] ??= [];
+    ensure(Array.isArray(st.quests[q]));
+    for (const quest of st.quests[q]) {
+      ensure(object(quest) && typeof quest.id === 'string' && typeof quest.title === 'string'
+        && ['travel', 'combat', 'debate', 'check'].includes(quest.mode));
+      for (const key of ['targetCity', 'originCity', 'cityId']) {
+        if (quest[key] != null) ensure(own(CITY_MAP, quest[key]));
+      }
+      for (const key of ['npcId', 'npcId2']) {
+        if (quest[key] != null) ensure(own(NPC_MAP, quest[key]));
+      }
+      for (const key of ['days', 'exp', 'qty', 'difficulty', 'dc', 'routeDays']) {
+        if (quest[key] != null) ensure(Number.isFinite(quest[key]));
+      }
+      if (quest.reward != null) numericMap(quest.reward);
+      if (quest.mode === 'travel') ensure(own(CITY_MAP, quest.targetCity));
+      if (quest.mode === 'combat') {
+        ensure(object(quest.enemy) && typeof quest.enemy.name === 'string');
+        for (const key of ['wu', 'skill', 'hp']) {
+          if (quest.enemy[key] != null) ensure(Number.isFinite(quest.enemy[key]));
+        }
+      }
+      if (quest.mode === 'debate') ensure(own(STATES, quest.targetState));
+      if (quest.mode === 'check') ensure(own(defaults.player.skills, quest.checkSkill));
+      if (quest.kind === 'supply') ensure(own(GOODS, quest.goodId) && Number.isInteger(quest.qty) && quest.qty > 0);
+    }
+  }
+  ensure(st.events.fired.every(id => typeof id === 'string'));
+  for (const entry of st.events.pending) {
+    ensure(object(entry) && ['timeline', 'random'].includes(entry.kind));
+    const defs = entry.kind === 'timeline' ? TIMELINE : RANDOM_EVENTS;
+    ensure(defs.some(ev => ev.id === entry.id));
+    ensure(object(entry.effects) && Array.isArray(entry.effects.notes)
+      && entry.effects.notes.every(note => typeof note === 'string'));
+  }
   st.world.owner ||= {};
   st.world.prices ||= {};
   st.world.power ||= {};
-  for (const c of CITIES) {
-    if (!st.world.owner[c.id]) st.world.owner[c.id] = c.state;
-    if (!st.world.prices[c.id]) st.world.prices[c.id] = priceSet(st, c.id);
-  }
   for (const s of Object.values(STATES)) {
     if (st.world.power[s.id] == null) st.world.power[s.id] = s.power;
+  }
+  numericMap(st.world.power, STATES);
+  for (const [id, owner] of Object.entries(st.world.owner)) {
+    ensure(own(CITY_MAP, id) && own(STATES, owner));
+  }
+  for (const prices of Object.values(st.world.prices)) numericMap(prices, GOODS, 0);
+  for (const c of CITIES) {
+    if (!st.world.owner[c.id]) st.world.owner[c.id] = c.state;
+    st.world.prices[c.id] = { ...priceSet(st, c.id), ...st.world.prices[c.id] };
   }
   st.npc ||= {};
   const year = st.time?.year ?? START_YEAR;
   for (const n of NPCS) {
     if (!st.npc[n.id]) st.npc[n.id] = { id: n.id, city: n.city, alive: npcAlive(n, year), affinity: 0, met: false, gifts: 0 };
+    else {
+      ensure(object(st.npc[n.id]) && own(CITY_MAP, st.npc[n.id].city));
+      fill(st.npc[n.id], { id: n.id, city: n.city, alive: npcAlive(n, year), affinity: 0, met: false, gifts: 0 });
+    }
   }
   st.quests ||= { active: [], done: [], board: null, boardDay: -99, offers: [] };
   return st;

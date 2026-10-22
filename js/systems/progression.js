@@ -137,7 +137,7 @@ export function computeEnding(st) {
     stats: [
       ['名声', p.fame], ['功勋', p.merit], ['金钱', p.money],
       ['知己', Object.values(p.relations).filter(r => r.aff >= 52).length],
-      ['遍历', `${Math.min(16, new Set([p.homeCity, p.cityId]).size)}城`],
+      ['遍历', `${new Set(p.visitedCities ?? [p.homeCity, p.cityId]).size}城`],
       ['决斗胜', `${s.duelWins}/${s.duels}`],
     ],
     date: st.time,

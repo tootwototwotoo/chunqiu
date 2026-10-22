@@ -458,9 +458,9 @@ function profPanelHtml(st, app, c) {
     return `<div class="panel">
       <div class="section-title">学统</div>
       <div class="kv">
-        <dt>宗旨</dt><dd>${p.doctrine ?? '未立'}</dd>
+        <dt>宗旨</dt><dd>${esc(p.doctrine ?? '未立')}</dd>
         <dt>弟子</dt><dd>${p.disciples} 人</dd>
-        <dt>著述</dt><dd>${p.works.length ? p.works.map(w => w.title).join('、') : '无'}</dd>
+        <dt>著述</dt><dd>${p.works.length ? p.works.map(w => esc(w.title)).join('、') : '无'}</dd>
       </div>
       <div class="footnote">讲学得名，著书立说；弟子既众，束脩自至。</div>
     </div>`;

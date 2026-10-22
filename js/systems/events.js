@@ -114,7 +114,7 @@ export function collectTimeline(st) {
     st.events.news.unshift({ year: ev.year, month: ev.month, title: ev.title, body: ev.body });
     if (st.events.news.length > 40) st.events.news.length = 40;
     addLog(st, `${ev.title}。`, 'war');
-    out.push({ kind: 'timeline', ev });
+    out.push(queueEvent(st, 'timeline', ev));
   }
   return out;
 }
@@ -123,6 +123,7 @@ export function rollRandomEvent(st) {
   const day = st.time.year * 360 + st.time.month;
   const recent = st.flags.recentRandom ?? {};
   const pool = RANDOM_EVENTS.filter(ev => {
+    if (st.events.pending?.some(p => p.kind === 'random' && p.id === ev.id)) return false;
     if (recent[ev.id] != null && day - recent[ev.id] < 30) return false;
     try { return typeof ev.when === 'function' ? ev.when(st) : true; } catch { return true; }
   });
@@ -130,17 +131,33 @@ export function rollRandomEvent(st) {
   const picked = weightedPick(st, pool);
   recent[picked.id] = day;
   st.flags.recentRandom = recent;
-  return { kind: 'random', ev: picked };
+  return queueEvent(st, 'random', picked);
+}
+
+// 先结算天下变化，再存入可序列化的待处理选择；弹窗只负责展示。
+function queueEvent(st, kind, ev) {
+  const effects = applyEffects(st, ev.effects);
+  (st.events.pending ||= []).push({ kind, id: ev.id, effects });
+  return { kind, ev, effects };
+}
+
+export function pendingEvents(st) {
+  return (st.events.pending ?? []).flatMap(p => {
+    const defs = p.kind === 'timeline' ? TIMELINE : RANDOM_EVENTS;
+    const ev = defs.find(ev => ev.id === p.id);
+    return ev ? [{ kind: p.kind, ev, effects: p.effects }] : [];
+  });
+}
+
+export function finishEvent(st, kind, id) {
+  st.events.pending = (st.events.pending ?? []).filter(p => p.kind !== kind || p.id !== id);
 }
 
 export function prepareEvent(st, wrapped) {
   const ev = wrapped.ev;
-  const res = { kind: wrapped.kind, ev, effects: { notes: [] } };
-  if (ev.effects) {
-    res.effects = applyEffects(st, ev.effects);
-    res.notes = res.effects.notes;
-  }
-  return res;
+  // 兼容外部直接传入的事件；新收集的事件与读档事件均已结算。
+  wrapped.effects ??= applyEffects(st, ev.effects);
+  return { kind: wrapped.kind, ev, effects: wrapped.effects, notes: wrapped.effects.notes };
 }
 
 export function resolveChoice(st, ev, choice) {
@@ -159,6 +176,8 @@ export function resolveChoice(st, ev, choice) {
     checkInfo = { roll: Math.round(roll), dc: c.dc ?? 50, success };
   }
   const res = applyEffects(st, effects);
+  const kind = TIMELINE.includes(ev) ? 'timeline' : 'random';
+  finishEvent(st, kind, ev.id);
   const text = choice.text ?? (success ? '事成了。' : '事未成。');
   return { ok: true, success, text, notes: res.notes, pendingDuel: res.pendingDuel, checkInfo };
 }

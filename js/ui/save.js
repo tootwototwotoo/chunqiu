@@ -14,7 +14,7 @@ export function mount(root, st, app) {
   <div class="cols" style="grid-template-columns:1fr 1fr">
     <div class="panel">
       <h2>存档 <span class="sub">简册所录</span></h2>
-      <div class="desc">${esc(player(st).name)} · ${fullTitle(st)} · ${gameDate(st.time)} · ${age(st)}岁</div>
+      <div class="desc">${esc(player(st).name)} · ${esc(fullTitle(st))} · ${gameDate(st.time)} · ${age(st)}岁</div>
       <div class="btn-row">
         <button class="btn primary" data-act="save">存档</button>
         <button class="btn" data-act="load">读档</button>
@@ -35,7 +35,7 @@ export function mount(root, st, app) {
       <h2>世局 <span class="sub">此刻天下</span></h2>
       <div class="kv">
         <dt>年月</dt><dd>${gameDate(st.time)}</dd>
-        <dt>身份</dt><dd>${fullTitle(st)}</dd>
+        <dt>身份</dt><dd>${esc(fullTitle(st))}</dd>
         <dt>名声</dt><dd>${player(st).fame}</dd>
         <dt>金钱</dt><dd>${player(st).money}</dd>
         <dt>体力</dt><dd>${Math.round(player(st).stamina)}</dd>
@@ -45,7 +45,7 @@ export function mount(root, st, app) {
       </div>
       <div class="divider"></div>
       <div class="section-title">自动存档</div>
-      <div class="desc" style="margin-top:0">${auto ? `每月自动记录于简册。最近：${auto.player?.name ?? '—'} · ${auto.time ? `前${-auto.time.year}年` : ''}` : '尚无自动存档。'}</div>
+      <div class="desc" style="margin-top:0">${auto ? `每月自动记录于简册。最近：${esc(auto.player?.name ?? '—')} · ${auto.time ? `前${-auto.time.year}年` : ''}` : '尚无自动存档。'}</div>
       <div class="btn-row">
         <button class="btn sm" data-act="auto">读取自动存档</button>
       </div>

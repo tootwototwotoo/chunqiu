@@ -25,6 +25,7 @@ export function dayInYear(t) { return (t.month - 1) * DAYS_PER_MONTH + t.day; }
  */
 export function advanceDays(st, days, opts = {}) {
   const out = { notes: [], events: [], promotions: [], died: false };
+  if (st.player.alive) out.events.push(...collectTimeline(st));
   for (let i = 0; i < days; i++) {
     if (!st.player.alive) break;
     stepDay(st, out, opts);

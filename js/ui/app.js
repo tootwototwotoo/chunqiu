@@ -1,7 +1,8 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
 import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
-import { prepareEvent, resolveChoice, choiceAvailable } from '../systems/events.js';
+import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent } from '../systems/events.js';
+import { esc } from '../util.js';
 import { computeEnding } from '../systems/progression.js';
 import { startDuel, makeWanderer } from '../systems/combat.js';
 import { sanitizeQuests } from '../systems/quests.js';
@@ -45,14 +46,22 @@ class App {
   startGame(st) {
     migrateState(st);
     sanitizeQuests(st);
+    collectTimeline(st);
+    this.closeModal(false);
     this.st = st;
+    this.queue = pendingEvents(st);
     document.body.classList.remove('title-mode');
     this.endingShown = false;
     this.screen = 'city';
     this.render();
+    setTimeout(() => {
+      if (this.st === st && this.screen !== 'title' && this.screen !== 'ending' && !this.modalHandle) this.nextEvent();
+    }, 0);
   }
 
   showTitle() {
+    this.closeModal(false);
+    this.queue = [];
     this.screen = 'title';
     document.body.classList.add('title-mode');
     document.getElementById('screen').innerHTML = '';
@@ -111,7 +120,7 @@ class App {
     const list = document.getElementById('log-list');
     if (!list || !this.st) return;
     list.innerHTML = this.st.log.slice(0, 40).map(l =>
-      `<li class="${l.kind || ''}"><span class="l-date">${l.d}</span>${l.text}</li>`).join('');
+      `<li class="${esc(l.kind || '')}"><span class="l-date">${esc(l.d)}</span>${esc(l.text)}</li>`).join('');
   }
 
   log(text, kind = '') {
@@ -128,7 +137,7 @@ class App {
       <div class="modal-back"></div>
       <div class="modal ${opts.wide ? 'wide' : ''} ${opts.narrow ? 'narrow' : ''}">
         <div class="modal-head">
-          <div><h3>${opts.title ?? ''}</h3>${opts.sub ? `<div class="m-sub">${opts.sub}</div>` : ''}</div>
+          <div><h3>${esc(opts.title ?? '')}</h3>${opts.sub ? `<div class="m-sub">${esc(opts.sub)}</div>` : ''}</div>
           ${opts.closable === false ? '' : '<button class="modal-close" title="关闭">✕</button>'}
         </div>
         <div class="modal-body"></div>
@@ -169,10 +178,12 @@ class App {
   }
 
   closeModal(runNext = true) {
+    const onClose = this.modalHandle?.opts.onClose;
     const root = document.getElementById('modal-root');
     root.classList.remove('on');
     root.innerHTML = '';
     this.modalHandle = null;
+    if (runNext) onClose?.();
     if (runNext && this.queue.length) {
       setTimeout(() => this.nextEvent(), 40);
     } else if (runNext) {
@@ -182,7 +193,7 @@ class App {
 
   confirm(msg, onYes) {
     const h = this.modal({
-      title: '确认', narrow: true, body: `<p>${msg}</p>`,
+      title: '确认', narrow: true, body: `<p>${esc(msg)}</p>`,
       foot: [
         { label: '罢了', close: true },
         { label: '确定', cls: 'btn primary', close: true, onClick: () => onYes() },
@@ -228,7 +239,8 @@ class App {
       return;
     }
     if (res.events?.length) {
-      this.queue.push(...res.events);
+      const current = this.modalHandle?.opts.event;
+      this.queue = pendingEvents(st).filter(w => !current || w.kind !== current.kind || w.ev.id !== current.id);
       if (!this.modalHandle) this.nextEvent();
       else setTimeout(() => this.nextEvent(), 60);
     } else if (!this.modalHandle) {
@@ -238,14 +250,14 @@ class App {
 
   // ---------- 历史/随机事件队列 ----------
   nextEvent() {
-    if (this.modalHandle) return;
+    if (this.modalHandle || this.screen === 'title' || this.screen === 'ending') return;
     if (!this.queue.length) { this.render(); return; }
     const st = this.st;
     const wrapped = this.queue.shift();
     const prep = prepareEvent(st, wrapped);
     const ev = prep.ev;
     const isTimeline = wrapped.kind === 'timeline';
-    const notesHtml = prep.notes?.length ? `<div class="footnote">${prep.notes.join(' ')}</div>` : '';
+    const notesHtml = prep.notes?.length ? `<div class="footnote">${prep.notes.map(esc).join(' ')}</div>` : '';
     const baseBody = `<p style="line-height:1.95">${ev.body}</p>${notesHtml}`;
 
     const avail = (ev.choices ?? []).filter(c => choiceAvailable(st, c));
@@ -256,6 +268,8 @@ class App {
       sub: isTimeline ? `${dateLabel(st.time)} · 天下大势` : `${dateLabel(st.time)} · 际遇`,
       wide: true,
       body: baseBody,
+      event: { kind: wrapped.kind, id: ev.id },
+      onClose: () => finishEvent(st, wrapped.kind, ev.id),
       foot: [{ label: '知道了', cls: 'btn primary', onClick: hh => hh.close() }],
     });
 

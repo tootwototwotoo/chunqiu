@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node serve.cjs",
     "serve": "node serve.cjs",
-    "test": "node test/smoke.mjs && node test/history.mjs && node test/quests.mjs && node test/travel-quests.mjs && node test/migrate.mjs && node test/ui-smoke.mjs && node test/standalone.mjs",
+    "test": "node test/smoke.mjs && node test/history.mjs && node test/quests.mjs && node test/travel-quests.mjs && node test/migrate.mjs && node --test test/regressions.mjs && node test/ui-smoke.mjs && node test/standalone.mjs",
     "build": "node build.mjs"
   },
   "devDependencies": {
