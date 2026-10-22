@@ -1,45 +1,10 @@
 // 旅行：最短路、行程、途中遭遇
-import { ROADS, CITY_MAP } from '../data/world.js';
+import { CITY_MAP } from '../data/world.js';
 import { R, player, addStamina, addMoney, addLog, addHealth, city } from '../state.js';
-import { advanceDays, seasonOf, absDay } from './calendar.js';
+import { advanceDays } from './calendar.js';
+import { shortestPath } from './pathfind.js';
 import { checkArrivalQuests } from './quests.js';
-import { ri, clamp } from '../util.js';
-
-const ADJ = {};
-for (const [a, b, d] of ROADS) {
-  (ADJ[a] ||= []).push({ to: b, days: d });
-  (ADJ[b] ||= []).push({ to: a, days: d });
-}
-
-export function shortestPath(from, to, st) {
-  const dist = {}, prev = {}, seen = new Set();
-  for (const id of Object.keys(CITY_MAP)) dist[id] = Infinity;
-  dist[from] = 0;
-  while (true) {
-    let u = null, best = Infinity;
-    for (const id of Object.keys(CITY_MAP)) if (!seen.has(id) && dist[id] < best) { best = dist[id]; u = id; }
-    if (!u || u === to) break;
-    seen.add(u);
-    for (const e of ADJ[u] || []) {
-      const w = roadDays(st, e.days, e.to);
-      if (dist[u] + w < dist[e.to]) { dist[e.to] = dist[u] + w; prev[e.to] = u; }
-    }
-  }
-  if (!isFinite(dist[to])) return null;
-  const path = [to];
-  let cur = to;
-  while (cur !== from) { cur = prev[cur]; if (!cur) return null; path.unshift(cur); }
-  return { path, days: Math.round(dist[to]) };
-}
-
-function roadDays(st, base, destCity) {
-  let d = base;
-  if (seasonOf(st.time) === '冬') d *= 1.2;
-  if (st.time.month >= 6 && st.time.month <= 8) d *= 1.05; // 雨季
-  const owner = st.world.owner[destCity];
-  if (st.world.wars?.includes(`${owner}`)) d *= 1.1;
-  return d;
-}
+export { shortestPath } from './pathfind.js';
 
 export function travelPlan(st, toCityId) {
   if (toCityId === st.player.cityId) return null;

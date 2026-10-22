@@ -1,9 +1,10 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
-import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player } from '../state.js';
+import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable } from '../systems/events.js';
 import { computeEnding } from '../systems/progression.js';
 import { startDuel, makeWanderer } from '../systems/combat.js';
+import { sanitizeQuests } from '../systems/quests.js';
 import { onClick } from './common.js';
 import * as titleScreen from './title.js';
 import * as mapScreen from './map.js';
@@ -26,10 +27,24 @@ class App {
     this.queue = [];
     this.modalHandle = null;
     this.endingShown = false;
+    this.bindShell();
+  }
+
+  // 顶栏导航：事件委托，避免重复绑定
+  bindShell() {
+    if (this.shellBound) return;
+    this.shellBound = true;
+    document.addEventListener('click', (e) => {
+      const el = e.target && e.target.closest ? e.target.closest('#hud-nav button') : null;
+      if (!el || !this.st) return;
+      this.nav(el.dataset.screen);
+    });
   }
 
   // ---------- 生命周期 ----------
   startGame(st) {
+    migrateState(st);
+    sanitizeQuests(st);
     this.st = st;
     document.body.classList.remove('title-mode');
     this.endingShown = false;

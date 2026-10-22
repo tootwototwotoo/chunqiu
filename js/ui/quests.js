@@ -1,25 +1,30 @@
 // 差事界面与受托弹窗
 import { CITY_MAP } from '../data/world.js';
 import { player, npcsHere, addFame } from '../state.js';
-import { refreshBoard, acceptQuest, completeQuest, resolveCheck, questRewardText } from '../systems/quests.js';
+import { refreshBoard, acceptQuest, completeQuest, resolveCheck, questRewardText, sanitizeQuests } from '../systems/quests.js';
 import { duelModal, debateModal } from './minigames.js';
 import { onClick, cityName } from './common.js';
 import { esc } from '../util.js';
 import { absDay, dateLabel } from '../systems/calendar.js';
+import { shortestPath } from '../systems/pathfind.js';
 import { STATES } from '../data/world.js';
 
 export function mount(root, st, app) {
+  sanitizeQuests(st);
   const board = refreshBoard(st);
+  const doneIds = new Set(st.quests.done.map(q => q.id));
+  const activeList = st.quests.active.filter(q => q.status === 'active' && !doneIds.has(q.id));
+  const doneList = st.quests.done.filter(q => q.status === 'done' || q.status === 'failed');
   root.innerHTML = `
     <div class="panel">
       <h2>差事 <span class="sub">受人托付，忠人之事</span></h2>
       <div class="divider"></div>
       <div class="cols">
         <div>
-          <div class="section-title">进行中 <span class="hint">${st.quests.active.length}件</span></div>
-          ${st.quests.active.length ? st.quests.active.map(q => questCard(st, q, true)).join('') : '<div class="empty">眼下并无未了之事。</div>'}
+          <div class="section-title">进行中 <span class="hint">${activeList.length}件</span></div>
+          ${activeList.length ? activeList.map(q => questCard(st, q, true)).join('') : '<div class="empty">眼下并无未了之事。</div>'}
           <div class="section-title" style="margin-top:18px">已了 <span class="hint">近事</span></div>
-          ${st.quests.done.length ? st.quests.done.slice(0, 8).map(q => questCard(st, q, false)).join('') : '<div class="empty">尚无旧事可记。</div>'}
+          ${doneList.length ? doneList.slice(0, 8).map(q => questCard(st, q, false)).join('') : '<div class="empty">尚无旧事可记。</div>'}
         </div>
         <div>
           <div class="section-title">城中榜文 <span class="hint">${CITY_MAP[player(st).cityId].name}</span></div>
@@ -36,8 +41,11 @@ export function mount(root, st, app) {
 }
 
 export function questCard(st, q, active, offer = false) {
-  const left = q.exp != null ? `${Math.max(0, q.exp - absDay(st.time))}日` : '—';
-  const urgent = q.exp != null && q.exp - absDay(st.time) <= 2 && active;
+  const leftNum = q.exp != null ? Math.max(0, q.exp - absDay(st.time)) : null;
+  const left = leftNum != null ? `${leftNum}日` : '—';
+  const route = q.targetCity ? (shortestPath(player(st).cityId, q.targetCity, st)?.days ?? null) : null;
+  const tooLate = active && route != null && leftNum != null && leftNum < route;
+  const urgent = active && ((leftNum != null && leftNum <= 2) || tooLate);
   const rw = q.reward ?? {};
   return `<div class="quest ${q.status === 'done' ? 'done' : ''} ${urgent ? 'urgent' : ''}">
     <div class="q-top">
@@ -46,17 +54,31 @@ export function questCard(st, q, active, offer = false) {
     </div>
     <div class="q-desc">${q.desc ?? ''}</div>
     <div class="q-meta">
+      ${q.targetCity ? `<span>目标 <b>${CITY_MAP[q.targetCity].name}</b></span>` : ''}
+      ${route != null ? `<span>路程 <b>${route}日</b></span>` : ''}
       ${active ? `<span>余限 <b>${left}</b></span>` : ''}
+      ${offer && q.days ? `<span>限期 <b>${q.days}日</b></span>` : ''}
+      ${tooLate ? '<span style="color:#9c2b26">恐来不及</span>' : ''}
       ${rw.money ? `<span>酬金 <b>${rw.money}</b></span>` : ''}
       ${rw.fame ? `<span>名声 <b>+${rw.fame}</b></span>` : ''}
       ${rw.merit ? `<span>功勋 <b>+${rw.merit}</b></span>` : ''}
       ${q.status === 'done' ? '<span>已成</span>' : q.status === 'failed' ? '<span style="color:#9c2b26">已误</span>' : ''}
     </div>
     ${offer ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-accept="${q.id}">领受</button></div>` : ''}
+    ${active ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost" data-abandon="${q.id}">放弃</button></div>` : ''}
   </div>`;
 }
 
 function bindBoard(app, st, root) {
+  onClick(root, '[data-abandon]', (el) => {
+    const q = st.quests.active.find(x => x.id === el.dataset.abandon);
+    if (!q) return;
+    app.confirm(`放弃「${q.title}」？信誉将略有损伤。`, () => {
+      completeQuest(st, q, false);
+      app.log(`放弃了差事「${q.title}」。`);
+      app.render();
+    });
+  });
   onClick(root, '[data-accept]', (el) => {
     const res = acceptQuest(st, el.dataset.accept);
     if (!res.ok) { app.toast(res.msg, 'war'); return; }

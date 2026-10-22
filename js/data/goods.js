@@ -16,6 +16,9 @@ export const LOCAL_SPECIALTY = {
   luoyi: 'yu', linzi: 'yan', qufu: 'si', jiang: 'ma', handan: 'tie',
   yong: 'ma', ying: 'qi', shangqiu: 'ge', chaoge: 'si', xinzheng: 'yu',
   ji: 'ge', gusu: 'si', kuaiji: 'tie', wanqiu: 'ge', shangcai: 'su', tao: 'su',
+  ju: 'yan', zhu: 'su', fei: 'si', diqiu: 'ge', quwo: 'tie', pingyang: 'ma',
+  shen: 'tie', xi: 'qi', sui: 'yu', qi2: 'qi', pengcheng: 'su', zhoulai: 'ge',
+  zhuji: 'si', xu: 'ge', linyi: 'ma',
 };
 
 // 各地对各货的需求系数（1 为平）
@@ -36,6 +39,21 @@ const DEMAND_BASE = {
   wanqiu:   { ge: 0.88, su: 1.0, qi: 1.1 },
   shangcai: { su: 0.88, ge: 1.0, ma: 1.15 },
   tao:      { su: 0.86, si: 1.0, yan: 1.05, yu: 1.12, ge: 1.0 },
+  ju:       { yan: 0.7, si: 1.1, ma: 1.05, su: 1.0 },
+  zhu:      { su: 0.88, ge: 1.05, si: 1.05 },
+  fei:      { si: 0.82, su: 0.95, yu: 1.1 },
+  diqiu:    { ge: 0.85, su: 1.0, yan: 1.05, tie: 1.05 },
+  quwo:     { tie: 0.8, ma: 1.0, su: 1.0 },
+  pingyang: { ma: 0.8, tie: 1.05, si: 1.1 },
+  shen:     { tie: 0.82, qi: 1.1, yu: 1.1, su: 0.98 },
+  xi:       { qi: 0.85, su: 0.98, yu: 1.05 },
+  sui:      { yu: 0.86, si: 1.05, qi: 1.05 },
+  qi2:      { qi: 0.86, yu: 1.05, ma: 1.08 },
+  pengcheng:{ su: 0.86, ge: 1.0, si: 1.08 },
+  zhoulai:  { ge: 0.88, yan: 1.1, tie: 1.1 },
+  zhuji:    { si: 0.88, tie: 1.1, yan: 1.15 },
+  xu:       { ge: 0.9, su: 0.95, yu: 1.08 },
+  linyi:    { ma: 0.85, ge: 1.05, si: 1.15 },
 };
 
 export const demandOf = (cityId, goodId) => DEMAND_BASE[cityId]?.[goodId] ?? 1;

@@ -194,6 +194,21 @@ export const NPCS = [
     quote: '伐吴七术，越王用其三而吴灭。',
     desc: '越国大夫，与范蠡共佐勾践，灭吴之后不能去，终赐剑而死。' },
 
+  { id: 'ji_liang', name: '季梁', title: '随之贤大夫', state: 'sui', city: 'sui', birth: -720, death: -660, role: 'minister',
+    stats: { wu: 38, zhi: 88, zheng: 84, mei: 72 }, skills: { xuewen: 7, quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'yu', teach: ['quanmou', 'xuewen'],
+    quote: '夫民，神之主也。是以圣王先成民而后致力于神。',
+    desc: '随国贤臣，谏随侯修政亲邻，以民为本，汉东赖之。' },
+
+  { id: 'liu_xiahui', name: '展获', title: '鲁之柳下惠', state: 'lu', city: 'fei', birth: -720, death: -621, role: 'scholar',
+    stats: { wu: 40, zhi: 84, zheng: 80, mei: 90 }, skills: { xuewen: 8, biancai: 6, quanmou: 4 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'biancai'],
+    quote: '直道而事人，焉往而不三黜？',
+    desc: '鲁之贤大夫，食邑柳下。坐怀不乱，三黜而不去，士人称其和。' },
+
+  { id: 'qu_wan', name: '屈完', title: '楚之大夫', state: 'chu', city: 'shen', birth: -700, death: -640, role: 'minister',
+    stats: { wu: 54, zhi: 84, zheng: 78, mei: 86 }, skills: { biancai: 8, quanmou: 5, bingfa: 4 }, bias: 'shi', pref: 'ma', teach: ['biancai', 'quanmou'],
+    quote: '君若以德绥诸侯，谁敢不服？',
+    desc: '楚之辩士，召陵之盟单车入齐师，以一言折诸侯之兵。' },
+
   { id: 'yang_youji', name: '养由基', title: '楚之射师', state: 'chu', city: 'ying', birth: -640, death: -570, role: 'general',
     stats: { wu: 86, zhi: 60, zheng: 42, mei: 58 }, skills: { sheshu: 10, jianshu: 6, bingfa: 4 }, bias: 'ming', pref: 'ma', teach: ['sheshu', 'jianshu'],
     quote: '去柳叶者百步而射之，百发而百中。',

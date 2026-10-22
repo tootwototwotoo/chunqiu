@@ -55,12 +55,16 @@ ok(!!$('.modal'), '开场弹窗');
 click('.modal-foot .btn');
 await wait();
 
-// 各界面
-for (const s of ['city', 'map', 'character', 'quests', 'relations', 'cards', 'save']) {
-  app.nav(s);
-  ok(screenText().length > 20, `界面 ${s} 有内容`);
+// 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
+for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {
+  const btn = document.querySelector(`#hud-nav [data-screen="${key}"]`);
+  ok(!!btn, `存在导航按钮 ${key}`);
+  btn.click();
+  ok(document.querySelector('#hud-nav button.active')?.dataset.screen === key, `导航高亮 ${key}`);
+  if (key === 'map') ok(!!document.querySelector('#map-svg'), '舆图 SVG 渲染');
+  else ok(screenText().length > 20, `界面 ${key} 有内容`);
 }
-app.nav('city');
+click('#hud-nav [data-screen="city"]');
 
 // 市集
 click('[data-act="market"]');

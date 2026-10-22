@@ -7,7 +7,7 @@ window.addEventListener('error', (e) => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && app.modalHandle) {
+  if (e.key === 'Escape' && app.modalHandle && app.modalHandle.opts.closable !== false) {
     app.modalHandle.close();
   }
 });

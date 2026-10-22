@@ -235,20 +235,53 @@ export function basePriceOf(st, cityId, goodId) {
 }
 
 // ---------- 存档 ----------
+function store() {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage;
+  } catch { return null; }
+}
 export function saveGame(st) {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(st));
+    const ls = store();
+    if (!ls) throw new Error('localStorage unavailable');
+    ls.setItem(SAVE_KEY, JSON.stringify(st));
     return true;
   } catch (e) { console.error(e); return false; }
 }
+export function migrateState(st) {
+  if (!st || !st.world) return st;
+  st.world.owner ||= {};
+  st.world.prices ||= {};
+  st.world.power ||= {};
+  for (const c of CITIES) {
+    if (!st.world.owner[c.id]) st.world.owner[c.id] = c.state;
+    if (!st.world.prices[c.id]) st.world.prices[c.id] = priceSet(st, c.id);
+  }
+  for (const s of Object.values(STATES)) {
+    if (st.world.power[s.id] == null) st.world.power[s.id] = s.power;
+  }
+  st.npc ||= {};
+  const year = st.time?.year ?? START_YEAR;
+  for (const n of NPCS) {
+    if (!st.npc[n.id]) st.npc[n.id] = { id: n.id, city: n.city, alive: npcAlive(n, year), affinity: 0, met: false, gifts: 0 };
+  }
+  st.quests ||= { active: [], done: [], board: null, boardDay: -99, offers: [] };
+  return st;
+}
+
 export function loadGame() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = store()?.getItem(SAVE_KEY);
     if (!raw) return null;
     const st = JSON.parse(raw);
     if (!st || !st.player || !st.time) return null;
-    return st;
+    return migrateState(st);
   } catch (e) { console.error(e); return null; }
 }
-export function hasSave() { return !!localStorage.getItem(SAVE_KEY); }
-export function deleteSave() { localStorage.removeItem(SAVE_KEY); }
+export function hasSave() {
+  try { return !!store()?.getItem(SAVE_KEY); } catch { return false; }
+}
+export function deleteSave() {
+  try { store()?.removeItem(SAVE_KEY); } catch { /* ignore */ }
+}

@@ -6,9 +6,10 @@ import { openHelp } from './title.js';
 import { esc } from '../util.js';
 
 export function mount(root, st, app) {
-  const auto = (() => {
+  const readAuto = () => {
     try { return JSON.parse(localStorage.getItem('chunqiu_lieguozhi_auto') || 'null'); } catch { return null; }
-  })();
+  };
+  const auto = readAuto();
   root.innerHTML = `
   <div class="cols" style="grid-template-columns:1fr 1fr">
     <div class="panel">
@@ -90,7 +91,7 @@ export function mount(root, st, app) {
   });
   onClick(root, '[data-act="auto"]', () => {
     try {
-      const obj = JSON.parse(localStorage.getItem('chunqiu_lieguozhi_auto') || 'null');
+      const obj = readAuto();
       if (!obj) { app.toast('无自动存档', 'war'); return; }
       app.startGame(obj);
       app.toast('已读取自动存档', 'gain');

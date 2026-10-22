@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>春秋·列国志</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='9' fill='%239c2b26'/%3E%3Ctext x='32' y='46' font-size='40' text-anchor='middle' fill='%23f6e8c9' font-family='KaiTi,serif'%3E%E6%98%A5%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -50,6 +51,48 @@
   <div id="toast-root"></div>
   <div id="tick-bar"><div id="tick-fill"></div></div>
 </div>
+<div id="boot-error" style="display:none;position:fixed;inset:0;z-index:9999;background:#f6efe0;color:#3a2a1c;padding:36px;font-family:'KaiTi','SimSun',serif;overflow:auto">
+  <h2 style="margin:0 0 12px;color:#9c2b26;font-size:22px;letter-spacing:2px">春秋·列国志 · 启动失败</h2>
+  <p id="boot-error-msg" style="line-height:1.9;font-size:15px"></p>
+  <pre id="boot-error-detail" style="font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;background:#eee0c4;padding:14px;border:1px solid #b9a37e;line-height:1.7"></pre>
+  <p style="line-height:2;font-size:14px">
+    常见原因：<br>
+    1. 直接双击 index.html（file://）打开 —— 浏览器会拦截 ES Module。请用 <b>npm start</b> 后访问 http://localhost:5173，或直接打开单文件版 <b>chunqiu.html</b>。<br>
+    2. 浏览器禁用本地存储 —— 请关闭隐私模式/允许站点存储。<br>
+    3. 端口未启动或访问了错误地址。
+  </p>
+</div>
+<script>
+(function () {
+  var shown = false;
+  function show(msg, detail) {
+    if (shown) return; shown = true;
+    var box = document.getElementById('boot-error');
+    if (!box) return;
+    box.style.display = 'block';
+    document.getElementById('boot-error-msg').textContent = msg || '脚本未能启动。';
+    document.getElementById('boot-error-detail').textContent = detail || '';
+  }
+  window.addEventListener('error', function (e) {
+    var where = (e.filename || '') + (e.lineno ? ':' + e.lineno : '');
+    var stack = e.error && e.error.stack ? e.error.stack : '';
+    show('页面脚本出错：' + (e.message || '未知错误'), where + '  ' + stack);
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason || {};
+    show('页面脚本出错（Promise）：' + (r.message || String(e.reason)), r.stack || '');
+  });
+  setTimeout(function () {
+    var screen = document.getElementById('screen');
+    if (screen && screen.children.length === 0 && !shown) {
+      var hint = location.protocol === 'file:'
+        ? '当前是以 file:// 直接打开，浏览器会拦截 ES Module。'
+        : '脚本尚未渲染任何内容，请打开浏览器控制台（F12）查看报错。';
+      show(hint, 'URL: ' + location.href + ' ｜ 可运行 npm start 后访问 http://localhost:5173，或直接打开单文件版 chunqiu.html。');
+    }
+  }, 2500);
+})();
+</script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

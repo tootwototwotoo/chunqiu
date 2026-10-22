@@ -5,6 +5,7 @@ import { NPC_MAP } from '../data/npcs.js';
 import { R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel,
   npcsHere, rel, R as Rand } from '../state.js';
 import { absDay } from './calendar.js';
+import { shortestPath } from './pathfind.js';
 import { priceAt } from './trade.js';
 import { ri, clamp } from '../util.js';
 
@@ -22,6 +23,7 @@ function giverOf(st, city) {
     zhou: '王城司徒', qi: '齐之司徒', jin: '晋之司马', qin: '秦之庶长', chu: '楚之司马',
     lu: '鲁之司徒', song: '宋之司城', wei: '卫之大夫', zheng: '郑之当国', yan: '燕之大夫',
     wu: '吴之行人', yue: '越之大夫', chen: '陈之司徒', cai: '蔡之司马', cao: '曹之大夫',
+    ju: '莒之大夫', zhu: '邾之大夫', sui: '随之大夫', xu: '许之大夫',
   };
   return { npcId: null, name: names[owner] ?? '乡邑长者', title: STATES[owner].name + '国' };
 }
@@ -31,32 +33,55 @@ function randomOtherCity(st, from) {
   return R.pick(st, pool);
 }
 
+// 以真实道路里程为准：从出发城到目标的单程日数
+function routeFrom(st, fromCity, targetCity) {
+  return shortestPath(fromCity.id, targetCity.id, st)?.days ?? 999;
+}
+
+// 差事目标：七成在同区域（路程较短）中选择，避免早期总被派到天边
+function pickTarget(st, fromCity) {
+  const pool = CITIES.filter(c => c.id !== fromCity.id)
+    .map(c => ({ c, d: routeFrom(st, fromCity, c) }))
+    .filter(x => x.d > 0)
+    .sort((a, b) => a.d - b.d);
+  if (!pool.length) return CITIES.find(c => c.id !== fromCity.id);
+  if (R.chance(st, 0.7)) return R.pick(st, pool.slice(0, Math.max(3, Math.ceil(pool.length * 0.5)))).c;
+  return R.pick(st, pool).c;
+}
+
+// 限期 = 单程路程 + 准备与缓冲；并按路程给酬金
+function travelDeadline(st, fromCity, targetCity) {
+  const days = routeFrom(st, fromCity, targetCity);
+  return { route: days, days: days + 6 + R.int(st, 0, 3) };
+}
+
 const TEMPLATES = {
   escort(st, city) {
-    const target = randomOtherCity(st, city.id);
-    const days = 8 + Math.round(Math.abs(CITY_MAP[city.id].x - target.x) / 40) + R.int(st, 0, 5);
+    const target = pickTarget(st, city);
+    const plan = travelDeadline(st, city, target);
     const g = giverOf(st, city);
     return {
       kind: 'escort', mode: 'travel', title: `护送行旅至${target.name}`,
-      desc: `${g.name}托你护送一队行旅前往${target.name}，务必于限期之内抵达。`,
+      desc: `${g.name}托你护送一队行旅前往${target.name}，路程约${plan.route}日，务必于限期之内抵达。`,
       giverName: g.name, npcId: g.npcId, originCity: city.id, targetCity: target.id,
-      days, exp: absDay(st.time) + days,
-      reward: { money: 40 + days * 5 + player(st).fame * 2, fame: 3, merit: 8, rel: g.npcId ? 6 : 0 },
+      routeDays: plan.route, days: plan.days, exp: absDay(st.time) + plan.days,
+      reward: { money: 35 + plan.route * 6 + player(st).fame * 2, fame: 3, merit: 8, rel: g.npcId ? 6 : 0 },
       difficulty: 1,
     };
   },
   supply(st, city) {
-    const target = randomOtherCity(st, city.id);
+    const target = pickTarget(st, city);
+    const plan = travelDeadline(st, city, target);
     const goodId = R.pick(st, Object.keys(GOODS));
     const qty = 3 + R.int(st, 0, 4);
     const p = priceAt(st, target.id, goodId);
     const g = giverOf(st, city);
     return {
       kind: 'supply', mode: 'travel', title: `运${GOODS[goodId].name} ${qty}${GOODS[goodId].unit}至${target.name}`,
-      desc: `${target.name}缺${GOODS[goodId].name}，若有商人能运${qty}${GOODS[goodId].unit}至彼处，官府加倍偿付。须自备货物。`,
+      desc: `${target.name}缺${GOODS[goodId].name}，若有商人能运${qty}${GOODS[goodId].unit}至彼处，官府加倍偿付。须自备货物，路程约${plan.route}日。`,
       giverName: g.name, npcId: g.npcId, originCity: city.id, targetCity: target.id,
-      goodId, qty, days: 14, exp: absDay(st.time) + 14,
-      reward: { money: Math.round(p * qty * 1.45), fame: 3, merit: 6, rel: g.npcId ? 5 : 0 },
+      goodId, qty, routeDays: plan.route, days: plan.days + 3, exp: absDay(st.time) + plan.days + 3,
+      reward: { money: Math.round(p * qty * 1.45) + plan.route * 2, fame: 3, merit: 6, rel: g.npcId ? 5 : 0 },
       difficulty: 1,
     };
   },
@@ -162,6 +187,14 @@ export function acceptQuest(st, id) {
   if (idx < 0) return { ok: false, msg: '此差事已不在。' };
   const q = board[idx];
   if (player(st).stamina < 10) return { ok: false, msg: '体力不济，先歇息罢。' };
+  if (q.mode === 'travel' && q.targetCity) {
+    const need = shortestPath(player(st).cityId, q.targetCity, st)?.days ?? 999;
+    const allotted = q.days ?? 999;
+    if (allotted < need + 1) return { ok: false, msg: `限期${allotted}日，而路程需${need}日，已然来不及。` };
+    q.routeDays = need;
+    // 限期自领受之日起算，避免榜文放置多日后平白扣减
+    q.exp = absDay(st.time) + allotted;
+  }
   board.splice(idx, 1);
   q.status = 'active';
   st.quests.active.push(q);
@@ -192,7 +225,14 @@ export function checkArrivalQuests(st, cityId) {
 }
 
 export function completeQuest(st, q, success = true) {
+  if (!q) return { ok: false };
+  // 防重复结算：只有进行中/榜上的差事才能被结算
+  if (q.status !== 'active' && q.status !== 'board') return { ok: false, duplicate: true };
   q.status = success ? 'done' : 'failed';
+  // 从进行中与榜文里移除，避免同一差事在「进行中」「已了」重复出现
+  st.quests.active = (st.quests.active ?? []).filter(x => x.id !== q.id);
+  st.quests.offers = (st.quests.offers ?? []).filter(x => x.id !== q.id);
+  st.quests.done = (st.quests.done ?? []).filter(x => x.id !== q.id);
   st.quests.done.unshift(q);
   if (st.quests.done.length > 60) st.quests.done.length = 60;
   st.stats.quests++;
@@ -210,6 +250,30 @@ export function completeQuest(st, q, success = true) {
   if (q.kind === 'lecture') st.player.disciples += 1;
   addLog(st, `差事「${q.title}」成。得金${rw.money ?? 0}，名声+${rw.fame ?? 0}。`, 'gain');
   return { ok: true, reward: rw };
+}
+
+// 清理历史存档中残留的已完成差事，去重
+export function sanitizeQuests(st) {
+  const done = [], doneSeen = new Set();
+  for (const q of st.quests.done ?? []) {
+    if (!q) continue;
+    // 已了列表只收已结算的差事；旧存档里状态缺失但确实在已了的，补为 done
+    if (q.status !== 'done' && q.status !== 'failed') q.status = 'done';
+    if (doneSeen.has(q.id)) continue;
+    doneSeen.add(q.id);
+    done.push(q);
+  }
+  const active = [], activeSeen = new Set();
+  for (const q of st.quests.active ?? []) {
+    if (!q || q.status !== 'active') continue;
+    if (activeSeen.has(q.id) || doneSeen.has(q.id)) continue; // 同 id 已在已了，绝不重复
+    activeSeen.add(q.id);
+    active.push(q);
+  }
+  st.quests.active = active;
+  st.quests.done = done.slice(0, 60);
+  st.quests.offers = (st.quests.offers ?? []).filter(q => q && q.status === 'board');
+  return st;
 }
 
 export function expireQuests(st) {

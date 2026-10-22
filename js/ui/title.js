@@ -1,6 +1,7 @@
 // 标题、开局创建、结局
 import { newGame, hasSave, loadGame, deleteSave, age } from '../state.js';
 import { PROFESSIONS, ERAS } from '../data/defs.js';
+import { CITIES } from '../data/world.js';
 import { onClick, gameDate } from './common.js';
 import { esc, yearLabel } from '../util.js';
 
@@ -78,7 +79,7 @@ function mainHtml() {
         <button class="btn ghost" data-act="help">玩法</button>
       </div>
       <div class="footnote" style="margin-top:22px">
-        前722年—前473年 · 列国十六城 · 游侠、商人、说客、学者四途
+        前722年—前473年 · 列国${CITIES.length}城 · 游侠、商人、说客、学者四途
       </div>
     </div>
   </div>`;

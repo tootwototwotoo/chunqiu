@@ -88,7 +88,9 @@ function onMonth(st, out) {
   if (promo) out.promotions.push(promo);
   // 自动存档
   if (!st.flags.noAutosave) {
-    try { localStorage.setItem('chunqiu_lieguozhi_auto', JSON.stringify(st)); } catch { }
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.setItem('chunqiu_lieguozhi_auto', JSON.stringify(st));
+    } catch { /* 存储不可用时静默 */ }
   }
 }
 
