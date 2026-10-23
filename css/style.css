@@ -441,3 +441,17 @@ body.title-mode .screen > * { width: 100%; }
 .debate-opt.match:hover{border-color:var(--jade);background:rgba(77,111,86,.16)}
 .debate-opt.opp{border-color:rgba(156,43,38,.45);background:rgba(156,43,38,.06)}
 .debate-opt.opp small{color:#9c2b26}
+
+
+/* ---------- 三回合论辩 ---------- */
+.debate-speech{
+  margin:12px 0;padding:12px 15px;border-left:3px solid var(--seal);
+  background:rgba(255,251,240,.75);font-size:15px;line-height:1.9;
+}
+.debate-speech:before{content:"对方：";color:var(--ink-3);font-size:12px;margin-right:6px}
+.debate-meter{height:16px;margin:18px 0 10px;background:rgba(120,95,60,.18);border-radius:8px;overflow:visible;position:relative}
+.debate-meter .bar{height:10px;margin-top:3px;background:rgba(120,95,60,.18);border-radius:5px;overflow:hidden}
+.debate-meter .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--azure),#7fa3bd);transition:width .4s}
+.debate-mark{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(60,94,120,.7)}
+.debate-mark-label{position:absolute;top:-15px;transform:translateX(-50%);font-size:10px;color:var(--ink-3)}
+.debate-opt.match small{color:var(--jade)}

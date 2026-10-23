@@ -57,10 +57,10 @@ npm run build        # 输出 chunqiu.html
 
 - **游侠**：演武、除害、从军；决斗以「斩克突、突克崩、崩克斩」相制，守可回气，绝招耗气。
 - **商人**：三十一城物价各异，贱买贵卖；扩充商队、开设商号、打探行情。
-- **说客**：游说国君与卿相；观察对方心性（好利 / 重义 / 好名 / 慕强）对症下药。
-  初始心性固定且可在人物面板、城中人物列表或论辩界面看到；论辩中连续两次对症或说服值达到阈值，
-  对方会改变态度（随机转向其他心性；高智略者最多变两次，不扣说服值）。对症话术 ×2，平常 ×1.2，
-  相悖 ×0.55；连续使用同一话术效果减半，看清当前心性再换招。
+- **说客**：三回合论辩。认同度初始 50，每轮从三项具体回应中选一：切中顾虑 +15、有道理 +5、回避 −10；
+  思路合对方心性 +5、相悖 −5；每局可出示一次相关证据 +10（用错不消耗）。三轮后 ≥70 成功、40–69 妥协、<40 失败。
+  心性（好利 / 重义 / 好名 / 慕强）固定，可在人物面板、城中列表和论辩界面看到；三回合中不会改变。
+  50 个场景覆盖内政、邦交、军事、朝堂、商贸；妥协时有权限的对象会追加后续差事。
 - **学者**：设坛讲学收弟子、著书立说成一家、与名士论辩。
 
 ### 核心循环
@@ -136,12 +136,13 @@ build.mjs               单文件打包脚本（esbuild 内联 CSS/JS）
     goods.js            8 种货物、各地需求与特产
     events.js           26 条历史时间线 + 11 个随机事件
     trials.js           五等爵 15 道册命试炼（5 类小游戏 × 3 变体）
+    debates/            50 个三回合论辩场景（内政/邦交/军事/朝堂/商贸）
   systems/
     calendar.js         日/月/年推进、俸禄、物价漂移、生死
     travel.js           Dijkstra 最短路、行程与路费
     trade.js            买卖、牙钱、行情
     combat.js           个人决斗状态机（斩/突/崩/守/绝招）
-    debate.js           辩论状态机（利/义/名/势 + 心性克制）
+    debate.js           三回合论辩：认同度、三选一、证据、三档结局
     quests.js           榜文生成、受托、限期与结算
     relations.js        交谈、赠礼、师事、切磋数据
     events.js           事件触发、选项判定、效果应用
@@ -156,7 +157,9 @@ build.mjs               单文件打包脚本（esbuild 内联 CSS/JS）
     character.js        人物面板
     quests.js / market.js / npc.js
     relations.js / cards.js / save.js
-    minigames.js        修习、决斗、辩论小游戏
+    minigames.js        决斗小游戏
+    debate.js           三回合论辩界面
+    training.js         八种技艺的修习界面
     trials.js           五套册命试炼的专属界面
 test/
   smoke.mjs             四职业全流程 + 40 年模拟
@@ -167,7 +170,8 @@ test/
   board-ui.mjs          榜文领受后即时刷新
   skillgames.mjs        八种修习小游戏逻辑与经验减半
   training-ui.mjs       八种修习界面逐一点击到结算
-  debate-balance.mjs    辩论胜率曲线
+  debate.mjs            三回合论辩计分、证据、结局与后续差事
+  debate-ui.mjs         三回合论辩界面与结局
   checkimports.mjs      ESM 导入/导出静态检查
 ```
 
@@ -222,7 +226,7 @@ npm test
 ```bash
 node test/history.mjs          # 历史线
 node test/ui-smoke.mjs         # UI（需 jsdom）
-node test/debate-balance.mjs   # 辩论胜率
+node test/debate.mjs           # 论辩规则
 ```
 
 ---

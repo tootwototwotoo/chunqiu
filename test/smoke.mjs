@@ -28,10 +28,10 @@ function runDuel(st, enemy) {
 }
 
 function runDebate(st, npc) {
-  const d = startDebate(st, npc, { difficulty: 45 });
+  const d = startDebate(st, npc, {});
   let guard = 0;
-  while (!d.over && guard++ < 20) {
-    debateChoose(st, d, ['li', 'yi', 'ming', 'shi'][Math.floor(Math.random() * 4)]);
+  while (!d.over && guard++ < 6) {
+    debateChoose(st, d, Math.floor(Math.random() * 3));
   }
   ok(d.over, '辩论应当结束');
   return settleDebate(st, d, npc.id ?? null, {});

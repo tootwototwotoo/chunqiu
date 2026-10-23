@@ -1,4 +1,4 @@
-// 论辩界面：开局即显示心性与对症/相悖标记
+// 三回合论辩界面：认同度、证据、三选一与结局
 import { JSDOM } from 'jsdom';
 import fs from 'node:fs';
 
@@ -16,7 +16,8 @@ window.addEventListener('error', e => errors.push(e.message));
 
 const { app } = await import('../js/ui/app.js');
 const { newGame } = await import('../js/state.js');
-const { debateModal } = await import('../js/ui/minigames.js');
+const { debateModal } = await import('../js/ui/debate.js');
+const { DEBATE_BY_ID } = await import('../js/data/debates/index.js');
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -24,32 +25,52 @@ const wait = (ms = 30) => new Promise(r => setTimeout(r, ms));
 let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
 
-const st = newGame({ name: '辩士', profession: 'shuike', seed: 5 });
+const st = newGame({ name: '辩士', profession: 'shuike', seed: 9 });
 app.startGame(st);
-debateModal(app, st, { name: '管仲', title: '齐相', bias: 'shi', stats: { zhi: 90 } }, { topic: '国事', difficulty: 60 });
-await wait(50);
+let ended = null;
+debateModal(app, st, { name: '县令', title: '县宰', bias: 'li' }, {
+  scenario: DEBATE_BY_ID.relief,
+  onEnd: (r) => { ended = r; },
+});
+await wait(60);
 
-const text = $('.modal')?.textContent ?? '';
-ok(text.includes('心性：慕强'), '开局显示对方心性');
-ok(!!$('.debate-opt.match'), '对症话术有标记', $('.debate-opt.match')?.textContent.trim());
-ok(!!$('.debate-opt.opp'), '相悖话术有标记');
-ok(text.includes('对症') && text.includes('相悖'), '按钮文案标注对症/相悖');
+ok($$('.debate-opt').length === 3, '每轮三个选项');
+ok($('.modal').textContent.includes('认同度 50'), '初始认同度 50');
+ok($('.modal').textContent.includes('第 1 / 3 轮'), '显示轮次');
+ok(!!$('.debate-opt.match'), '合心性的思路有标记');
+ok(!!$('[data-evidence]'), '有出示证据按钮');
+ok($('.debate-speech').textContent.length > 4, '显示对方顾虑');
 
+// 第一轮用错证据：不消耗
+$('[data-evidence]').click();
+await wait(30);
+ok($('.modal').textContent.includes('认同度 50'), '用错证据不加分');
+ok(!$('[data-evidence]').disabled, '用错证据不消耗');
+
+// 选切中且合心性的一项
 $('.debate-opt.match').click();
 await wait(40);
-let log = $('.combat-log')?.textContent ?? '';
-ok(log.includes('【对症】'), '出招日志标注对症');
-ok(/说服[+-]\d+/.test(log), '日志显示说服增减');
+ok($('.modal').textContent.includes('认同度 70'), '切中+合心性 → 70');
+ok($('.modal').textContent.includes('第 2 / 3 轮'), '进入第二轮');
 
-// 连用对症两次应触发心性变化，并刷新标记
-$('.debate-opt.match').click();
+// 第二轮出示相关证据
+$('[data-evidence]').click();
+await wait(40);
+ok($('.modal').textContent.includes('认同度 80'), '相关证据 +10');
+ok($('[data-evidence]').disabled, '证据已消耗');
+
+// 完成剩余两轮
+while ($$('.debate-opt').length) {
+  $$('.debate-opt')[0].click();
+  await wait(40);
+}
+ok($('.modal').textContent.includes('说服成功'), '三轮后显示结局');
+ok(!!$('.modal-foot .btn'), '有继续按钮');
+$('.modal-foot .btn').click();
 await wait(60);
-const text2 = $('.modal')?.textContent ?? '';
-ok(text2.includes('（已变）'), '连用对症后显示心性已变');
-ok((text2.match(/【心性已变】/g) || []).length >= 1, '日志出现心性已变提示');
-ok($$('.debate-opt.match').length === 1, '转变后仍有且仅有一个对症话术');
-ok($('.debate-opt.match')?.dataset.key !== 'shi', '对症话术已从陈势换掉', $('.debate-opt.match')?.dataset.key);
+ok(ended && ended.result === 'success', 'onEnd 返回成功结局', ended?.result);
+ok(!$('.modal'), '弹窗关闭');
 ok(errors.length === 0, '无运行时错误', errors.slice(0, 2).join(' | '));
 
-console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n论辩信息可见性通过 ✓');
+console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n三回合论辩界面通过 ✓');
 process.exit(fails ? 1 : 0);

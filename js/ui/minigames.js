@@ -1,10 +1,7 @@
-// 小游戏：修习、决斗、辩论
+// 小游戏：决斗
 import { MOVES, startDuel, duelAct, settleDuel, makeWanderer } from '../systems/combat.js';
-import { ARGS, startDebate, debateChoose, settleDebate, biasName } from '../systems/debate.js';
-import { addSkillExp, addStamina, addHealth, player, skillLevel, addFame, addMoney, addLog, R } from '../state.js';
-import { advanceDays } from '../systems/calendar.js';
 import { onClick } from './common.js';
-import { clamp, esc } from '../util.js';
+import { esc } from '../util.js';
 
 // ---------------- 决斗 ----------------
 export function duelModal(app, st, enemy, opts = {}) {
@@ -86,77 +83,5 @@ function renderDuelBody(st, d) {
     </div>
     <div class="combat-log">
       ${d.log.slice(-14).map(l => `<p class="${l.includes('弃剑') || l.includes('倒地') ? 'hit' : ''}">${esc(l)}</p>`).join('')}
-    </div>`;
-}
-
-// ---------------- 辩论 ----------------
-export function debateModal(app, st, npc, opts = {}) {
-  const d = startDebate(st, npc, opts);
-  let revealed = true;
-  const h = app.modal({
-    title: `游说 · ${npc.name}`,
-    sub: opts.sub ?? `论${opts.topic ?? '国事'}`,
-    wide: true,
-    closable: false,
-    body: renderDebateBody(st, d, revealed),
-    foot: [],
-  });
-  bind(h);
-
-  function bind(handle) {
-    onClick(handle.bodyEl, '.debate-opt', (el) => {
-      if (d.over) return;
-      debateChoose(st, d, el.dataset.key);
-      if (d.justShifted) {
-        app.toast('对方心性已变！', 'war');
-        d.justShifted = false;
-      }
-      revealed = true;
-      handle.setBody(renderDebateBody(st, d, revealed));
-      if (d.over) finish(handle);
-      else bind(handle);
-    });
-  }
-
-  function finish(handle) {
-    const res = settleDebate(st, d, npc.id ?? null, opts.settleOpts ?? {});
-    handle.setBody(renderDebateBody(st, d, true) + `
-      <div class="mg-result" style="margin-top:10px;color:${d.won ? '#4d6f56' : '#9c2b26'}">
-        ${d.won ? '说成' : '未成'}
-      </div>`);
-    handle.setFoot([{ label: '继续', cls: 'btn primary', onClick: () => {
-      handle.close();
-      if (opts.onEnd) opts.onEnd(d.won, d);
-      else app.after({ notes: [d.won ? '对方被你说动了。' : '对方不为所动。'] });
-    } }]);
-    app.refreshHud();
-  }
-}
-
-function renderDebateBody(st, d, revealed) {
-  const skill = skillLevel(st, 'biancai');
-  const meters = `
-    <div style="font-size:12.5px;color:#6d6052;display:flex;justify-content:space-between">
-      <span>${esc(d.targetName)}${d.targetTitle ? `（${esc(d.targetTitle)}）` : ''}</span>
-      <span>第 ${d.round} / ${d.maxRounds} 轮</span>
-    </div>
-    <div class="debate-meter"><i style="width:${d.meter}%"></i></div>
-    <div style="font-size:11.5px;color:#6d6052;text-align:right">说服 ${Math.round(d.meter)}%</div>`;
-  const biasLine = revealed
-    ? `<div style="font-size:12.5px;color:#9c2b26;margin:8px 0 4px">心性：<b>${biasName(d.bias)}</b>${d.shifts ? '（已变）' : ''} · 以「${d.bias === 'li' ? '言利' : d.bias === 'yi' ? '晓义' : d.bias === 'ming' ? '动名' : '陈势'}」对症效果最佳</div>
-       ${d.tell ? `<div style="font-size:12px;color:#a67c34;margin-bottom:4px">${d.tell}</div>` : ''}`
-    : `<div style="font-size:12.5px;color:#6d6052;margin:8px 0 4px">尚未摸清对方心性。辩才愈高，愈易察言观色。</div>`;
-  const opts = Object.entries(ARGS).map(([k, a]) => {
-    const mark = revealed ? (k === d.bias ? 'match' : a.opp === d.bias ? 'opp' : '') : '';
-    return `<button class="debate-opt ${mark}" data-key="${k}" ${revealed && k === d.bias ? 'title="对症话术"' : revealed && a.opp === d.bias ? 'title="相悖话术"' : ''}>
-      <b>${a.name}</b><small>${a.hint}${mark === 'match' ? ' · 对症' : mark === 'opp' ? ' · 相悖' : ''}</small></button>`;
-  }).join('');
-  return `
-    ${meters}
-    ${biasLine}
-    <div class="footnote" style="margin:6px 0 2px">对症 ×2；相悖 ×0.55；平常 ×1.2。连续同一话术会衰减；连续对症或说服值过高会使对方改变心性${d.maxShifts > 1 ? '（此人城府深，或变两次）' : ''}。</div>
-    <div class="debate-opts">${opts}</div>
-    <div class="combat-log" style="margin-top:10px">
-      ${d.log.slice(-12).map(l => `<p>${esc(l)}</p>`).join('')}
     </div>`;
 }

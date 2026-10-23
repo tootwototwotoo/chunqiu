@@ -56,5 +56,31 @@ ok($('.modal-body').textContent.includes('今日无榜'), '显示空榜提示');
 ok(app.st.quests.active.length === 2, '两条均进入进行中');
 ok(errors.length === 0, '无运行时错误', errors.slice(0, 2).join(' | '));
 
+
+// 论辩妥协生成的后续差事：判定类与战斗类
+st.quests.active.push(
+  { id: 'f1', kind: 'followup', mode: 'check', title: '核查田亩', desc: '后续差事', checkSkill: 'quanmou', dc: 0,
+    days: 10, exp: absDay(st.time) + 10, reward: { money: 20 }, status: 'active', followup: true, cityId },
+  { id: 'f2', kind: 'followup', mode: 'combat', title: '查抄家丁', desc: '后续差事', enemy: { name: '家丁', wu: 40, skill: 1, hp: 50 },
+    days: 10, exp: absDay(st.time) + 10, reward: { money: 20 }, status: 'active', followup: true, cityId },
+);
+app.nav('quests');
+ok(!!$('[data-do-check]'), '判定类后续有「办理」按钮');
+ok(!!$('[data-do-combat]'), '战斗类后续有「讨伐」按钮');
+$('[data-do-check]').click();
+await wait(60);
+ok(st.quests.done.some(q => q.id === 'f1'), '判定类后续可完成');
+if ($('.modal-foot .btn')) { $('.modal-foot .btn').click(); await wait(60); }
+$('[data-do-combat]').click();
+await wait(60);
+ok(!!$('.move-grid'), '战斗类后续进入决斗');
+for (let i = 0; i < 80 && $('.move-grid') && !$('.modal-foot .btn'); i++) {
+  const moves = $$('.move-btn');
+  if (!moves.length) break;
+  moves[i % 4].click();
+  await wait(10);
+}
+if ($('.modal-foot .btn')) { $('.modal-foot .btn').click(); await wait(60); }
+ok(st.quests.done.some(q => q.id === 'f2'), '战斗类后续可完成');
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n榜文即时刷新通过 ✓');
 process.exit(fails ? 1 : 0);

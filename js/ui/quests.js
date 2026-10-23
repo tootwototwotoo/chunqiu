@@ -3,7 +3,8 @@ import { CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { player, npcsHere, addFame } from '../state.js';
 import { refreshBoard, acceptQuest, completeQuest, resolveCheck, questRewardText, sanitizeQuests } from '../systems/quests.js';
-import { duelModal, debateModal } from './minigames.js';
+import { duelModal } from './minigames.js';
+import { debateModal } from './debate.js';
 import { onClick, cityName } from './common.js';
 import { esc } from '../util.js';
 import { absDay, dateLabel } from '../systems/calendar.js';
@@ -66,11 +67,38 @@ export function questCard(st, q, active, offer = false) {
       ${q.status === 'done' ? '<span>已成</span>' : q.status === 'failed' ? '<span style="color:#9c2b26">已误</span>' : ''}
     </div>
     ${offer ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-accept="${esc(q.id)}">领受</button></div>` : ''}
+    ${active && q.followup && q.mode === 'check' ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-do-check="${esc(q.id)}">办理</button></div>` : ''}
+    ${active && q.followup && q.mode === 'combat' ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm primary" data-do-combat="${esc(q.id)}">前往讨伐</button></div>` : ''}
     ${active ? `<div class="btn-row" style="margin-top:8px"><button class="btn sm ghost" data-abandon="${esc(q.id)}">放弃</button></div>` : ''}
   </div>`;
 }
 
 function bindBoard(app, st, root) {
+  onClick(root, '[data-do-check]', (el) => {
+    const q = st.quests.active.find(x => x.id === el.dataset.doCheck);
+    if (!q) return;
+    const r = resolveCheck(st, q);
+    app.modal({
+      title: q.title, narrow: true,
+      body: `<p>${r.ok ? '你办得妥当，差事顺遂。' : '事情办得并不顺手。'}</p>
+        ${r.ok ? `<div class="footnote" style="color:#4d6f56">${questRewardText(q, st)}</div>` : ''}
+        <div class="footnote">判定 ${r.ok ? '成' : '不成'}（${r.roll}）</div>`,
+      foot: [{ label: '继续', cls: 'btn primary', onClick: h => { h.close(); app.render(); } }],
+    });
+    app.refreshHud();
+  });
+  onClick(root, '[data-do-combat]', (el) => {
+    const q = st.quests.active.find(x => x.id === el.dataset.doCombat);
+    if (!q || !q.enemy) return;
+    duelModal(app, st, q.enemy, {
+      sub: q.title,
+      onEnd: (won) => {
+        completeQuest(st, q, won);
+        app.after({ notes: [won ? `「${q.title}」成了。` : `「${q.title}」未成。`] });
+        app.render();
+      },
+    });
+  });
   onClick(root, '[data-abandon]', (el) => {
     const q = st.quests.active.find(x => x.id === el.dataset.abandon);
     if (!q) return;
@@ -113,12 +141,13 @@ function bindBoard(app, st, root) {
         ? { id: def.id, name: def.name, title: def.title, bias: def.bias, stats: def.stats }
         : { name: q.targetName ?? `${STATES[q.targetState].name}国大夫`, title: '', bias: q.targetBias ?? 'li', stats: { zhi: 70 } };
       debateModal(app, st, target, {
-        sub: q.title, difficulty: q.difficulty, topic: '结盟之事',
-        settleOpts: { fame: 3 },
-        onEnd: (won) => {
-          completeQuest(st, q, won);
-          const detail = won ? `：${questRewardText(q, st)}` : '';
-          app.after({ notes: [won ? `「${q.title}」成了${detail}。` : `「${q.title}」未成。`] });
+        category: 'diplomacy',
+        onEnd: ({ result }) => {
+          const ok = result !== 'fail';
+          completeQuest(st, q, ok);
+          const detail = ok ? `：${questRewardText(q, st)}` : '';
+          const word = result === 'success' ? '成了' : result === 'compromise' ? '谈成了一半' : '未成';
+          app.after({ notes: [`「${q.title}」${word}${detail}。`] });
           app.render();
         },
       });

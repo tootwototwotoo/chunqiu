@@ -262,7 +262,7 @@ if (res.events.length) {
     }
     if ($('.debate-opts')) {
       const opts = $$('.debate-opt');
-      if (opts.length) { click(opts[i % 4]); await wait(10); continue; }
+      if (opts.length) { click(opts[i % opts.length]); await wait(10); continue; }
     }
     const x = $('.modal-close');
     if (x) { x.click(); await wait(45); continue; }

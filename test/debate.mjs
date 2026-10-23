@@ -1,143 +1,166 @@
-// 论辩机制：对症收益、连用衰减、心性转变与两次转变
+// 三回合论辩：计分、证据、结局与后续差事
 import { newGame } from '../js/state.js';
-import { startDebate, debateChoose, ARGS } from '../js/systems/debate.js';
+import { startDebate, debateChoose, useEvidence, settleDebate } from '../js/systems/debate.js';
+import { DEBATE_BY_ID, DEBATES, validateDebates, OPPOSITE } from '../js/data/debates/index.js';
 
 let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
 
-function fresh(seed = 1, skill = 3, diff = 60, bias = 'shi') {
-  const st = newGame({ name: '辩士', profession: 'shuike', seed });
-  st.player.skills.biancai = skill;
-  st.player.stats.mei = 60;
-  st.player.stats.zhi = 60;
-  const d = startDebate(st, { name: '国君', bias }, { difficulty: diff });
-  return { st, d };
-}
-const pickNeutral = (bias) => Object.keys(ARGS).find(k => k !== bias && k !== ARGS[bias].opp);
-
-// 对症首用 vs 连用
+// 数据完整性
 {
-  const { st, d } = fresh(1);
-  const m0 = d.meter;
-  debateChoose(st, d, 'shi');
-  const first = d.meter - m0;
-  const m1 = d.meter;
-  debateChoose(st, d, 'shi');
-  const second = d.meter - m1;
-  ok(first > 10, '对症「陈势」首用收益明显', `+${first}`);
-  ok(second < first, '连续同一话术收益衰减', `${first} → ${second}`);
-  ok(d.shifts === 1, '连续两次对症触发心性转变', String(d.shifts));
-  ok(d.bias !== 'shi', '转变后心性改变', d.bias);
-  ok(d.log.some(l => l.includes('【心性已变】')), '日志标明心性已变');
+  const errors = validateDebates();
+  ok(errors.length === 0, '50 个场景结构合法', errors.slice(0, 2).join('；'));
+  ok(DEBATES.length >= 50, '场景数量不少于 50', String(DEBATES.length));
+  const byHeart = {};
+  for (const d of DEBATES) byHeart[d.heart] = (byHeart[d.heart] ?? 0) + 1;
+  ok(Object.values(byHeart).every(n => n >= 8), '四心性场景分布均衡', JSON.stringify(byHeart));
 }
 
-// 平常话术仍有正收益，且弱于对症
+function setup(id = 'relief', bias = 'li') {
+  const st = newGame({ name: '辩士', profession: 'shuike', seed: 5 });
+  st.player.skills.biancai = 5;
+  const scenario = DEBATE_BY_ID[id];
+  const d = startDebate(st, { name: '县令', title: '县宰', bias }, { scenario });
+  return { st, d, scenario };
+}
+const idx = (c, level, tag) => c.options.findIndex(o => o.level === level && o.tag === tag);
+
+// 初始
 {
-  const { st, d } = fresh(2);
-  const m0 = d.meter;
-  debateChoose(st, d, 'shi');
-  const matched = d.meter - m0;
-  const m1 = d.meter;
-  debateChoose(st, d, 'li');
-  const neutral = d.meter - m1;
-  ok(neutral > 0, '对症之后用平常话术仍能推进', `+${neutral}`);
-  ok(neutral < matched, '平常话术弱于对症', `${neutral} vs ${matched}`);
+  const { d } = setup();
+  ok(d.agreement === 50, '认同度初始 50');
+  ok(d.round === 1 && d.maxRounds === 3, '共三回合');
+  ok(d.heart === 'li', '心性取场景设定');
 }
 
-// 相悖话术最低
+// 切中 + 合心性
 {
-  const { st, d } = fresh(3);
-  const m0 = d.meter;
-  debateChoose(st, d, 'ming');
-  const wrong = d.meter - m0;
-  const { st: s2, d: d2 } = fresh(4);
-  const n0 = d2.meter;
-  debateChoose(s2, d2, 'li');
-  const neutral = d2.meter - n0;
-  ok(wrong < neutral, '相悖话术弱于平常话术', `${wrong} vs ${neutral}`);
+  const { st, d } = setup();
+  const c = d.scenario.concerns[0];
+  debateChoose(st, d, idx(c, 'hit', 'li'));
+  ok(d.agreement === 70, '切中(+15)且合心性(+5) → 70', String(d.agreement));
+  const h = d.history[0];
+  ok(h.base === 15 && h.heartMod === 5, '明细记录切中与心性');
 }
 
-// 单次对症不转变
+// 有道理 / 回避 / 相悖
 {
-  const { st, d } = fresh(5);
-  debateChoose(st, d, 'shi');
-  ok(d.shifts === 0, '仅一次对症不会转变');
-  ok(d.tell.includes('不耐烦') || d.tell === '', '有神色提示', d.tell);
+  const a = setup();
+  debateChoose(a.st, a.d, idx(a.d.scenario.concerns[0], 'hit', 'li'));
+  debateChoose(a.st, a.d, idx(a.d.scenario.concerns[1], 'reason', 'li'));
+  const h = a.d.history[1];
+  ok(h.base === 5 && h.heartMod === 5, '有道理但未解决 → +5（另合心性 +5）', JSON.stringify(h));
+  const b = setup(); debateChoose(b.st, b.d, idx(b.d.scenario.concerns[0], 'evade', 'ming'));
+  ok(b.d.agreement === 40, '回避 → -10', String(b.d.agreement));
+  const c = setup(); debateChoose(c.st, c.d, idx(c.d.scenario.concerns[0], 'reason', 'yi'));
+  ok(c.d.history[0].heartMod === -5, '相悖心性 → -5');
 }
 
-// 说服值达到 60 也会转变（交替出牌，不靠连用）
+// 不合心性的切中
 {
-  const { st, d } = fresh(6);
-  let guard = 0;
-  while (!d.over && d.shifts === 0 && guard++ < 10) {
-    debateChoose(st, d, d.used[d.used.length - 1] === d.bias ? pickNeutral(d.bias) : d.bias);
+  const { st, d } = setup();
+  debateChoose(st, d, idx(d.scenario.concerns[0], 'hit', 'li')); // 进入第二轮
+  const c = d.scenario.concerns[1];
+  debateChoose(st, d, idx(c, 'hit', 'shi'));
+  const h = d.history[1];
+  ok(h.base === 15 && h.heartMod === 0, '切中但思路不合心性 → +15', JSON.stringify(h));
+}
+
+// 证据：用错不消耗，用对 +10
+{
+  const { st, d } = setup();
+  const ev = d.scenario.evidence;
+  const wrong = useEvidence(st, d);
+  ok(!wrong.ok && !d.evidenceUsed, '用错顾虑不消耗证据', wrong.msg);
+  while (d.round - 1 < ev.concern) {
+    const c = d.scenario.concerns[d.round - 1];
+    debateChoose(st, d, idx(c, 'reason', 'yi'));
   }
-  ok(d.shifts >= 1, '说服值到阈值触发转变', `meter ${Math.round(d.meter)}`);
+  const before = d.agreement;
+  const right = useEvidence(st, d);
+  ok(right.ok && d.evidenceUsed, '相关顾虑可出示证据');
+  ok(d.agreement === Math.min(100, before + 10), '证据 +10', String(d.agreement - before));
+  const c = d.scenario.concerns[d.round - 1];
+  debateChoose(st, d, idx(c, 'reason', 'li'));
+  ok(d.history.at(-1).evidence === 10, '证据计入明细');
 }
 
-// 高难度可两次；低难度一次
+// 三档结局
+function toRound3(agreement, id = 'relief', bias = 'li') {
+  const x = setup(id, bias);
+  x.d.agreement = agreement;
+  x.d.round = 3;
+  return x;
+}
 {
-  const low = fresh(7, 3, 60).d;
-  const high = fresh(8, 3, 70).d;
-  ok(low.maxShifts === 1 && high.maxShifts === 2, '难度决定转变次数', `${low.maxShifts}/${high.maxShifts}`);
+  const s = toRound3(85);
+  debateChoose(s.st, s.d, idx(s.d.scenario.concerns[2], 'hit', 'li'));
+  ok(s.d.result === 'success', '≥70 为成功', `${s.d.agreement}/${s.d.result}`);
 
-  const { st, d } = fresh(9, 5, 70);
-  let guard = 0;
-  while (!d.over && d.shifts < 2 && guard++ < 12) {
-    debateChoose(st, d, d.used[d.used.length - 1] === d.bias ? pickNeutral(d.bias) : d.bias);
-  }
-  if (d.shifts < 2) {
-    // 若自然没走到第二次，直接构造第二次触发条件
-    d.round = 5; d.meter = 86; d.matchStreak = 2; d.lastShiftRound = 3; d.over = false; d.shifts = 1;
-    debateChoose(st, d, d.bias);
-  }
-  ok(d.shifts === 2, '高难度可第二次转变', String(d.shifts));
-  ok(d.maxShifts === 2, '不会超过两次');
+  const c = toRound3(45);
+  debateChoose(c.st, c.d, idx(c.d.scenario.concerns[2], 'reason', 'yi'));
+  ok(c.d.result === 'compromise', '40–69 为妥协', `${c.d.agreement}/${c.d.result}`);
+
+  const f = toRound3(15);
+  debateChoose(f.st, f.d, idx(f.d.scenario.concerns[2], 'evade', 'shi'));
+  ok(f.d.result === 'fail', '<40 为失败', `${f.d.agreement}/${f.d.result}`);
 }
 
-// 转变方向随机
+// 妥协生成后续差事（有权限）
 {
-  const dirs = new Set();
-  for (let i = 0; i < 40; i++) {
-    const { st, d } = fresh(100 + i);
-    debateChoose(st, d, 'shi');
-    debateChoose(st, d, 'shi');
-    if (d.shifts) dirs.add(d.bias);
-  }
-  ok(dirs.size >= 2, '转变方向为随机（不止一种）', [...dirs].join(','));
+  const { st, d } = toRound3(45);
+  debateChoose(st, d, idx(d.scenario.concerns[2], 'reason', 'yi'));
+  const before = st.quests.active.length;
+  const res = settleDebate(st, d, null);
+  ok(res.result === 'compromise', '结算返回妥协');
+  ok(!!res.followup && st.quests.active.length === before + 1, '有权限者生成后续差事');
+  ok(res.followup.mode === d.scenario.followup.mode, '后续差事类型与场景一致', res.followup.mode);
 }
 
-// 日志带判定与得失
+// 无权限不生成
 {
-  const { st, d } = fresh(11);
-  debateChoose(st, d, 'shi');
-  ok(d.log.some(l => l.includes('【对症】') && /说服[+-]\d+/.test(l)), '日志显示对症与说服增减');
+  const { st, d } = toRound3(39, 'surrender', 'yi');
+  d.heart = 'yi';
+  debateChoose(st, d, idx(d.scenario.concerns[2], 'reason', 'ming'));
+  const before = st.quests.active.length;
+  const res = settleDebate(st, d, null);
+  ok(!res.followup && st.quests.active.length === before, '降将无权限，不生成差事');
 }
 
-// 会换招的玩家胜率明显更高
-function rate(skill, diff, smart, n = 300) {
-  let win = 0;
-  for (let i = 0; i < n; i++) {
-    const { st, d } = fresh(300 + i, skill, diff);
-    let guard = 0;
-    while (!d.over && guard++ < 12) {
-      let key;
-      if (smart) {
-        const last = d.used[d.used.length - 1];
-        key = last === d.bias ? pickNeutral(d.bias) : d.bias;
-      } else {
-        key = ['li', 'yi', 'ming', 'shi'][Math.floor(Math.random() * 4)];
-      }
-      debateChoose(st, d, key);
-    }
-    if (d.won) win++;
-  }
-  return win / n;
+// 后续差事类型按场景生成
+function forceCompromise(id) {
+  const x = setup(id);
+  x.d.round = 3;
+  const c = x.d.scenario.concerns[2];
+  const o = c.options[0];
+  const delta = ({ hit: 15, reason: 5, evade: -10 }[o.level]) + (o.tag === x.d.heart ? 5 : OPPOSITE[x.d.heart] === o.tag ? -5 : 0);
+  x.d.agreement = 55 - delta;
+  debateChoose(x.st, x.d, 0);
+  return x;
 }
-const smart = rate(3, 70, true);
-const random = rate(3, 70, false);
-ok(smart > 0.35, '辩才3 对高智略者、会换招可胜', `${Math.round(smart * 100)}%`);
-ok(smart > random + 0.2, '会看心性换招明显优于乱选', `${Math.round(smart * 100)}% vs ${Math.round(random * 100)}%`);
+{
+  const check = forceCompromise('officials');
+  const rc = settleDebate(check.st, check.d, null);
+  ok(rc.followup?.mode === 'check' && !!rc.followup.checkSkill, '内政场景生成判定类后续', rc.followup?.mode);
 
-console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n论辩机制通过 ✓');
+  const combat = forceCompromise('clans');
+  const rw = settleDebate(combat.st, combat.d, null);
+  ok(rw.followup?.mode === 'combat' && !!rw.followup.enemy, '查抄豪强生成战斗类后续', rw.followup?.mode);
+
+  const travel = forceCompromise('alliance');
+  const rt = settleDebate(travel.st, travel.d, null);
+  ok(rt.followup?.mode === 'travel' && !!rt.followup.targetCity, '结盟场景生成出行类后续', rt.followup?.mode);
+}
+
+// 成功结算与关系
+{
+  const s = toRound3(90);
+  debateChoose(s.st, s.d, idx(s.d.scenario.concerns[2], 'hit', 'li'));
+  s.st.player.relations['guan_zhong'] = { aff: 10, met: true, gifts: 0 };
+  const res = settleDebate(s.st, s.d, 'guan_zhong');
+  ok(res.result === 'success', '成功结算');
+  ok(s.st.player.relations['guan_zhong'].aff > 10, '成功提升关系');
+}
+
+console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n三回合论辩逻辑通过 ✓');
 process.exit(fails ? 1 : 0);

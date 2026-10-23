@@ -12,7 +12,8 @@ import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
 import { openTrialGame } from './trials.js';
-import { duelModal, debateModal } from './minigames.js';
+import { duelModal } from './minigames.js';
+import { debateModal, categoryForRole } from './debate.js';
 import { trainingModal } from './training.js';
 import { marketModal } from './market.js';
 import { openBoard } from './quests.js';
@@ -494,20 +495,26 @@ function openPersuade(app, st) {
   const here = npcsHere(st);
   const target = here.find(n => n.def.role === 'ruler') ?? here.find(n => n.def.role === 'minister') ?? here[0];
   if (!target) { app.toast('此地无人可说服。', 'war'); return; }
-  const info = npcDebateInfo(st, target.id);
-  debateModal(app, st, { ...info, title: target.def.title, stats: target.def.stats }, {
-    sub: `游说${target.def.name}`, topic: '结好之事', difficulty: info.difficulty,
-    onEnd: (won) => {
-      if (won) {
-        const p = player(st);
+  debateModal(app, st, {
+    id: target.id, name: target.def.name, title: target.def.title, bias: target.def.bias,
+  }, {
+    category: categoryForRole(target.def.role),
+    onEnd: ({ result }) => {
+      const p = player(st);
+      if (result === 'success') {
         p.missions += 1;
         p.alliances += 1;
         addMoney(st, 80);
-        addFame(st, 6);
-        addRel(st, target.id, 8);
+        addFame(st, 2);
         st.world.power[target.def.state] = clamp((st.world.power[target.def.state] ?? 30) + 2, 5, 100);
         app.log(`游说${target.def.name}成功，两国通好。`, 'big');
-        app.after({ notes: ['游说成功：名声+6，得金80，促成盟约一则。'] });
+        app.after({ notes: ['游说成功：得金80，促成盟约一则。'] });
+      } else if (result === 'compromise') {
+        p.missions += 1;
+        addMoney(st, 30);
+        st.world.power[target.def.state] = clamp((st.world.power[target.def.state] ?? 30) + 1, 5, 100);
+        app.log(`游说${target.def.name}，对方只肯口头应承。`);
+        app.after({ notes: ['对方态度松动，但未正式结盟。'] });
       } else {
         app.after({ notes: ['对方不应，游说不成。'] });
       }

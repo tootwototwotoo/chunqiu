@@ -4,7 +4,8 @@ import { STATES, CITY_MAP } from '../data/world.js';
 import { player, rel, npcsHere, addRel, addFame, addMoney, addMerit, skillLevel } from '../state.js';
 import { talk, giveGift, learnFrom, teachInfo, giftCandidates, affName, affTier, npcDuelInfo, npcDebateInfo } from '../systems/relations.js';
 import { biasName, BIAS_TIP } from '../systems/debate.js';
-import { duelModal, debateModal } from './minigames.js';
+import { duelModal } from './minigames.js';
+import { debateModal, categoryForRole } from './debate.js';
 import { skillName, onClick, avatar, relTierName } from './common.js';
 import { esc } from '../util.js';
 
@@ -38,7 +39,7 @@ export function openNpc(app, st, npcId) {
           <div style="display:flex;justify-content:space-between"><span>交情</span><span style="color:#9c2b26">${relTierName(rr.aff)} ${rr.aff}</span></div>
           <div class="bar red"><i style="width:${rr.aff}%"></i></div>
         </div>
-        <div style="flex:0 0 auto;color:#6d6052;font-size:12px;max-width:190px;text-align:right" title="${BIAS_TIP[def.bias] ?? ''}">心性：${biasName(def.bias)}<br><span style="font-size:10.5px;color:#8d8478">${BIAS_TIP[def.bias] ?? ''}<br>临场论辩时态度可能改变</span></div>
+        <div style="flex:0 0 auto;color:#6d6052;font-size:12px;max-width:190px;text-align:right" title="${BIAS_TIP[def.bias] ?? ''}">心性：${biasName(def.bias)}<br><span style="font-size:10.5px;color:#8d8478">${BIAS_TIP[def.bias] ?? ''}<br>论辩中心性不变</span></div>
       </div>
       ${extra}
       <div class="btn-row" style="margin-top:14px">
@@ -110,12 +111,15 @@ export function openNpc(app, st, npcId) {
     });
 
     onClick(h.bodyEl, '[data-act="debate"]', () => {
-      const info = npcDebateInfo(st, npcId);
-      debateModal(app, st, { ...info, title: def.title, stats: def.stats }, {
-        sub: '以言相辩，各抒己见', difficulty: info.difficulty, topic: '国事',
-        settleOpts: { rel: 8, fame: 3 },
-        onEnd: (won) => {
-          render(`<div class="footnote">${won ? '对方抚掌：「善哉斯言！」' : '对方摇头：「子之言，未达也。」'}</div>`);
+      debateModal(app, st, {
+        id: def.id, name: def.name, title: def.title, bias: def.bias,
+      }, {
+        category: categoryForRole(def.role),
+        onEnd: ({ result }) => {
+          const line = result === 'success' ? '对方抚掌：「善哉斯言！」'
+            : result === 'compromise' ? '对方沉吟：「容我再思。」'
+              : '对方摇头：「子之言，未达也。」';
+          render(`<div class="footnote">${line}</div>`);
           app.refreshHud();
         },
       });
