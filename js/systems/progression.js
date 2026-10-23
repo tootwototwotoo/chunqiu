@@ -48,7 +48,8 @@ export function seekOffice(st, stateId) {
     }
     addLog(st, `谒见${STATES[stateId].name}君，拜为${RANKS[p.rank].name}。`, 'big');
     addFame(st, 3);
-    addRel(st, npcRulerOf(st, stateId), 8);
+    const ruler = npcRulerOf(st, stateId);
+    if (ruler) addRel(st, ruler, 8);
     return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国${RANKS[p.rank].name}。`, state: stateId, rank: p.rank };
   }
   addStamina(st, -5);
@@ -56,10 +57,9 @@ export function seekOffice(st, stateId) {
 }
 
 export function npcRulerOf(st, stateId) {
-  const found = Object.values(st.npc).find(n => n.alive && n.city && CITY_MAP[n.city]?.state === stateId);
-  if (found) return found.id;
-  const rulers = Object.entries(st.npc).filter(([id, n]) => n.alive && n.city && CITY_MAP[n.city].state === stateId);
-  return rulers[0]?.[0] ?? null;
+  const ownerOf = (cityId) => st.world.owner[cityId] ?? CITY_MAP[cityId]?.state;
+  const found = Object.values(st.npc).find(n => n.alive && n.city && ownerOf(n.city) === stateId);
+  return found ? found.id : null;
 }
 
 // 献策：提升本国势力

@@ -1,5 +1,6 @@
 // 舆图
 import { CITIES, CITY_MAP, ROADS, STATES, STATE_LABEL_POS } from '../data/world.js';
+import { GOODS } from '../data/goods.js';
 import { player, npcsHere } from '../state.js';
 import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 import { today, esc } from '../util.js';
@@ -115,7 +116,7 @@ function cityCardHtml(st, cityId, plan, cur) {
     <div class="city-meta">
       <div>人口 <b>${c.pop}千</b></div>
       <div>所属 <b>${stateName(owner)}</b></div>
-      <div>特产 <b>${c.good === 'su' ? '粟' : c.good === 'yan' ? '盐' : c.good === 'tie' ? '铁' : c.good === 'si' ? '丝' : c.good === 'ma' ? '马' : c.good === 'qi' ? '漆' : c.good === 'yu' ? '玉' : '革'}</b></div>
+      <div>特产 <b>${GOODS[c.good]?.name ?? '—'}</b></div>
       <div>国势 <b>${st.world.power[owner] ?? 0}</b></div>
     </div>
     <div class="hero-tags" style="margin-bottom:8px">

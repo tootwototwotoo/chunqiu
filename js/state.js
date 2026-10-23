@@ -177,6 +177,7 @@ export function addSkillExp(st, k, v) {
   return { leveled, lv: p.skills[k] };
 }
 export function addRel(st, npcId, v) {
+  if (!npcId || !NPC_MAP[npcId]) return null;
   const r = rel(st, npcId);
   r.aff = Math.max(0, Math.min(100, r.aff + v));
   return r;
