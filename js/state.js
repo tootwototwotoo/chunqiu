@@ -8,6 +8,7 @@ import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
 export const SAVE_KEY = 'chunqiu_lieguozhi_save_v1';
 export const AUTO_SAVE_KEY = 'chunqiu_lieguozhi_auto';
+export const AUTO_KEY = AUTO_SAVE_KEY;
 export const AUTO_SAVE_ERROR = '自动存档失败：浏览器存储不可用或空间不足，请在存档页导出备份。';
 export const START_YEAR = -722;
 const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
@@ -403,6 +404,16 @@ export function loadLatestGame() {
     || b.time.year - a.time.year || b.time.month - a.time.month || b.time.day - a.time.day);
   return saves[0] ?? null;
 }
+export function saveAuto(st) {
+  return saveGame(st, AUTO_SAVE_KEY);
+}
+export function loadAuto() {
+  return loadGame(AUTO_SAVE_KEY);
+}
+export function autoSavedAt() {
+  return loadAuto()?.savedAt ?? 0;
+}
+
 export function hasSave() {
   return !!loadLatestGame();
 }

@@ -1,13 +1,14 @@
 // 存档与设置
-import { saveGame, loadGame, deleteSave, hasSave, player, age, fullTitle, AUTO_SAVE_KEY } from '../state.js';
+import { saveGame, loadGame, deleteSave, hasSave, player, age, fullTitle, AUTO_SAVE_KEY, loadAuto, autoSavedAt } from '../state.js';
 import { onClick } from './common.js';
 import { gameDate } from './common.js';
 import { openHelp } from './title.js';
 import { esc } from '../util.js';
 
 export function mount(root, st, app) {
-  const readAuto = () => loadGame(AUTO_SAVE_KEY);
+  const readAuto = () => loadAuto();
   const auto = readAuto();
+  const autoAt = autoSavedAt();
   root.innerHTML = `
   <div class="cols" style="grid-template-columns:1fr 1fr">
     <div class="panel">
@@ -43,9 +44,13 @@ export function mount(root, st, app) {
       </div>
       <div class="divider"></div>
       <div class="section-title">自动存档</div>
-      <div class="desc" style="margin-top:0">${auto ? `每月初自动记录于简册。最近：${esc(auto.player.name)} · ${gameDate(auto.time)} ${auto.time.day}日` : '尚无可用自动存档。'}</div>
+      <div class="desc" style="margin-top:0">
+        每次行动后自动记录（1 秒内合并写入），切出页面时也会补存。<br>
+        ${auto ? `最近：${esc(auto.player.name)} · ${gameDate(auto.time)} ${auto.time.day}日${autoAt ? ` · ${new Date(autoAt).toLocaleTimeString()}` : ''}` : '尚无可用自动存档。'}
+      </div>
       <div class="btn-row">
         <button class="btn sm" data-act="auto">读取自动存档</button>
+        <button class="btn sm ${st.flags.noAutosave ? '' : 'primary'}" data-act="toggle-auto">自动存档：${st.flags.noAutosave ? '关' : '开'}</button>
       </div>
       <div class="divider"></div>
       <div class="section-title">重开</div>
@@ -88,12 +93,16 @@ export function mount(root, st, app) {
     } catch (e) { app.toast('存档文本无效', 'war'); }
   });
   onClick(root, '[data-act="auto"]', () => {
-    try {
-      const obj = readAuto();
-      if (!obj) { app.toast('无自动存档', 'war'); return; }
-      app.startGame(obj);
-      app.toast('已读取自动存档', 'gain');
-    } catch { app.toast('自动存档损坏', 'war'); }
+    const obj = readAuto();
+    if (!obj) { app.toast('无自动存档', 'war'); return; }
+    app.startGame(obj);
+    app.toast('已读取自动存档', 'gain');
+  });
+  onClick(root, '[data-act="toggle-auto"]', () => {
+    st.flags.noAutosave = !st.flags.noAutosave;
+    if (!st.flags.noAutosave) app.scheduleAutosave(0);
+    app.toast(`自动存档已${st.flags.noAutosave ? '关闭' : '开启'}`, st.flags.noAutosave ? 'war' : 'gain');
+    app.render();
   });
   onClick(root, '[data-act="title"]', () => app.showTitle());
   onClick(root, '[data-act="help"]', () => openHelp(app));

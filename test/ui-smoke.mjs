@@ -56,6 +56,13 @@ ok(!!$('.modal'), '开场弹窗');
 click('.modal-foot .btn');
 await wait();
 
+// 自动存档（行动后写入，界面可切换开关）
+const { AUTO_KEY } = await import('../js/state.js');
+ok(app.autosaveNow(), '行动后可立即自动存档');
+ok(!!localStorage.getItem(AUTO_KEY), '自动存档键已写入');
+app.nav('save');
+ok(screenText().includes('自动存档：开'), '存档页显示自动存档开关');
+
 // 交游显示（回归：曾把 relations 的值当条目、人名渲染为 undefined）
 app.st.player.relations['guan_zhong'] = { aff: 40, met: true, gifts: 0 };
 app.st.player.relations['ji_liang'] = { aff: 22, met: true, gifts: 0 };

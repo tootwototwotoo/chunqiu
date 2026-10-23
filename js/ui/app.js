@@ -1,5 +1,5 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
-import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState, AUTO_SAVE_ERROR } from '../state.js';
+import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState, AUTO_SAVE_ERROR, saveAuto } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent } from '../systems/events.js';
 import { esc } from '../util.js';
@@ -28,6 +28,7 @@ class App {
     this.queue = [];
     this.modalHandle = null;
     this.endingShown = false;
+    this.autosaveTimer = null;
     this.bindShell();
   }
 
@@ -40,6 +41,27 @@ class App {
       if (!el || !this.st) return;
       this.nav(el.dataset.screen);
     });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.autosaveNow();
+    });
+    window.addEventListener('beforeunload', () => this.autosaveNow());
+  }
+
+  // 行动后自动存档：1 秒内合并多次写入，切出页面时立即补存
+  scheduleAutosave(delay = 1000) {
+    if (!this.st || this.st.flags?.noAutosave) return;
+    if (this.screen === 'title' || this.screen === 'ending') return;
+    if (this.autosaveTimer) return;
+    this.autosaveTimer = setTimeout(() => {
+      this.autosaveTimer = null;
+      this.autosaveNow();
+    }, delay);
+  }
+
+  autosaveNow() {
+    if (!this.st || this.st.flags?.noAutosave) return false;
+    if (this.screen === 'title' || this.screen === 'ending') return false;
+    return saveAuto(this.st);
   }
 
   // ---------- 生命周期 ----------
@@ -114,6 +136,7 @@ class App {
     document.querySelectorAll('#hud-nav button').forEach(b => {
       b.classList.toggle('active', b.dataset.screen === this.screen);
     });
+    this.scheduleAutosave();
   }
 
   renderLog() {
