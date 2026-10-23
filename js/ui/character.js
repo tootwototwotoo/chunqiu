@@ -7,7 +7,6 @@ import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
 import { trainingModal } from './training.js';
-import { officeChance } from '../systems/progression.js';
 import { peerageSummary } from '../systems/peerage.js';
 import { esc, diffTier, clamp } from '../util.js';
 
@@ -125,8 +124,8 @@ function careerPanelHtml(st) {
     ` : `
       <div class="kv">
         <dt>身份</dt><dd>布衣</dd>
-        <dt>求仕</dt><dd>名声 ≥ 8，往有朝廷的都城谒见国君</dd>
-        <dt>成算</dt><dd>约 ${Math.round(officeChance(st) * 100)}%</dd>
+        <dt>求仕</dt><dd>名声 ≥ 20、完成 3 件差事，往有朝廷的都城廷对</dd>
+        <dt>廷对</dt><dd>三回合问政，认同 ≥70 方得任用</dd>
       </div>
       <div class="footnote">亦可与卿相结好（交情 50 以上），请其举荐直接入仕。布衣所积功勋在出仕时不会作废。<br>
       五等爵须先在洛邑领受「册命之试」，完成专属试炼后再请封；每次未准都会另命新试。</div>

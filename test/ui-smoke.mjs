@@ -76,6 +76,7 @@ ok(screenText().includes('仕途'), '人物界面有仕途面板');
 const { seekOffice, officeChance } = await import('../js/systems/progression.js');
 ok(officeChance(app.st) > 0.5, '初始求仕成算大于五成');
 app.st.player.fame = 60;
+for (let k = 0; k < 3; k++) app.st.quests.done.push({ id: `d${k}`, title: `差事${k}`, status: 'done', reward: {} });
 app.st.player.stats.zheng = 90;
 app.st.player.stats.mei = 90;
 app.st.player.skills.biancai = 6;

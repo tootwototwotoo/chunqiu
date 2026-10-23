@@ -29,6 +29,17 @@ function rankForMerit(merit) {
 const OFFICE_DC = 55;
 
 // 求仕成算：政略、魅力、名声、辩才共同决定
+export const OFFICE_FAME = 20;
+export const OFFICE_QUEST_COUNT = 3;
+
+export function canSeekOffice(st) {
+  const p = player(st);
+  if (p.fame < OFFICE_FAME) return { ok: false, msg: `名声不足（${p.fame}/${OFFICE_FAME}）。` };
+  const done = st.quests?.done?.filter(q => q.status === 'done').length ?? 0;
+  if (done < OFFICE_QUEST_COUNT) return { ok: false, msg: `差事未足（${done}/${OFFICE_QUEST_COUNT}）。` };
+  return { ok: true };
+}
+
 export function officeChance(st) {
   const p = player(st);
   const score = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2;
@@ -40,10 +51,16 @@ export function officeCooldownLeft(st) {
   return Math.max(0, 10 - (dayOf(st.time) - st.flags.lastOffice));
 }
 
+export function markOfficeAttempt(st) {
+  st.flags.lastOffice = dayOf(st.time);
+}
+
 export function seekOffice(st, stateId) {
   const p = player(st);
   if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
-  if (p.fame < 8) return { ok: false, msg: '名声未著，国君不见。' };
+  if (p.fame < OFFICE_FAME) return { ok: false, msg: `名声未著（${p.fame}/${OFFICE_FAME}），国君不见。` };
+  const doneCount = st.quests?.done?.filter(q => q.status === 'done').length ?? 0;
+  if (doneCount < OFFICE_QUEST_COUNT) return { ok: false, msg: `未见实绩（差事 ${doneCount}/${OFFICE_QUEST_COUNT}），国君不见。` };
   const now = dayOf(st.time);
   if (st.flags.lastOffice && now - st.flags.lastOffice < 10) return { ok: false, msg: '门吏挡驾：「君且待旬日再来。」' };
   st.flags.lastOffice = now;

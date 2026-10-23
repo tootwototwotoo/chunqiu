@@ -40,6 +40,7 @@ ok(out.length === 0, '国名标注在地图范围内', out.map(o => o[0]).join('
 // 无主君的小国也能正常出仕，且不会写入非法关系
 const st2 = newGame({ name: '求仕', profession: 'youxia', seed: 2 });
 st2.player.fame = 60;
+for (let k = 0; k < 3; k++) st2.quests.done.push({ id: `d${k}`, title: `差事${k}`, status: 'done', reward: {} });
 st2.player.stats.zheng = 90;
 st2.player.stats.mei = 90;
 st2.player.skills.biancai = 8;

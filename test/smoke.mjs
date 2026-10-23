@@ -97,6 +97,8 @@ for (const prof of ['youxia', 'shangren', 'shuike', 'xuezhe']) {
   }
 
   // 仕途
+  st.player.fame = Math.max(st.player.fame, 30);
+  for (let k = 0; k < 3; k++) st.quests.done.push({ id: `sm${k}`, title: `差事${k}`, status: 'done', reward: {} });
   const office = seekOffice(st, 'qi');
   if (office.ok) {
     advise(st);

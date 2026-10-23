@@ -30,6 +30,7 @@ ok(!questRewardText(sq, sh).includes('功勋'), '商人奖励文本不显示功�
 const w2 = newGame({ name: '仕', profession: 'youxia', seed: 13 });
 w2.player.merit = 200;
 w2.player.fame = 40;
+for (let i = 0; i < 3; i++) w2.quests.done.push({ id: `d${i}`, title: `差事${i}`, status: 'done', reward: {} });
 let off = null;
 for (let i = 0; i < 12 && !(off && off.ok); i++) {
   delete w2.flags.lastOffice;

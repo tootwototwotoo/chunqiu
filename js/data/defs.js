@@ -27,25 +27,25 @@ export const PROFESSIONS = {
   youxia: {
     id: 'youxia', name: '游侠', seal: '侠',
     desc: '仗剑去国，辞亲远游。以武立身，可仕于列国，由士而卿，终佐霸主。',
-    start: { money: 200, fame: 8, stats: { wu: 58, zhi: 42, zheng: 30, mei: 44 }, skills: { jianshu: 3, sheshu: 2, bingfa: 1 } },
+    start: { money: 200, fame: 0, stats: { wu: 58, zhi: 42, zheng: 30, mei: 44 }, skills: { jianshu: 3, sheshu: 2, bingfa: 1 } },
     path: '仕途',
   },
   shangren: {
     id: 'shangren', name: '商人', seal: '商',
     desc: '转毂四方，以有为无。善观时变，可富甲天下，亦可挟财势以动列国。',
-    start: { money: 600, fame: 6, stats: { wu: 34, zhi: 52, zheng: 44, mei: 52 }, skills: { shanggu: 3, suanshu: 2, biancai: 1 } },
+    start: { money: 600, fame: 0, stats: { wu: 34, zhi: 52, zheng: 44, mei: 52 }, skills: { shanggu: 3, suanshu: 2, biancai: 1 } },
     path: '商途',
   },
   shuike: {
     id: 'shuike', name: '说客', seal: '辩',
     desc: '一言之辩，重于九鼎。游走列国，以口舌定盟约、解纷争，纵横天下。',
-    start: { money: 260, fame: 10, stats: { wu: 32, zhi: 60, zheng: 56, mei: 60 }, skills: { biancai: 3, quanmou: 2, xuewen: 1 } },
+    start: { money: 260, fame: 0, stats: { wu: 32, zhi: 60, zheng: 56, mei: 60 }, skills: { biancai: 3, quanmou: 2, xuewen: 1 } },
     path: '纵横',
   },
   xuezhe: {
     id: 'xuezhe', name: '学者', seal: '文',
     desc: '游学问道，讲席授徒。立一家之言，桃李满天下，名垂后世。',
-    start: { money: 160, fame: 8, stats: { wu: 30, zhi: 56, zheng: 48, mei: 54 }, skills: { xuewen: 3, biancai: 2, suanshu: 1 } },
+    start: { money: 160, fame: 0, stats: { wu: 30, zhi: 56, zheng: 48, mei: 54 }, skills: { xuewen: 3, biancai: 2, suanshu: 1 } },
     path: '学统',
   },
 };

@@ -7,13 +7,14 @@ import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHeal
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft } from '../systems/progression.js';
+import { canSeekOffice, markOfficeAttempt, advise, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
 import { TOPIC_NAMES } from '../data/debates/index.js';
 import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
 import { openTrialGame } from './trials.js';
+import { audienceModal } from './audience.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
 import { trainingModal } from './training.js';
@@ -180,24 +181,16 @@ function buildActions(st, app, c, owner) {
     });
     if (c.tags.includes('court')) {
       const cd = officeCooldownLeft(st);
-      const pct = Math.round(officeChance(st) * 100);
+      const chk = canSeekOffice(st);
       add({
         id: 'office', name: '谒见国君', cost: cd ? `${cd}日后` : '半日',
         desc: p.stateId === owner
           ? '已在朝中，可献策议事。'
-          : p.fame < 8
-            ? `名声不足（${p.fame}/8），先接差事扬名。`
-            : `求仕于${stateName(owner)} · 成算约${pct}%${cd ? ` · ${cd}日后可再谒见` : ''}`,
-        disabled: p.stateId === owner || p.fame < 8 || cd > 0,
-        run: () => {
-          const res = seekOffice(st, owner);
-          app.modal({
-            title: res.ok ? '拜官' : '求见', narrow: true,
-            body: `<p>${res.msg}</p>`,
-            foot: [{ label: res.ok ? '谢恩' : '知道了', cls: 'btn primary', onClick: h => h.close() }],
-          });
-          app.after({});
-        },
+          : !chk.ok
+            ? chk.msg
+            : `求仕于${stateName(owner)} · 三回合廷对，认同 ≥70 方得任用${cd ? ` · ${cd}日后可再谒见` : ''}`,
+        disabled: p.stateId === owner || !chk.ok || cd > 0,
+        run: () => openOfficeAudience(app, st, owner),
       });
     }
     if (p.stateId) {
@@ -293,12 +286,12 @@ function buildActions(st, app, c, owner) {
     if (c.tags.includes('court') && p.stateId !== owner) {
       add({
         id: 'office', name: '谒见国君', cost: '半日',
-        desc: `求仕于${stateName(owner)}，以辩才干禄 · 成算约${Math.round(officeChance(st) * 100)}%。`,
-        run: () => {
-          const res = seekOffice(st, owner);
-          app.modal({ title: '求见', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '知道了', cls: 'btn primary', onClick: h => h.close() }] });
-          app.after({});
-        },
+        desc: (() => {
+          const chk = canSeekOffice(st);
+          return chk.ok ? `求仕于${stateName(owner)} · 三回合廷对，认同 ≥70 方得任用。` : chk.msg;
+        })(),
+        disabled: !canSeekOffice(st).ok,
+        run: () => openOfficeAudience(app, st, owner),
       });
     }
     if (p.stateId) {
@@ -369,13 +362,12 @@ function buildActions(st, app, c, owner) {
   if (!['merchant'].includes(p.profession) && c.tags.includes('court') && p.stateId !== owner && !acts.some(a => a.id === 'office')) {
     add({
       id: 'office', name: '谒见国君', cost: '半日',
-      desc: p.fame < 8 ? `名声不足（${p.fame}/8），先接差事扬名。` : `求仕于${stateName(owner)} · 成算约${Math.round(officeChance(st) * 100)}%。`,
-      disabled: p.fame < 8,
-      run: () => {
-        const res = seekOffice(st, owner);
-        app.modal({ title: '求见', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '知道了', cls: 'btn primary', onClick: h => h.close() }] });
-        app.after({});
-      },
+      desc: (() => {
+        const chk = canSeekOffice(st);
+        return chk.ok ? `求仕于${stateName(owner)} · 三回合廷对，认同 ≥70 方得任用。` : chk.msg;
+      })(),
+      disabled: !canSeekOffice(st).ok,
+      run: () => openOfficeAudience(app, st, owner),
     });
   }
 
@@ -501,6 +493,25 @@ function openTrain(app, st, c) {
     if (p.stamina < 8) { app.toast('体力不济。', 'war'); return; }
     h.close();
     trainingModal(app, st, el.dataset.k, { bonus: bonusFor(el.dataset.k), sub: `${CITY_MAP[p.cityId].name} · ${SKILL_DEFS[el.dataset.k].where}` });
+  });
+}
+
+function openOfficeAudience(app, st, owner) {
+  audienceModal(app, st, owner, {
+    sub: `求仕于${stateName(owner)}`,
+    onEnd: ({ success }) => {
+      if (!success) {
+        markOfficeAttempt(st);
+        app.after({ notes: ['廷对失旨，国君未见用。'] });
+        return;
+      }
+      st.player.stateId = owner;
+      st.player.rank = 1;
+      st.player.merit = Math.max(st.player.merit, 10);
+      addLog(st, `廷对称旨，拜为${stateName(owner)}国士。`, 'big');
+      addFame(st, 3);
+      app.after({ notes: [`廷对称旨，拜为${stateName(owner)}国士。`] });
+    },
   });
 }
 

@@ -7,6 +7,7 @@ import { RANKS } from '../js/data/defs.js';
 
 const st = newGame({ name: '管仲之徒', profession: 'youxia', era: 'huan', seed: 21 });
 st.player.fame = 30;
+for (let k = 0; k < 3; k++) st.quests.done.push({ id: `d${k}`, title: `差事${k}`, status: 'done', reward: {} });
 let served = false;
 for (let i = 0; i < 30 && !served; i++) {
   const r = seekOffice(st, 'qi');
