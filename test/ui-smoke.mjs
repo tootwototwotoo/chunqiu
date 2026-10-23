@@ -45,6 +45,7 @@ ok(!!$('[data-act="new"]'), '有开局按钮');
 click('[data-act="new"]');
 ok(!!$('#pname'), '角色创建表单');
 $('#pname').value = '姜小白';
+$('#pseed').value = '20261022';
 click('[data-prof="shuike"]');
 click('[data-gender="女"]');
 click('[data-act="start"]');
@@ -222,22 +223,25 @@ if (res.events.length) {
   app.after(res);
   ok(!!$('.modal'), '时间推进后展示事件弹窗');
   // 手动走事件队列
-  for (let i = 0; i < 60 && ($('.modal') || app.queue.length); i++) {
-    // 随机事件可能触发决斗/辩论弹窗，先把小游戏走完
+  // 每步只做一个动作：选项 > 结算按钮 > 决斗/辩论出招 > 关闭
+  for (let i = 0; i < 500 && ($('.modal') || app.queue.length); i++) {
+    if ($('.choice-btn')) { $('.choice-btn').click(); await wait(15); continue; }
+    const foot = $('.modal-foot .btn');
+    if (foot) { foot.click(); await wait(45); continue; }
     if ($('.move-grid')) {
       const moves = $$('.move-btn');
-      if (moves.length) { click(moves[i % 4]); await wait(25); continue; }
+      if (moves.length) { click(moves[i % 4]); await wait(10); continue; }
     }
     if ($('.debate-opts')) {
       const opts = $$('.debate-opt');
-      if (opts.length) { click(opts[i % 4]); await wait(25); continue; }
+      if (opts.length) { click(opts[i % 4]); await wait(10); continue; }
     }
-    if ($('.choice-btn')) { $('.choice-btn').click(); await wait(15); continue; }
-    const b = $('.modal-foot .btn') || $('.modal-close');
-    if (b) b.click();
-    await wait(60); // 下一事件在关闭弹窗后异步入场
+    const x = $('.modal-close');
+    if (x) { x.click(); await wait(45); continue; }
+    await wait(30);
   }
-  ok(!$('.modal') && app.queue.length === 0, '事件弹窗全部结算');
+  if (app.screen === 'ending') ok(true, '寿终后进入结局');
+  else ok(!$('.modal') && app.queue.length === 0, '事件弹窗全部结算');
 }
 ok(app.st.log.length > 3, '纪事有记录');
 ok(errors.length === 0, '无运行时错误: ' + errors.slice(0, 3).join(' | '));
