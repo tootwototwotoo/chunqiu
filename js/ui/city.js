@@ -506,11 +506,12 @@ function openOfficeAudience(app, st, owner) {
         return;
       }
       st.player.stateId = owner;
-      st.player.rank = 1;
+      st.player.rank = st.player.merit >= 150 ? 3 : st.player.merit >= 80 ? 2 : 1;
       st.player.merit = Math.max(st.player.merit, 10);
-      addLog(st, `廷对称旨，拜为${stateName(owner)}国士。`, 'big');
+      const rankName = ['士', '中士', '上士'][Math.min(2, st.player.rank - 1)];
+      addLog(st, `廷对称旨，拜为${stateName(owner)}国${rankName}。`, 'big');
       addFame(st, 3);
-      app.after({ notes: [`廷对称旨，拜为${stateName(owner)}国士。`] });
+      app.after({ notes: [`廷对称旨，拜为${stateName(owner)}国${rankName}。`] });
     },
   });
 }
