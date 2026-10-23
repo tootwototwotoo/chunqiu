@@ -1,5 +1,6 @@
 // 差事界面与受托弹窗
 import { CITY_MAP } from '../data/world.js';
+import { NPC_MAP } from '../data/npcs.js';
 import { player, npcsHere, addFame } from '../state.js';
 import { refreshBoard, acceptQuest, completeQuest, resolveCheck, questRewardText, sanitizeQuests } from '../systems/quests.js';
 import { duelModal, debateModal } from './minigames.js';
@@ -107,7 +108,10 @@ function bindBoard(app, st, root) {
         },
       });
     } else if (res.instant === 'debate') {
-      const target = q.npcId2 ? { id: q.npcId2, name: '对方大夫', title: '', bias: 'li', stats: { zhi: 70 } } : { name: `${STATES[q.targetState].name}国大夫`, title: '', bias: 'li', stats: { zhi: 70 } };
+      const def = q.npcId2 ? NPC_MAP[q.npcId2] : null;
+      const target = def
+        ? { id: def.id, name: def.name, title: def.title, bias: def.bias, stats: def.stats }
+        : { name: q.targetName ?? `${STATES[q.targetState].name}国大夫`, title: '', bias: q.targetBias ?? 'li', stats: { zhi: 70 } };
       debateModal(app, st, target, {
         sub: q.title, difficulty: q.difficulty, topic: '结盟之事',
         settleOpts: { fame: 3 },

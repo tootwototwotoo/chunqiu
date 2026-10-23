@@ -92,10 +92,10 @@ function renderDuelBody(st, d) {
 // ---------------- 辩论 ----------------
 export function debateModal(app, st, npc, opts = {}) {
   const d = startDebate(st, npc, opts);
-  let revealed = false;
+  let revealed = true;
   const h = app.modal({
     title: `游说 · ${npc.name}`,
-    sub: opts.sub ?? `论${opts.topic ?? '国事'}`,
+    sub: (opts.sub ?? `论${opts.topic ?? '国事'}`) + ` · 心性：${biasName(npc.bias)}`,
     wide: true,
     closable: false,
     body: renderDebateBody(st, d, revealed),

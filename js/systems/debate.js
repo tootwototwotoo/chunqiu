@@ -58,7 +58,7 @@ export function startDebate(st, npc, opts = {}) {
     difficulty: opts.difficulty ?? 40,
     targetName: npc.name,
     targetTitle: npc.title ?? '',
-    log: [`${npc.name}端坐席上，等你开口。`],
+    log: [`${npc.name}端坐席上，等你开口。你观其神色，知其${biasName(npc.bias)}。`],
     used: [],
     topic: opts.topic ?? '国事',
     npcId: npc.id ?? null,
