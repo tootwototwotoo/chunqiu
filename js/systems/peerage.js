@@ -2,10 +2,11 @@
 import { PEERAGES, peerageName } from '../data/defs.js';
 import { TRIAL_RANKS, TRIAL_BY_ID, variantsOfRank } from '../data/trials.js';
 import { CITY_MAP } from '../data/world.js';
-import { player, addLog, addMoney, addFame, R } from '../state.js';
+import { player, addLog, addMoney, addFame, addGoods, R } from '../state.js';
 import { shortestPath } from './pathfind.js';
 import { clamp } from '../util.js';
 import { evaluateGame } from './trialGames.js';
+import { biPetitionBonus } from './treasures.js';
 
 const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 const careerProf = (p) => ['youxia', 'shuike', 'xuezhe'].includes(p.profession);
@@ -141,7 +142,8 @@ export function petitionChance(st) {
   const fameBonus = Math.min(0.10, p.fame / 2000);
   const rankBonus = (p.rank ?? 0) * 0.01;
   const pity = Math.min(0.24, (p.peerageFails ?? 0) * 0.08);
-  const raw = meta.base + perf * 0.0035 + fameBonus + rankBonus + pity;
+  const bi = biPetitionBonus(st);
+  const raw = meta.base + perf * 0.0035 + fameBonus + rankBonus + pity + bi;
   return clamp(raw, meta.floor, 0.95);
 }
 
@@ -172,6 +174,8 @@ export function petition(st) {
   p.peerageHistory = p.peerageHistory ?? [];
   if (win) {
     addMoney(st, -300);
+    // 玄璧助封，成则献出
+    if ((p.inventory.bi ?? 0) > 0) { addGoods(st, 'bi', -1); addLog(st, '以玄璧为贽，周室纳之。', 'big'); }
     const fief = p.homeCity ?? p.cityId;
     p.peerage = { rank: info.idx, fief, year: st.time.year };
     p.peerageFails = 0;

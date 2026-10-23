@@ -10,9 +10,12 @@ let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
 
 // 礼物价值
-const guan = NPC_MAP.guan_zhong; // 偏好玉
-ok(giftValue(guan, 'yu') <= 20 && giftValue(guan, 'yu') >= 12, '玉单次赠礼不超过 20', String(giftValue(guan, 'yu')));
-ok(giftValue(guan, 'ma') < giftValue(guan, 'yu'), '玉仍是最贵重的礼物');
+const guan = NPC_MAP.guan_zhong; // 偏好珊瑚树
+const plain = { pref: 'su' };
+ok(giftValue(plain, 'yu') <= 20 && giftValue(plain, 'yu') >= 10, '玉单次赠礼不超过 20', String(giftValue(plain, 'yu')));
+ok(giftValue(plain, 'ma') < giftValue(plain, 'yu'), '玉仍是最贵重的礼物', `${giftValue(plain, 'ma')} < ${giftValue(plain, 'yu')}`);
+ok(giftValue(guan, 'shan') === 20, '匹配偏好的珊瑚树封顶 20', String(giftValue(guan, 'shan')));
+ok(giftValue(plain, 'bi') >= giftValue(plain, 'yu'), '玄璧不贱于玉');
 ok(giftValue(NPC_MAP.qi_huan, 'ma') > giftValue(NPC_MAP.qi_huan, 'su'), '匹配偏好仍然更高');
 
 // 赠礼：随机浮动、10 日冷却、75 封顶
@@ -48,7 +51,7 @@ ok(giftValue(NPC_MAP.qi_huan, 'ma') > giftValue(NPC_MAP.qi_huan, 'su'), '匹配�
   const b1 = buyJade(st, city);
   ok(b1.ok, '可购玉', b1.msg);
   ok(st.player.inventory.yu === 1, '获得一块玉');
-  ok(st.world.jade.price > before, '购后玉价上涨', `${before} → ${st.world.jade.price}`);
+  ok(st.world.treasures.yu.price > before, '购后玉价上涨', `${before} → ${st.world.treasures.yu.price}`);
   const s1 = jadeStatus(st, city);
   ok(!s1.available && s1.left > 0, '本城售罄，需等待补货', String(s1.left));
   st.player.cityId = JADE.cities[1];

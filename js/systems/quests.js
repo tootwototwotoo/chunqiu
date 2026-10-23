@@ -1,6 +1,6 @@
 // 差事：官府委托、行商契约、游说使命、讲学之请
 import { CITY_MAP, CITIES, STATES, cityState } from '../data/world.js';
-import { GOODS } from '../data/goods.js';
+import { GOODS, PLAIN_GOODS } from '../data/goods.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel,
   npcsHere, rel, R as Rand } from '../state.js';
@@ -72,7 +72,7 @@ const TEMPLATES = {
   supply(st, city) {
     const target = pickTarget(st, city);
     const plan = travelDeadline(st, city, target);
-    const goodId = R.pick(st, Object.keys(GOODS).filter(g => g !== 'yu'));
+    const goodId = R.pick(st, PLAIN_GOODS);
     const qty = 3 + R.int(st, 0, 4);
     const p = priceAt(st, target.id, goodId);
     const g = giverOf(st, city);

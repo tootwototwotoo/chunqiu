@@ -76,7 +76,9 @@ export function giftValue(def, goodId) {
   if (!g) return 0;
   const match = def.pref === goodId;
   // 价值压平：便宜货也有心意，贵重物不再一枚顶十次交往
-  const raw = Math.round((3 + g.base / 25) * (match ? 1.6 : 1.0));
+  // 珍宝不以市价折算交情，只按珍稀程度给固定心意
+  const rawBase = g.treasure ? 8 + Math.round(g.base / 260) : 3 + g.base / 25;
+  const raw = Math.round(rawBase * (match ? 1.6 : 1.0));
   // 顶级珍物也换不来无限情谊：单次赠礼有上限
   return Math.min(match ? 20 : 12, raw);
 }

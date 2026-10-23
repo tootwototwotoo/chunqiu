@@ -7,9 +7,20 @@ export const GOODS = {
   si:      { name: '丝', unit: '匹', base: 66, bulk: 1 },
   ma:      { name: '马', unit: '匹', base: 140, bulk: 2 },
   qi:      { name: '漆', unit: '桶', base: 44, bulk: 1 },
-  yu:      { name: '玉', unit: '双', base: 500, bulk: 1 },
   ge:      { name: '革', unit: '张', base: 48, bulk: 1 },
+  // 珍宝：不在市集买卖，只在「珍宝」页以稀缺价出售
+  yu:      { name: '美玉', unit: '双', base: 500, bulk: 1, treasure: true },
+  zhu:     { name: '明珠', unit: '颗', base: 900, bulk: 1, treasure: true },
+  shan:    { name: '珊瑚树', unit: '株', base: 1400, bulk: 1, treasure: true },
+  xi:      { name: '犀角', unit: '支', base: 2000, bulk: 1, treasure: true },
+  xiang:   { name: '象牙', unit: '对', base: 2700, bulk: 1, treasure: true },
+  bi:      { name: '玄璧', unit: '件', base: 3600, bulk: 1, treasure: true },
 };
+
+// 普通货物（排除珍宝）
+export const PLAIN_GOODS = Object.keys(GOODS).filter(g => !GOODS[g].treasure);
+export const TREASURE_GOODS = Object.keys(GOODS).filter(g => GOODS[g].treasure);
+export const isTreasure = (g) => !!GOODS[g]?.treasure;
 
 // 城市产地：该货在此地便宜
 export const LOCAL_SPECIALTY = {
@@ -59,7 +70,7 @@ const DEMAND_BASE = {
 export const demandOf = (cityId, goodId) => DEMAND_BASE[cityId]?.[goodId] ?? 1;
 
 
-// 珍稀玉石：全国最多 8 块，一城最多 1 块；买后 30 日补货，价格逐次上涨
+// 兼容旧代码：美玉的配置（完整珍宝表见 treasures.js）
 export const JADE = {
   cities: ['luoyi', 'xinzheng', 'linzi', 'qufu', 'ying', 'yong', 'jiang', 'tao'],
   basePrice: 500,

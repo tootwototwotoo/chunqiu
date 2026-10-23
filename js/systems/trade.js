@@ -1,5 +1,6 @@
 // 买卖与行情
-import { GOODS, JADE } from '../data/goods.js';
+import { GOODS, JADE, isTreasure, PLAIN_GOODS } from '../data/goods.js';
+import { TREASURES, TREASURE_IDS, treasuresInCity } from '../data/treasures.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
 import { player, addMoney, addGoods, goodsCount, caravanFree, addLog, R, basePriceOf } from '../state.js';
 import { ri, clamp } from '../util.js';
@@ -34,7 +35,7 @@ export function canBuy(st, goodId, qty) {
 }
 
 export function buy(st, goodId, qty) {
-  if (goodId === 'yu') return { ok: false, msg: '玉为珍稀之物，只在「珍玉」页出售。' };
+  if (isTreasure(goodId)) return { ok: false, msg: `${GOODS[goodId].name}为珍稀之物，只在「珍宝」页出售。` };
   const err = canBuy(st, goodId, qty);
   if (err) return { ok: false, msg: err };
   const cid = player(st).cityId;
@@ -49,7 +50,7 @@ export function buy(st, goodId, qty) {
 }
 
 export function sell(st, goodId, qty) {
-  if (goodId === 'yu') return { ok: false, msg: '玉为珍稀之物，市集不敢收。' };
+  if (isTreasure(goodId)) return { ok: false, msg: `${GOODS[goodId].name}为珍稀之物，市集不敢收。` };
   const inv = player(st).inventory[goodId] ?? 0;
   if (qty <= 0) return { ok: false, msg: '数量不足。' };
   if (inv < qty) return { ok: false, msg: '货不够。' };
@@ -96,31 +97,57 @@ export function tradeSummary(st, goodId) {
 }
 
 
-// ---------------- 珍稀玉市 ----------------
-const jadeDay = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
+// ---------------- 珍宝市 ----------------
+const dayNum = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
-export function jadeStatus(st, cityId = player(st).cityId) {
-  if (!JADE.cities.includes(cityId)) return { available: false, reason: '此城无珍玉出售', left: 0, price: 0 };
-  const j = st.world.jade;
-  const c = j?.cities?.[cityId];
-  if (!j || !c) return { available: false, reason: '此城暂无珍玉', left: 0, price: j?.price ?? JADE.basePrice };
-  const now = jadeDay(st.time);
+// 单种珍宝在某城的状态
+export function treasureStatus(st, gemId, cityId = player(st).cityId) {
+  const def = TREASURES[gemId];
+  if (!def || !def.cities.includes(cityId)) return { available: false, reason: '此城无此珍宝', left: 0, price: 0, def };
+  const w = st.world.treasures?.[gemId];
+  const c = w?.cities?.[cityId];
+  if (!w || !c) return { available: false, reason: '此城暂无此珍宝', left: 0, price: w?.price ?? def.base, def };
+  const now = dayNum(st.time);
   if (c.nextDay && c.nextDay <= now) c.nextDay = 0;
   const left = c.nextDay ? Math.max(0, c.nextDay - now) : 0;
-  return { available: !left, left, price: j.price };
+  return { available: !left, left, price: w.price, def };
 }
 
-export function buyJade(st, cityId = player(st).cityId) {
-  if (!JADE.cities.includes(cityId)) return { ok: false, msg: '此城并无玉商。' };
-  const status = jadeStatus(st, cityId);
-  if (!status.available) return { ok: false, msg: `本城玉已售罄，${status.left} 日后才会再有。` };
-  if (player(st).money < status.price) return { ok: false, msg: `玉价 ${status.price} 金，囊中不足。` };
+// 本城所有珍宝的状态
+export function treasureList(st, cityId = player(st).cityId) {
+  return treasuresInCity(cityId).map(id => ({ id, ...treasureStatus(st, id, cityId) }));
+}
+
+export function buyTreasure(st, gemId, cityId = player(st).cityId) {
+  const def = TREASURES[gemId];
+  if (!def || !def.cities.includes(cityId)) return { ok: false, msg: '此城并无此宝。' };
+  const status = treasureStatus(st, gemId, cityId);
+  if (!status.available) return { ok: false, msg: `本城${def.name}已售罄，${status.left} 日后才会再有。` };
+  if (player(st).money < status.price) return { ok: false, msg: `${def.name}价 ${status.price} 金，囊中不足。` };
   addMoney(st, -status.price, true);
-  addGoods(st, 'yu', 1);
-  const j = st.world.jade;
-  j.sold = (j.sold ?? 0) + 1;
-  j.price = Math.round(j.price * JADE.priceStep);
-  j.cities[cityId].nextDay = jadeDay(st.time) + JADE.restockDays;
-  addLog(st, `以 ${status.price} 金购得美玉一块。`, 'big');
-  return { ok: true, price: status.price, nextPrice: j.price, msg: `购得美玉，价 ${status.price} 金。此后玉价上涨至 ${j.price} 金。` };
+  addGoods(st, gemId, 1);
+  const w = st.world.treasures[gemId];
+  w.sold = (w.sold ?? 0) + 1;
+  w.price = Math.round(w.price * def.step);
+  w.cities[cityId].nextDay = dayNum(st.time) + def.restock;
+  st.world.treasuresCollected = st.world.treasuresCollected ?? {};
+  st.world.treasuresCollected[gemId] = true;
+  addLog(st, `以 ${status.price} 金购得${def.name}。`, 'big');
+  return {
+    ok: true, price: status.price, nextPrice: w.price, def,
+    msg: `购得${def.name}，价 ${status.price} 金。此后${def.name}价上涨至 ${w.price} 金。`,
+  };
+}
+
+// 兼容旧接口
+export function jadeStatus(st, cityId = player(st).cityId) {
+  return treasureStatus(st, 'yu', cityId);
+}
+export function buyJade(st, cityId = player(st).cityId) {
+  return buyTreasure(st, 'yu', cityId);
+}
+
+// 已收藏的珍宝种类数
+export function treasuresOwnedKinds(st) {
+  return TREASURE_IDS.filter(id => (player(st).inventory[id] ?? 0) > 0).length;
 }

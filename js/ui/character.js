@@ -9,6 +9,8 @@ import { EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
 import { trainingModal } from './training.js';
 import { peerageSummary } from '../systems/peerage.js';
 import { policySummary } from '../systems/policy.js';
+import { treasureSummary } from '../systems/treasures.js';
+import { TREASURES } from '../data/treasures.js';
 import { esc, diffTier, clamp } from '../util.js';
 
 export function mount(root, st, app) {
@@ -121,6 +123,11 @@ function careerPanelHtml(st) {
         <dt>功勋</dt><dd>${p.merit}${next ? ` / ${next.merit}` : ''}</dd>
         <dt>国势</dt><dd>${STATES[p.stateId]?.name ?? ''} ${st.world.power[p.stateId] ?? 0} <small style="color:#6d6052">物价 ${(((st.world.power[p.stateId] ?? 30) - 40) / 4).toFixed(1)}%</small></dd>
         <dt>国策</dt><dd>${(() => { const s2 = policySummary(st); return s2.cur ? `${s2.cur.policy.name}（余 ${s2.cur.left} 日）` : '无'; })()}</dd>
+        <dt>珍宝</dt><dd>${(() => {
+          const t = treasureSummary(st);
+          const names = t.owned.map(id => TREASURES[id].name).join('、');
+          return `${t.count}/6${t.honor ? ` · ${t.honor.name}` : ''}${names ? `<small style="color:#6d6052">（${names}）</small>` : ''}`;
+        })()}</dd>
       </div>
       <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
       <div class="footnote">${next ? `距「${next.name}」还需功勋 ${Math.max(0, next.merit - p.merit)}；每月初按功勋擢升一级。` : '已至极品「执政」。'}</div>

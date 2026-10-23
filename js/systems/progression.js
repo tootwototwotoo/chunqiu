@@ -4,6 +4,7 @@ import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R, rel } from '../state.js';
 import { ri, clamp, diffTier } from '../util.js';
 import { currentPolicy } from './policy.js';
+import { treasureHonor, collectedTreasureKinds, offeredAllKinds } from './treasures.js';
 
 export function checkPromotion(st) {
   const p = player(st);
@@ -131,10 +132,12 @@ export function joinCampaign(st) {
 export function scoreOf(st) {
   const p = player(st);
   const skills = Object.values(p.skills).reduce((a, b) => a + b, 0);
+  const honor = treasureHonor(st);
   return Math.round(
     p.fame * 3 + p.merit * 0.6 + skills * 6 + p.money / 60 +
     p.disciples * 4 + p.missions * 6 + p.alliances * 10 + p.shops.length * 8 +
-    (p.rank * 12) + (p.peerage ? (p.peerage.rank + 1) * 80 : 0)
+    (p.rank * 12) + (p.peerage ? (p.peerage.rank + 1) * 80 : 0) +
+    (honor ? honor.bonus : 0)
   );
 }
 
@@ -167,6 +170,9 @@ export function computeEnding(st) {
     comment = p.disciples >= 28 ? '立一家之言，弟子遍天下，后世宗师之。' : p.disciples >= 8 ? '讲学授徒，门庭若市。' : '弦歌不辍，独善其身。';
     epilogue = `你收徒${p.disciples}人，著书${p.works.length}篇。`;
   }
+  const honor = treasureHonor(st);
+  if (honor) comment = `${honor.text}${comment}`;
+  if (offeredAllKinds(st)) epilogue = `${epilogue}六种珍宝俱曾献于朝，君臣之义亦厚矣。`;
   return {
     rank, comment, epilogue, score,
     age: age(st),
@@ -174,6 +180,7 @@ export function computeEnding(st) {
       ['名声', p.fame], ['官阶', careerTitle(st) || rankName(st)],
       ['爵位', p.peerage ? peerageName(p.peerage.rank) : '未受封'],
       ['功勋', p.merit],
+      ['珍宝', `${collectedTreasureKinds(st).length}/6`],
       ['知己', Object.values(p.relations).filter(r => r.aff >= 52).length],
       ['决斗胜', `${s.duelWins}/${s.duels}`],
     ],

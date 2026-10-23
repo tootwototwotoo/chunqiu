@@ -1,6 +1,6 @@
 // 城中：诸般行动
 import { CITY_MAP, STATES, cityState } from '../data/world.js';
-import { GOODS } from '../data/goods.js';
+import { GOODS, PLAIN_GOODS } from '../data/goods.js';
 import { SKILL_DEFS, PEERAGES, peerageName } from '../data/defs.js';
 import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHealth, addLog,
   skillLevel, R, isMerchant, isWarrior, isDiplomat, isScholar, addRel } from '../state.js';
@@ -16,6 +16,8 @@ import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peer
 import { openTrialGame } from './trials.js';
 import { audienceModal } from './audience.js';
 import { councilModal } from './council.js';
+import { offerableTreasures } from '../systems/treasures.js';
+import { offerModal } from './offer.js';
 import { currentPolicy, policySummary } from '../systems/policy.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
@@ -65,7 +67,7 @@ export function mount(root, st, app) {
       <div class="divider"></div>
       <div class="section-title">市价一览 <span class="hint">本地特产最贱</span></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 14px;font-size:13px">
-        ${Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
+        ${PLAIN_GOODS.map(g => {
           const price = priceAt(st, c.id, g);
           return `<div style="display:flex;justify-content:space-between;border-bottom:1px dotted rgba(120,95,60,.25);padding:3px 0">
             <span>${GOODS[g].name}</span><b style="color:${c.good === g ? '#4d6f56' : '#6d6052'}">${price}</b></div>`;
@@ -208,6 +210,13 @@ function buildActions(st, app, c, owner) {
         },
       });
     }
+    if (p.stateId === owner && c.tags.includes('court') && offerableTreasures(st).length) {
+      add({
+        id: 'offer', name: '献宝于朝', cost: '1日',
+        desc: `献${offerableTreasures(st).map(o => o.def.name).join('、')}于君，换功勋与名声。`,
+        run: () => offerModal(app, st),
+      });
+    }
     if (p.stateId === owner && c.tags.includes('barracks')) {
       add({
         id: 'campaign', name: '从军出征', cost: '20日 · 18力',
@@ -257,7 +266,7 @@ function buildActions(st, app, c, owner) {
       disabled: p.money < 10,
       run: () => {
         addMoney(st, -10, true);
-        const rows = Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
+        const rows = PLAIN_GOODS.map(g => {
           const here = priceAt(st, c.id, g);
           let best = null;
           for (const cc of Object.values(CITY_MAP)) {
@@ -306,6 +315,13 @@ function buildActions(st, app, c, owner) {
           const adv = advanceDays(st, 1);
           councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
+      });
+    }
+    if (p.stateId === owner && c.tags.includes('court') && offerableTreasures(st).length) {
+      add({
+        id: 'offer', name: '献宝于朝', cost: '1日',
+        desc: `献${offerableTreasures(st).map(o => o.def.name).join('、')}于君，换功勋与名声。`,
+        run: () => offerModal(app, st),
       });
     }
   }

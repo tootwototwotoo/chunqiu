@@ -1,6 +1,6 @@
 // 八种技艺的修习小游戏逻辑（与 DOM 无关）
 import { R } from '../state.js';
-import { GOODS } from '../data/goods.js';
+import { GOODS, PLAIN_GOODS } from '../data/goods.js';
 import { clamp, ri } from '../util.js';
 
 export const SKILL_KIND = {
@@ -71,7 +71,7 @@ export function startSkillGame(st, skill) {
     });
   } else if (kind === 'price') {
     g.questions = Array.from({ length: 3 }, () => {
-      const goodId = R.pick(st, Object.keys(GOODS));
+      const goodId = R.pick(st, PLAIN_GOODS);
       const good = GOODS[goodId];
       const actual = Math.max(3, Math.round(good.base * (0.7 + R.next(st) * 0.7)));
       const hint = Math.max(2, Math.round(actual * (0.9 + R.next(st) * 0.2)));

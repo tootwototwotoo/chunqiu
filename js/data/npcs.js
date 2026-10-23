@@ -20,7 +20,7 @@ export const NPCS = [
     desc: '郑国辩士，年老而不得用，然一言之辩可退千军。' },
 
   { id: 'xian_gao', name: '弦高', title: '郑之商人', state: 'zheng', city: 'xinzheng', birth: -680, death: -590, role: 'merchant',
-    stats: { wu: 30, zhi: 70, zheng: 60, mei: 74 }, skills: { shanggu: 8, suanshu: 6, biancai: 4 }, bias: 'li', pref: 'yu', teach: ['shanggu', 'suanshu'],
+    stats: { wu: 30, zhi: 70, zheng: 60, mei: 74 }, skills: { shanggu: 8, suanshu: 6, biancai: 4 }, bias: 'li', pref: 'zhu', teach: ['shanggu', 'suanshu'],
     quote: '商人不唯利是图，亦有利国之时。',
     desc: '郑国行商，曾以牛十二犒秦师，伪称郑君之命，全郑于危难。' },
 
@@ -30,7 +30,7 @@ export const NPCS = [
     desc: '齐国之主，任管仲而修内政，尊王攘夷，为春秋首霸。' },
 
   { id: 'guan_zhong', name: '管仲', title: '齐相', state: 'qi', city: 'linzi', birth: -723, death: -645, role: 'minister',
-    stats: { wu: 38, zhi: 96, zheng: 95, mei: 72 }, skills: { shanggu: 9, suanshu: 9, quanmou: 8, xuewen: 8, biancai: 7 }, bias: 'li', pref: 'yu', teach: ['shanggu', 'suanshu', 'quanmou'],
+    stats: { wu: 38, zhi: 96, zheng: 95, mei: 72 }, skills: { shanggu: 9, suanshu: 9, quanmou: 8, xuewen: 8, biancai: 7 }, bias: 'li', pref: 'shan', teach: ['shanggu', 'suanshu', 'quanmou'],
     quote: '仓廪实而知礼节，衣食足而知荣辱。',
     desc: '齐之相国，通货积财，设轻重九府，齐以富强。' },
 
@@ -120,7 +120,7 @@ export const NPCS = [
     desc: '陈国之君，国小势微，周旋于晋楚之间。' },
 
   { id: 'cai_ai', name: '蔡哀公', title: '蔡侯', state: 'cai', city: 'shangcai', birth: -730, death: -675, role: 'ruler',
-    stats: { wu: 42, zhi: 46, zheng: 50, mei: 54 }, skills: { jianshu: 2 }, bias: 'ming', pref: 'yu', teach: ['jianshu'],
+    stats: { wu: 42, zhi: 46, zheng: 50, mei: 54 }, skills: { jianshu: 2 }, bias: 'ming', pref: 'zhu', teach: ['jianshu'],
     quote: '蔡人亦自有志。',
     desc: '蔡国之君，地薄兵弱，为楚所窥。' },
 
@@ -150,7 +150,7 @@ export const NPCS = [
     desc: '郑国执政，铸刑书，不毁乡校，小国而能自立于晋楚之间。' },
 
   { id: 'lao_zi', name: '老子', title: '周之守藏史', state: 'zhou', city: 'luoyi', birth: -571, death: -471, role: 'scholar',
-    stats: { wu: 26, zhi: 96, zheng: 72, mei: 80 }, skills: { xuewen: 10, biancai: 7, quanmou: 8 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'quanmou'],
+    stats: { wu: 26, zhi: 96, zheng: 72, mei: 80 }, skills: { xuewen: 10, biancai: 7, quanmou: 8 }, bias: 'yi', pref: 'bi', teach: ['xuewen', 'quanmou'],
     quote: '上善若水，水善利万物而不争。',
     desc: '周室守藏室之史，博古知今，其学以自隐无名为务。' },
 
@@ -175,7 +175,7 @@ export const NPCS = [
     desc: '吴国之主，任伍胥、孙武，西破楚而入郢，东南之势成。' },
 
   { id: 'fu_cha', name: '夫差', title: '吴王', state: 'wu', city: 'gusu', birth: -540, death: -473, role: 'ruler',
-    stats: { wu: 80, zhi: 62, zheng: 58, mei: 70 }, skills: { bingfa: 6, jianshu: 7 }, bias: 'ming', pref: 'yu', teach: ['jianshu'],
+    stats: { wu: 80, zhi: 62, zheng: 58, mei: 70 }, skills: { bingfa: 6, jianshu: 7 }, bias: 'ming', pref: 'xiang', teach: ['jianshu'],
     quote: '寡人岂敢忘越王之杀吾父耶！',
     desc: '吴国之主，夫椒胜越，黄池会盟，然矜功自伐，终为越所灭。' },
 
@@ -185,7 +185,7 @@ export const NPCS = [
     desc: '越国之主，败于夫椒而不屈，忍辱负重，终以三千越甲吞吴。' },
 
   { id: 'fan_li', name: '范蠡', title: '越之上将军', state: 'yue', city: 'kuaiji', birth: -536, death: -448, role: 'merchant',
-    stats: { wu: 56, zhi: 94, zheng: 88, mei: 84 }, skills: { shanggu: 10, quanmou: 8, biancai: 7, suanshu: 8 }, bias: 'li', pref: 'yu', teach: ['shanggu', 'suanshu', 'quanmou'],
+    stats: { wu: 56, zhi: 94, zheng: 88, mei: 84 }, skills: { shanggu: 10, quanmou: 8, biancai: 7, suanshu: 8 }, bias: 'li', pref: 'zhu', teach: ['shanggu', 'suanshu', 'quanmou'],
     quote: '飞鸟尽，良弓藏；狡兔死，走狗烹。',
     desc: '越国谋臣，佐勾践灭吴，功成身退，浮海至陶，三致千金，号陶朱公。' },
 
@@ -195,7 +195,7 @@ export const NPCS = [
     desc: '越国大夫，与范蠡共佐勾践，灭吴之后不能去，终赐剑而死。' },
 
   { id: 'ji_liang', name: '季梁', title: '随之贤大夫', state: 'sui', city: 'sui', birth: -720, death: -660, role: 'minister',
-    stats: { wu: 38, zhi: 88, zheng: 84, mei: 72 }, skills: { xuewen: 7, quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'yu', teach: ['quanmou', 'xuewen'],
+    stats: { wu: 38, zhi: 88, zheng: 84, mei: 72 }, skills: { xuewen: 7, quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'xi', teach: ['quanmou', 'xuewen'],
     quote: '夫民，神之主也。是以圣王先成民而后致力于神。',
     desc: '随国贤臣，谏随侯修政亲邻，以民为本，汉东赖之。' },
 

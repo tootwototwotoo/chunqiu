@@ -3,6 +3,7 @@ import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_M
 import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY, JADE } from './data/goods.js';
+import { TREASURES, TREASURE_IDS } from './data/treasures.js';
 import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
@@ -12,6 +13,18 @@ export const AUTO_KEY = AUTO_SAVE_KEY;
 export const AUTO_SAVE_ERROR = '自动存档失败：浏览器存储不可用或空间不足，请在存档页导出备份。';
 export const START_YEAR = -722;
 const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+
+function makeTreasureWorld() {
+  const out = {};
+  for (const id of TREASURE_IDS) {
+    const def = TREASURES[id];
+    out[id] = {
+      price: def.base, sold: 0,
+      cities: Object.fromEntries(def.cities.map(c => [c, { nextDay: 0 }])),
+    };
+  }
+  return out;
+}
 
 export function newGame({ name, gender = '男', profession = 'youxia', seed = Date.now(), era = 'early' }) {
   const prof = PROFESSIONS[profession];
@@ -57,10 +70,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       policy: null,
       alliances: [],
       wars: [],
-      jade: {
-        price: JADE.basePrice, sold: 0,
-        cities: Object.fromEntries(JADE.cities.map(id => [id, { nextDay: 0 }])),
-      },
+      treasures: makeTreasureWorld(),
     },
     npc: buildNpcs(eraDef.year),
     quests: { active: [], done: [], board: null, boardDay: -99 },
@@ -407,12 +417,26 @@ export function migrateState(st) {
   st.flags ||= {};
   if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
   st.world.policy ||= null;
-  st.world.jade ||= { price: JADE.basePrice, sold: 0, cities: {} };
-  st.world.jade.price ||= JADE.basePrice;
-  st.world.jade.cities ||= {};
-  for (const id of JADE.cities) {
-    if (!st.world.jade.cities[id]) st.world.jade.cities[id] = { nextDay: 0 };
+  // 珍宝：旧存档的 world.jade 迁移为 world.treasures.yu
+  const legacyJade = st.world.jade;
+  st.world.treasures ||= {};
+  for (const id of TREASURE_IDS) {
+    const def = TREASURES[id];
+    const cur = st.world.treasures[id];
+    st.world.treasures[id] = {
+      price: cur?.price ?? (id === 'yu' && legacyJade?.price) ?? def.base,
+      sold: cur?.sold ?? (id === 'yu' && legacyJade?.sold) ?? 0,
+      cities: {},
+    };
+    const curCities = cur?.cities ?? {};
+    const legacyCities = id === 'yu' ? (legacyJade?.cities ?? {}) : {};
+    for (const cityId of def.cities) {
+      const c = curCities[cityId] ?? legacyCities[cityId];
+      st.world.treasures[id].cities[cityId] = { nextDay: c?.nextDay ?? 0 };
+    }
   }
+  delete st.world.jade;
+  st.world.treasuresCollected ||= {};
   return st;
 }
 

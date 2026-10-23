@@ -148,6 +148,52 @@ ok(!$('.modal-body').textContent.includes('美玉'), '市集买卖不含玉');
 click('.modal-foot .btn');
 await wait();
 
+// 珍宝页（临淄有美玉、明珠、珊瑚树）
+app.st.player.cityId = 'linzi';
+app.st.player.money = 100000;
+app.nav('city');
+click('[data-act="market"]');
+await wait();
+const gemTab = $$('[data-tab]').find(b => b.textContent.includes('珍宝'));
+ok(!!gemTab, '市集有「珍宝」页');
+if (gemTab) {
+  gemTab.click();
+  await wait();
+  ok($('.modal-body').textContent.includes('美玉'), '珍宝页列美玉');
+  ok($('.modal-body').textContent.includes('明珠'), '珍宝页列明珠');
+  ok($('.modal-body').textContent.includes('珊瑚树'), '珍宝页列珊瑚树');
+  const buyGem = $$('[data-buy-gem]')[1]; // 明珠
+  ok(!!buyGem, '珍宝可购');
+  if (buyGem) { buyGem.click(); await wait(60); }
+  ok((app.st.player.inventory.zhu ?? 0) > 0, '购入珍宝入行囊');
+}
+click('.modal-foot .btn');
+await wait();
+
+// 献宝：本国朝堂 + 持有珍宝
+{
+  const { addGoods } = await import('../js/state.js');
+  addGoods(app.st, 'zhu', 1);
+  app.st.player.stateId = 'qi';
+  app.st.player.cityId = 'linzi';
+  app.nav('city');
+  await wait();
+  const offerBtn = $$('[data-act]').find(b => b.dataset.act === 'offer');
+  ok(!!offerBtn, '本国朝堂且有宝时出现「献宝于朝」');
+  if (offerBtn) {
+    offerBtn.click();
+    await wait(40);
+    ok($('.modal-body').textContent.includes('明珠'), '献宝弹窗列出明珠');
+    const doOffer = $('[data-offer]');
+    ok(!!doOffer, '献宝可点');
+    const before = app.st.player.inventory.zhu ?? 0;
+    if (doOffer) { doOffer.click(); await wait(60); }
+    ok((app.st.player.inventory.zhu ?? 0) === before - 1, '献宝消耗一件珍宝', `${before} → ${app.st.player.inventory.zhu ?? 0}`);
+  }
+  while ($('.modal')) { const b = $('.modal-foot .btn'); if (b) b.click(); await wait(60); }
+  app.nav('city');
+}
+
 // 修习小游戏
 click('[data-act="train"]');
 const skillBtns = $$('.choice-btn');
