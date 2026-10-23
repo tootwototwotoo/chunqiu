@@ -71,19 +71,23 @@ export function debateChoose(st, d, key) {
   const p = player(st);
   const skill = skillLevel(st, 'biancai');
   const track = Math.min(3, Math.floor(skill / 3));
-  let value = 10 + skill * 1.9 + (p.stats.mei - 50) * 0.15 + (p.stats.zhi - 50) * 0.1 + R.int(st, 0, 6);
-  if (key === d.bias) value *= 2.0;
-  else if (ARGS[key].opp === d.bias) value *= 0.5;
-  else value *= 1.0;
-  // 连续重复同一论调，效力递减
+  const base = 8 + skill * 1.9 + (p.stats.mei - 50) * 0.12 + (p.stats.zhi - 50) * 0.08 + R.int(st, 0, 6);
+  let mult = 1.20, tag = '平常';
+  if (key === d.bias) { mult = 2.0; tag = '对症'; }
+  else if (ARGS[key].opp === d.bias) { mult = 0.55; tag = '相悖'; }
+  let value = base * mult;
+  // 连续重复同一话术，效力递减；间隔使用只轻微递减
   const last = d.used[d.used.length - 1];
   const repeat = d.used.filter(k => k === key).length;
-  if (key === last) value *= 0.5;
-  else if (repeat >= 2) value *= 0.8;
-  const resist = Math.max(5, d.difficulty * 0.25) + R.int(st, 0, 4);
+  if (key === last) value *= 0.55;
+  else if (repeat >= 2) value *= 0.85;
+  const resist = Math.max(4, d.difficulty * 0.17) + R.int(st, 0, 4);
+  const delta = Math.round(value - resist);
   d.meter = clamp(d.meter + value - resist, 0, 100);
   d.used.push(key);
-  d.log.push(LINES[key][R.int(st, 0, 2)]);
+  d.lastDelta = delta;
+  d.lastTag = tag;
+  d.log.push(`${LINES[key][R.int(st, 0, 2)]}【${tag}】说服${delta >= 0 ? '+' : ''}${delta}`);
   if (d.meter >= 100) {
     d.over = true; d.won = true;
     d.log.push(`${d.targetName}默然良久，终于颔首：「先生之言，寡人受教。」`);

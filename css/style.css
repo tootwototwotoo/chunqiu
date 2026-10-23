@@ -434,3 +434,10 @@ body.title-mode .screen > * { width: 100%; }
 .match-btn:hover:not(:disabled){border-color:var(--gold);background:#fffaf0}
 .match-btn.sel{border-color:var(--seal);box-shadow:0 0 0 1px var(--seal) inset;background:#fff7e8}
 .match-btn.done{opacity:.45;border-color:rgba(77,111,86,.55);color:var(--jade);cursor:default}
+
+
+/* ---------- 论辩：对症/相悖标记 ---------- */
+.debate-opt.match{border-color:rgba(77,111,86,.75);background:rgba(77,111,86,.10);box-shadow:0 0 0 1px rgba(77,111,86,.25) inset}
+.debate-opt.match:hover{border-color:var(--jade);background:rgba(77,111,86,.16)}
+.debate-opt.opp{border-color:rgba(156,43,38,.45);background:rgba(156,43,38,.06)}
+.debate-opt.opp small{color:#9c2b26}

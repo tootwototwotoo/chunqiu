@@ -139,13 +139,17 @@ function renderDebateBody(st, d, revealed) {
     <div class="debate-meter"><i style="width:${d.meter}%"></i></div>
     <div style="font-size:11.5px;color:#6d6052;text-align:right">说服 ${Math.round(d.meter)}%</div>`;
   const biasLine = revealed
-    ? `<div style="font-size:12.5px;color:#9c2b26;margin:8px 0 4px">观其神色：<b>${biasName(d.bias)}</b>${skill >= 4 ? ' · 可对症下药' : ''}</div>`
+    ? `<div style="font-size:12.5px;color:#9c2b26;margin:8px 0 4px">观其神色：<b>${biasName(d.bias)}</b> · 以「${d.bias === 'li' ? '言利' : d.bias === 'yi' ? '晓义' : d.bias === 'ming' ? '动名' : '陈势'}」对症效果最佳</div>`
     : `<div style="font-size:12.5px;color:#6d6052;margin:8px 0 4px">尚未摸清对方心性。辩才愈高，愈易察言观色。</div>`;
-  const opts = Object.entries(ARGS).map(([k, a]) =>
-    `<button class="debate-opt" data-key="${k}"><b>${a.name}</b><small>${a.hint}</small></button>`).join('');
+  const opts = Object.entries(ARGS).map(([k, a]) => {
+    const mark = revealed ? (k === d.bias ? 'match' : a.opp === d.bias ? 'opp' : '') : '';
+    return `<button class="debate-opt ${mark}" data-key="${k}" ${revealed && k === d.bias ? 'title="对症话术"' : revealed && a.opp === d.bias ? 'title="相悖话术"' : ''}>
+      <b>${a.name}</b><small>${a.hint}${mark === 'match' ? ' · 对症' : mark === 'opp' ? ' · 相悖' : ''}</small></button>`;
+  }).join('');
   return `
     ${meters}
     ${biasLine}
+    <div class="footnote" style="margin:6px 0 2px">对症 ×2；相悖 ×0.55；平常 ×1.2。连续使用同一话术会衰减，对症与平常交替最稳。</div>
     <div class="debate-opts">${opts}</div>
     <div class="combat-log" style="margin-top:10px">
       ${d.log.slice(-12).map(l => `<p>${esc(l)}</p>`).join('')}
