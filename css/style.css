@@ -102,6 +102,10 @@ button{font-family:var(--serif);cursor:pointer;}
 .map-city:hover .dot{r:9;}
 .map-city text{font-family:var(--serif);font-size:15px;fill:#33291f;paint-order:stroke;stroke:rgba(246,238,220,.85);stroke-width:3.5px;pointer-events:none;letter-spacing:1px;}
 .map-city .star{fill:var(--seal);}
+.here-ring,.here-ring2{pointer-events:none;}
+@media (prefers-reduced-motion: reduce){
+  .here-ring animate,.here-ring2 animate{display:none;}
+}
 .map-road{stroke:#b39d78;stroke-width:1.6;stroke-dasharray:5 4;opacity:.75;}
 .map-road.sea{stroke:var(--azure);stroke-dasharray:2 6;}
 .map-river{fill:none;stroke:#7d97a6;stroke-width:6;opacity:.55;stroke-linecap:round;}

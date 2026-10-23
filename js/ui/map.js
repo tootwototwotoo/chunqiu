@@ -83,7 +83,14 @@ function mapSvg(st, cur, sel, path) {
       <circle class="dot" cx="${c.x}" cy="${c.y}" r="${isCur ? 8 : isSel ? 7 : 5.5}"
         fill="${isCur ? '#9c2b26' : stateColor(owner)}" stroke="#f7efdc" stroke-width="2"/>
       ${isSel ? `<circle cx="${c.x}" cy="${c.y}" r="13" fill="none" stroke="#a67c34" stroke-width="1.6" stroke-dasharray="3 3"/>` : ''}
-      ${isCur ? `<text x="${c.x + 13}" y="${c.y + 5}" style="font-size:12px;fill:#9c2b26">◆</text>` : ''}
+      ${isCur ? `<circle class="here-ring" cx="${c.x}" cy="${c.y}" r="14" fill="none" stroke="#9c2b26" stroke-width="1.6">
+        <animate attributeName="r" values="10;20;10" dur="2.4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;0.15;0.9" dur="2.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle class="here-ring2" cx="${c.x}" cy="${c.y}" r="9" fill="none" stroke="#9c2b26" stroke-width="1" opacity=".5">
+        <animate attributeName="r" values="8;15;8" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;0.05;0.6" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+      </circle>` : ''}
       <text x="${c.x + 11}" y="${c.y - 8}">${c.name}</text>
     </g>`;
   }).join('');
