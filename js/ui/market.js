@@ -5,6 +5,8 @@ import { player, basePriceOf, caravanFree, goodsCount, R } from '../state.js';
 import { buy, sell, priceAt, levyOf, bestMarkets, inventoryRows } from '../systems/trade.js';
 import { onClick, cityName } from './common.js';
 import { esc } from '../util.js';
+import { BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
+import { marketHere, buyEvidence } from '../systems/evidence.js';
 
 export function marketModal(app, st) {
   let tab = 'buy';
@@ -20,6 +22,7 @@ export function marketModal(app, st) {
     const p = player(st);
     const inv = p.inventory;
     const tabs = [['buy', '买入'], ['sell', '卖出'], ['info', '行情']];
+    if (BOOKSHOPS.includes(p.cityId)) tabs.push(['book', '书肆']);
     const rows = Object.keys(GOODS).map(g => {
       const good = GOODS[g];
       const price = priceAt(st, p.cityId, g);
@@ -45,7 +48,15 @@ export function marketModal(app, st) {
         ${tabs.map(([k, n]) => `<button class="btn sm ${tab === k ? 'primary' : ''}" data-tab="${k}">${n}</button>`).join('')}
         <span style="margin-left:auto;font-size:12.5px;color:#6d6052">金 ${p.money} · 行囊 ${goodsCount(st)}/${p.caravan}（余 ${caravanFree(st)}）</span>
       </div>`;
-    if (tab === 'info') {
+    if (tab === 'book') {
+      const evs = marketHere(st, p.cityId);
+      body += `<div class="footnote">书肆出售账册、书信与旧档，买下后可在此后论辩中按主题使用。</div>`;
+      body += evs.length ? `<table class="table"><thead><tr><th>名称</th><th>主题</th><th class="num">价格</th><th style="text-align:right">购买</th></tr></thead><tbody>
+        ${evs.map(e => `<tr><td><b>${esc(e.name)}</b><div class="footnote" style="margin:0">${esc(e.text)}</div></td>
+          <td>${TOPIC_NAMES[e.topic] ?? e.topic}</td><td class="num">${e.source.price} 金</td>
+          <td style="text-align:right"><button class="btn sm primary" data-buy-ev="${e.id}" ${p.money < e.source.price ? 'disabled' : ''}>购买</button></td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty">本城书肆暂无可购的证物。</div>';
+    } else if (tab === 'info') {
       const sk = p.skills.shanggu ?? 0;
       body += `<div class="footnote">商贾之能：可见 ${Math.min(5, 1 + Math.floor(sk / 2))} 处行情。牙钱 ${(100 - levyOf(st) * 100).toFixed(1)}%。</div>`;
       const cards = Object.keys(GOODS).map(g => {
@@ -69,6 +80,14 @@ export function marketModal(app, st) {
     h.setBody(body);
 
     onClick(h.bodyEl, '[data-tab]', (el) => { tab = el.dataset.tab; render(); });
+    onClick(h.bodyEl, '[data-buy-ev]', (el) => {
+      const r = buyEvidence(st, el.dataset.buyEv);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.toast(r.msg, 'gain');
+      app.log(r.msg, 'gain');
+      app.refreshHud();
+      render(r.msg);
+    });
     onClick(h.bodyEl, '[data-op]', (el) => {
       const g = el.dataset.g, q = Number(el.dataset.q);
       const res = el.dataset.op === 'buy' ? buy(st, g, q) : sell(st, g, q);

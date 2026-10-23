@@ -10,6 +10,8 @@ import { makeWanderer } from '../systems/combat.js';
 import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
+import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
+import { TOPIC_NAMES } from '../data/debates/index.js';
 import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
 import { openTrialGame } from './trials.js';
 import { duelModal } from './minigames.js';
@@ -140,6 +142,17 @@ function buildActions(st, app, c, owner) {
     desc: '官府、世族、商号皆有委托，成则得金与名声。',
     run: () => openBoard(app, st),
   });
+
+  const clues = investigateHere(st);
+  if (clues.length) {
+    const cd = investigateCooldown(st);
+    add({
+      id: 'investigate', name: '查访线索', cost: cd ? `${cd}日后` : '1日 · 8力',
+      desc: cd ? '本城查访尚无头绪，须待来日。' : `本城有 ${clues.length} 条线索可查：${clues.map(e => e.name).join('、')}`,
+      disabled: cd > 0 || p.stamina < 8,
+      run: () => openInvestigate(app, st, clues),
+    });
+  }
 
   add({
     id: 'travel', name: '出行远游', cost: '按程计日',
@@ -488,6 +501,29 @@ function openTrain(app, st, c) {
     if (p.stamina < 8) { app.toast('体力不济。', 'war'); return; }
     h.close();
     trainingModal(app, st, el.dataset.k, { bonus: bonusFor(el.dataset.k), sub: `${CITY_MAP[p.cityId].name} · ${SKILL_DEFS[el.dataset.k].where}` });
+  });
+}
+
+function openInvestigate(app, st, clues) {
+  const h = app.modal({
+    title: '查访线索', sub: CITY_MAP[player(st).cityId].name, wide: true,
+    body: `<div class="footnote">查访消耗 1 日、8 体力，按对应技艺判定；失败后本城需隔 1 日再查。</div>
+      <div class="choices" style="margin-top:10px">
+        ${clues.map(e => `<button class="choice-btn" data-inv="${e.id}">${e.name}
+          <small>${e.source.skill ? (SKILL_DEFS[e.source.skill]?.name ?? '技艺') : ''} · ${TOPIC_NAMES[e.topic] ?? e.topic} · ${e.text}</small></button>`).join('')}
+      </div>`,
+    foot: [{ label: '关闭', close: true }],
+  });
+  onClick(h.bodyEl, '[data-inv]', (el) => {
+    const r = investigate(st, el.dataset.inv);
+    h.close();
+    const adv = advanceDays(st, 1);
+    app.modal({
+      title: r.ok ? '查访所得' : '查访未果', narrow: true,
+      body: `<p>${r.msg}</p>`,
+      foot: [{ label: '继续', cls: 'btn primary', onClick: hh => { hh.close(); app.after({ notes: adv.notes, events: adv.events, died: adv.died }); } }],
+    });
+    app.refreshHud();
   });
 }
 

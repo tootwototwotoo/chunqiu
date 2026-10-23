@@ -1,8 +1,6 @@
 // 三回合论辩界面
-import { startDebate, debateChoose, useEvidence, acquireEvidence, settleDebate, currentConcern, biasName } from '../systems/debate.js';
+import { startDebate, debateChoose, useEvidence, settleDebate, currentConcern, biasName } from '../systems/debate.js';
 import { TAGS, EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
-import { SKILL_DEFS } from '../data/defs.js';
-import { npcsHere } from '../state.js';
 import { onClick } from './common.js';
 import { esc } from '../util.js';
 
@@ -40,12 +38,6 @@ export function debateModal(app, st, npc, opts = {}) {
     onClick(h.bodyEl, '[data-evidence]', (el) => {
       if (d.over) return;
       const r = useEvidence(st, d, el.dataset.evidence);
-      app.toast(r.msg, r.ok ? 'gain' : 'war');
-      render();
-    });
-    onClick(h.bodyEl, '[data-acquire]', () => {
-      if (d.over) return;
-      const r = acquireEvidence(st, d);
       app.toast(r.msg, r.ok ? 'gain' : 'war');
       render();
     });
@@ -99,37 +91,16 @@ function bodyHtml(st, d) {
     <div class="combat-log">${d.log.slice(-8).map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
 
-const DAY = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
-
 function evidenceHtml(st, d, concern) {
   if (d.evidenceUsed) return '<div class="footnote" style="color:#4d6f56">本局已出示过证据。</div>';
   const topic = concern.topic ?? d.scenario.topic;
   const owned = st.player.evidence
     .map(id => EVIDENCE_BY_ID[id])
     .filter(e => e && e.topic === topic);
-  const ev = d.scenario.evidence;
-  const ownThis = st.player.evidence.includes(ev.id);
-  const buttons = owned.map(e => `<button class="btn sm" data-evidence="${e.id}">出示：${esc(e.name)}</button>`);
-  if (!ownThis) buttons.push(acquireButton(st, d, ev));
-  if (!buttons.length) return `<div class="footnote">眼下没有与「${TOPIC_NAMES[topic] ?? '此事'}」相关的证据。</div>`;
-  return `<div class="btn-row" style="margin-top:10px;align-items:center">${buttons.join('')}</div>`;
-}
-
-function acquireButton(st, d, ev) {
-  const src = ev.source ?? { type: 'investigate', skill: 'quanmou', dc: 44 };
-  if (src.type === 'investigate') {
-    const left = Math.max(0, (st.flags.evidenceCooldown ?? 0) - DAY(st.time));
-    const lack = st.player.stamina < 8;
-    const label = left ? `查访：${ev.name}（${left}日后）` : `查访：${ev.name}（${SKILL_DEFS[src.skill]?.name ?? '技艺'}，8体力）`;
-    return `<button class="btn sm" data-acquire ${left || lack ? 'disabled' : ''}>${label}</button>`;
-  }
-  if (src.type === 'npc') {
-    const none = npcsHere(st).length === 0;
-    const lack = st.player.stamina < 6;
-    return `<button class="btn sm" data-acquire ${none || lack ? 'disabled' : ''}>打听：${ev.name}（6体力）</button>`;
-  }
-  const price = src.price ?? 60;
-  return `<button class="btn sm" data-acquire ${st.player.money < price ? 'disabled' : ''}>购买：${ev.name}（${price}金）</button>`;
+  if (!owned.length) return `<div class="footnote">尚无与「${TOPIC_NAMES[topic] ?? '此事'}」相关的证据，可先到城中查访、向人物打听或在书肆购买。</div>`;
+  return `<div class="btn-row" style="margin-top:10px;align-items:center">
+    ${owned.map(e => `<button class="btn sm" data-evidence="${e.id}">出示：${esc(e.name)}</button>`).join('')}
+  </div>`;
 }
 
 function outcomeHtml(d, settled) {

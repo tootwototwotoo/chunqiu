@@ -8,6 +8,8 @@ import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
 import { skillName, onClick, avatar, relTierName } from './common.js';
 import { esc } from '../util.js';
+import { npcEvidence, askNpc } from '../systems/evidence.js';
+import { advanceDays } from '../systems/calendar.js';
 
 export function openNpc(app, st, npcId) {
   const def = NPC_MAP[npcId];
@@ -25,6 +27,7 @@ export function openNpc(app, st, npcId) {
 
   function render(extra = '') {
     const rr = rel(st, npcId);
+    const evs = npcEvidence(st, npcId);
     handle.setBody(`
       <div class="dialog-line">
         ${avatar(def.name, STATES[def.state].color)}
@@ -48,6 +51,7 @@ export function openNpc(app, st, npcId) {
         <button class="btn" data-act="learn" ${atHome ? '' : 'disabled'}>问学</button>
         <button class="btn" data-act="duel" ${atHome ? '' : 'disabled'}>切磋</button>
         <button class="btn" data-act="debate" ${atHome ? '' : 'disabled'}>论辩</button>
+        ${evs.length ? `<button class="btn" data-act="ask" ${atHome && rr.aff > 20 ? '' : 'disabled'}>打听消息</button>` : ''}
         ${rr.aff >= 50 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
       </div>
       ${!atHome ? '<div class="footnote">此人不在你所在之城，须先行前往。</div>' : ''}
@@ -122,6 +126,32 @@ export function openNpc(app, st, npcId) {
           render(`<div class="footnote">${line}</div>`);
           app.refreshHud();
         },
+      });
+    });
+
+    onClick(h.bodyEl, '[data-act="ask"]', () => {
+      const evs = npcEvidence(st, npcId);
+      if (!evs.length) return;
+      const askOne = (ev) => {
+        h.close();
+        const r = askNpc(st, npcId, ev.id);
+        const adv = advanceDays(st, 1);
+        app.modal({
+          title: r.ok ? '打听所得' : '打听未果', narrow: true,
+          body: `<p>${r.msg}</p>`,
+          foot: [{ label: '继续', cls: 'btn primary', onClick: hh => { hh.close(); app.after({ notes: adv.notes, events: adv.events, died: adv.died }); } }],
+        });
+        app.refreshHud();
+      };
+      if (evs.length === 1) { askOne(evs[0]); return; }
+      const sub = app.modal({
+        title: '打听消息', sub: `${def.name}知道的事`, narrow: true,
+        body: `<div class="choices">${evs.map(e => `<button class="choice-btn" data-ask-ev="${e.id}">${e.name}<small>${e.text}</small></button>`).join('')}</div>`,
+        foot: [{ label: '罢了', close: true }],
+      });
+      onClick(sub.bodyEl, '[data-ask-ev]', (el) => {
+        sub.close();
+        askOne(evs.find(e => e.id === el.dataset.askEv));
       });
     });
 

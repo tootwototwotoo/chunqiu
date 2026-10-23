@@ -15,7 +15,7 @@ const errors = [];
 window.addEventListener('error', e => errors.push(e.message));
 
 const { app } = await import('../js/ui/app.js');
-const { newGame } = await import('../js/state.js');
+const { newGame, addEvidence } = await import('../js/state.js');
 const { debateModal } = await import('../js/ui/debate.js');
 const { DEBATE_BY_ID } = await import('../js/data/debates/index.js');
 
@@ -26,10 +26,8 @@ let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
 
 const st = newGame({ name: '辩士', profession: 'shuike', seed: 9 });
-st.player.skills.suanshu = 10;
-st.player.stats.zhi = 100;
-st.player.stamina = 100;
 app.startGame(st);
+addEvidence(st, 'relief_ev');
 let ended = null;
 debateModal(app, st, { name: '县令', title: '县宰', bias: 'li' }, {
   scenario: DEBATE_BY_ID.relief,
@@ -41,14 +39,8 @@ ok($$('.debate-opt').length === 3, '每轮三个选项');
 ok($('.modal').textContent.includes('认同度 50'), '初始认同度 50');
 ok($('.modal').textContent.includes('第 1 / 3 轮'), '显示轮次');
 ok(!!$('.debate-opt.match'), '合心性的思路有标记');
-ok(!!$('[data-acquire]'), '未掌握时可查访证据');
-ok($('.debate-speech').textContent.length > 4, '显示对方顾虑');
-
-// 查访取得证据
-$('[data-acquire]').click();
-await wait(50);
-ok(st.player.evidence.includes('relief_ev'), '查访后证据入库');
 ok(!!$('[data-evidence]'), '掌握后可出示证据');
+ok($('.debate-speech').textContent.length > 4, '显示对方顾虑');
 
 // 出示相关证据
 $('[data-evidence]').click();

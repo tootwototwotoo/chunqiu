@@ -4,6 +4,7 @@ import diplomacy from './diplomacy.js';
 import military from './military.js';
 import court from './court.js';
 import trade from './trade.js';
+import { NPC_MAP } from '../npcs.js';
 
 const RAW = [...domestic, ...diplomacy, ...military, ...court, ...trade];
 
@@ -17,6 +18,29 @@ export const CATEGORY_NAMES = {
   domestic: '内政', diplomacy: '邦交', military: '军事', court: '朝堂', trade: '商贸',
 };
 export const OPPOSITE = { li: 'yi', yi: 'li', ming: 'shi', shi: 'ming' };
+
+export const BOOKSHOPS = ['luoyi', 'linzi', 'qufu', 'xinzheng', 'tao', 'ying', 'shangqiu'];
+
+const HOME_CITY = {
+  relief: 'tao', tax: 'qufu', refugees: 'shangqiu', prices: 'pengcheng',
+  marriage: 'linzi', tribute: 'luoyi', border: 'xinzheng', truce: 'jiang',
+  recruit: 'handan', exchange: 'ying', landcase: 'shangcai', succession: 'qufu',
+  law: 'luoyi', recommend: 'qufu', inflation: 'pengcheng', manumit: 'tao',
+  hoarding: 'tao',
+  wall: 'luoyi', academy: 'qufu', fields: 'xinzheng', passage: 'luoyi',
+  meeting: 'linzi', fugitive: 'shangqiu', surrender: 'ying', siege: 'linzi',
+  deserters: 'tao', captives: 'shangqiu', impeach: 'luoyi', ritual: 'qufu',
+  hunt: 'tao', saltiron: 'linzi', strike: 'tao', fraud: 'xinzheng',
+};
+
+const NPC_BY_EVIDENCE = {
+  flood: 'guan_zhong', officials: 'ji_zu', clans: 'zheng_zhuang',
+  alliance: 'bao_shuya', hostage: 'lu_yin', mediator: 'liu_xiahui',
+  market: 'bai_li_xi', pursuit: 'xian_zhen', grain: 'jian_shu',
+  reward: 'hu_yan', injustice: 'cao_gui', corruption: 'wei_wen',
+  merits: 'yan_zhuang', seedloan: 'chen_xuan', caravan: 'zi_wen',
+  water: 'ji_liang', pirates: 'fan_li',
+};
 
 export const TOPIC_NAMES = {
   grain: '粮草', water: '水利', construction: '工程', army: '军务',
@@ -59,10 +83,15 @@ RAW.forEach((d, i) => {
   ev.topic = d.topic;
   const type = ['investigate', 'npc', 'market'][i % 3];
   ev.source = type === 'investigate'
-    ? { type, skill: SKILL_BY_CATEGORY[d.category], dc: 44 }
+    ? { type, skill: SKILL_BY_CATEGORY[d.category], dc: 44, city: HOME_CITY[d.id] ?? null }
     : type === 'market'
-      ? { type, price: PRICE_BY_CATEGORY[d.category] }
-      : { type };
+      ? { type, price: PRICE_BY_CATEGORY[d.category], city: HOME_CITY[d.id] ?? null }
+      : { type, npcId: NPC_BY_EVIDENCE[d.id] ?? null };
+  if (ev.source.type === 'npc') {
+    ev.homeCity = NPC_MAP[ev.source.npcId]?.city ?? null;
+  } else {
+    ev.homeCity = ev.source.city;
+  }
 });
 
 export const DEBATES = RAW;
@@ -104,6 +133,9 @@ export function validateDebates(list = DEBATES) {
       if (!['investigate', 'npc', 'market'].includes(ev.source?.type)) errors.push(`${where}：证据来源非法`);
       if (ev.source?.type === 'investigate' && !ev.source.skill) errors.push(`${where}：查访证据缺技能`);
       if (ev.source?.type === 'market' && !(ev.source.price > 0)) errors.push(`${where}：购买证据缺价格`);
+      if (ev.source?.type === 'npc' && !ev.source.npcId) errors.push(`${where}：打听证据缺 NPC`);
+      if (ev.source?.type !== 'npc' && !ev.homeCity) errors.push(`${where}：证据缺所在城`);
+      if (ev.source?.type === 'market' && !BOOKSHOPS.includes(ev.homeCity)) errors.push(`${where}：购买证据不在书肆城`);
     }
     if (!d.outcomes?.success || !d.outcomes?.compromise || !d.outcomes?.fail) errors.push(`${where}：结局文本不全`);
     if (!d.effects?.success) errors.push(`${where}：成功效果缺失`);

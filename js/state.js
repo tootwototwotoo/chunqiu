@@ -396,6 +396,8 @@ export function migrateState(st) {
   st.player.peerageFails ||= 0;
   st.player.peerageHistory ||= [];
   st.player.evidence = Array.isArray(st.player.evidence) ? st.player.evidence.filter(x => typeof x === 'string') : [];
+  st.flags ||= {};
+  if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
   return st;
 }
 
