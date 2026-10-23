@@ -37,9 +37,18 @@ ok(text.includes('对症') && text.includes('相悖'), '按钮文案标注对症
 
 $('.debate-opt.match').click();
 await wait(40);
-const log = $('.combat-log')?.textContent ?? '';
+let log = $('.combat-log')?.textContent ?? '';
 ok(log.includes('【对症】'), '出招日志标注对症');
 ok(/说服[+-]\d+/.test(log), '日志显示说服增减');
+
+// 连用对症两次应触发心性变化，并刷新标记
+$('.debate-opt.match').click();
+await wait(60);
+const text2 = $('.modal')?.textContent ?? '';
+ok(text2.includes('（已变）'), '连用对症后显示心性已变');
+ok((text2.match(/【心性已变】/g) || []).length >= 1, '日志出现心性已变提示');
+ok($$('.debate-opt.match').length === 1, '转变后仍有且仅有一个对症话术');
+ok($('.debate-opt.match')?.dataset.key !== 'shi', '对症话术已从陈势换掉', $('.debate-opt.match')?.dataset.key);
 ok(errors.length === 0, '无运行时错误', errors.slice(0, 2).join(' | '));
 
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n论辩信息可见性通过 ✓');

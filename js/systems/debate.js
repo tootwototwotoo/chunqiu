@@ -58,19 +58,62 @@ export function startDebate(st, npc, opts = {}) {
     difficulty: opts.difficulty ?? 40,
     targetName: npc.name,
     targetTitle: npc.title ?? '',
-    log: [`${npc.name}端坐席上，等你开口。你观其神色，知其${biasName(npc.bias)}。`],
+    log: [
+      `${npc.name}端坐席上，等你开口。你观其神色，知其${biasName(npc.bias)}。`,
+      ...((opts.difficulty ?? 40) >= 66 ? ['此人城府颇深，态度恐有反复。'] : []),
+    ],
     used: [],
     topic: opts.topic ?? '国事',
     npcId: npc.id ?? null,
+    // 心性转变：连续两次对症，或说服值到阈值；高难度可转变两次
+    maxShifts: (opts.difficulty ?? 40) >= 66 ? 2 : 1,
+    shifts: 0,
+    shiftThresholds: [60, 86],
+    matchStreak: 0,
+    lastShiftRound: 0,
+    justShifted: false,
+    tell: '',
     opts,
   };
+}
+
+const SHIFT_LINE = {
+  li: '对方忽然话锋一转，问起赋税与盐铁之利。',
+  yi: '对方正色道：「终究还是要讲一个义字。」',
+  ming: '对方屡屡望向史官，似极在意身后之名。',
+  shi: '对方望了望城外的旌旗，语气渐渐硬了起来。',
+};
+
+function tryShift(st, d) {
+  if (d.shifts >= d.maxShifts) return false;
+  if (d.round > d.maxRounds) return false;
+  if (d.round <= d.lastShiftRound) return false;
+  const threshold = d.shiftThresholds[d.shifts] ?? 90;
+  if (d.matchStreak < 2 && d.meter < threshold) return false;
+  const others = Object.keys(ARGS).filter(k => k !== d.bias);
+  const nextBias = R.pick(st, others);
+  d.bias = nextBias;
+  d.shifts++;
+  d.lastShiftRound = d.round;
+  d.matchStreak = 0;
+  d.justShifted = true;
+  d.log.push(`【心性已变】${SHIFT_LINE[nextBias]}`);
+  return true;
+}
+
+function tellOf(d) {
+  if (d.shifts >= d.maxShifts) return '';
+  const threshold = d.shiftThresholds[d.shifts] ?? 90;
+  if (d.matchStreak >= 1 || d.meter >= threshold - 12) {
+    return '对方神色微沉，似乎已不耐烦这套说辞……';
+  }
+  return '';
 }
 
 export function debateChoose(st, d, key) {
   if (d.over) return d;
   const p = player(st);
   const skill = skillLevel(st, 'biancai');
-  const track = Math.min(3, Math.floor(skill / 3));
   const base = 8 + skill * 1.9 + (p.stats.mei - 50) * 0.12 + (p.stats.zhi - 50) * 0.08 + R.int(st, 0, 6);
   let mult = 1.20, tag = '平常';
   if (key === d.bias) { mult = 2.0; tag = '对症'; }
@@ -87,18 +130,24 @@ export function debateChoose(st, d, key) {
   d.used.push(key);
   d.lastDelta = delta;
   d.lastTag = tag;
+  // 连续对症计数（用于触发心性变化）
+  if (key === d.bias) d.matchStreak++;
+  else d.matchStreak = 0;
   d.log.push(`${LINES[key][R.int(st, 0, 2)]}【${tag}】说服${delta >= 0 ? '+' : ''}${delta}`);
   if (d.meter >= 100) {
     d.over = true; d.won = true;
     d.log.push(`${d.targetName}默然良久，终于颔首：「先生之言，寡人受教。」`);
-  } else {
-    d.log.push(REBUT[R.int(st, 0, 3)]);
-    d.round++;
-    if (d.round > d.maxRounds) {
-      d.over = true; d.won = false;
-      d.log.push(`${d.targetName}拂袖而起，谈话不欢而散。`);
-    }
+    return d;
   }
+  d.log.push(REBUT[R.int(st, 0, 3)]);
+  d.round++;
+  if (d.round > d.maxRounds) {
+    d.over = true; d.won = false;
+    d.log.push(`${d.targetName}拂袖而起，谈话不欢而散。`);
+    return d;
+  }
+  tryShift(st, d);
+  d.tell = tellOf(d);
   return d;
 }
 
