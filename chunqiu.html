@@ -664,7 +664,7 @@ body.title-mode .screen > * { width: 100%; }
       <ul style="line-height:2;margin:4px 0 8px 18px">
         <li><b>游侠</b>：演武、除害、从军。决斗以「斩克突、突克崩、崩克斩」相制，守可回气，绝招耗气。</li>
         <li><b>商人</b>：各地物价不同，贱买贵卖。扩充商队增载量，开设商号得月入，打探行情知贵贱。</li>
-        <li><b>说客</b>：游说当道，观其性向（好利／重义／好名／尚势）对症下药，成则名声与盟约俱增。</li>
+        <li><b>说客</b>：游说当道，观其心性（好利／重义／好名／尚势）对症下药，成则名声与盟约俱增。</li>
         <li><b>学者</b>：设坛讲学收弟子，著书立说成一家；亦可与名士论辩。</li>
       </ul>
 
@@ -984,7 +984,7 @@ body.title-mode .screen > * { width: 100%; }
           <div style="display:flex;justify-content:space-between"><span>交情</span><span style="color:#9c2b26">${ne(u.aff)} ${u.aff}</span></div>
           <div class="bar red"><i style="width:${u.aff}%"></i></div>
         </div>
-        <div style="flex:0 0 auto;color:#6d6052;font-size:12px">性向：${Be(n.bias)}</div>
+        <div style="flex:0 0 auto;color:#6d6052;font-size:12px">心性：${Be(n.bias)}</div>
       </div>
       ${c}
       <div class="btn-row" style="margin-top:14px">
@@ -1222,7 +1222,7 @@ body.title-mode .screen > * { width: 100%; }
         ${qe("武艺",n.stats.wu)}${qe("智略",n.stats.zhi)}
         ${qe("政略",n.stats.zheng)}${qe("魅力",n.stats.mei)}
       </div>
-      <div class="footnote" style="margin-top:10px">所擅：${(n.teach??[]).map(o=>o).join("、")||"—"} · 性向：${{li:"好利",yi:"重义",ming:"好名",shi:"尚势"}[n.bias]} · 交情：${ne(a.aff)}</div>`,foot:[{label:"关闭",close:!0}]})}var wi={};le(wi,{mount:()=>Ws});M();P();P();S();function Ws(e,t,i){let n=()=>Yt(),a=n(),s=Ri();e.innerHTML=`
+      <div class="footnote" style="margin-top:10px">所擅：${(n.teach??[]).map(o=>o).join("、")||"—"} · 心性：${{li:"好利",yi:"重义",ming:"好名",shi:"尚势"}[n.bias]} · 交情：${ne(a.aff)}</div>`,foot:[{label:"关闭",close:!0}]})}var wi={};le(wi,{mount:()=>Ws});M();P();P();S();function Ws(e,t,i){let n=()=>Yt(),a=n(),s=Ri();e.innerHTML=`
   <div class="cols" style="grid-template-columns:1fr 1fr">
     <div class="panel">
       <h2>存档 <span class="sub">简册所录</span></h2>

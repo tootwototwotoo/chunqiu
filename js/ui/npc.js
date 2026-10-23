@@ -38,7 +38,7 @@ export function openNpc(app, st, npcId) {
           <div style="display:flex;justify-content:space-between"><span>交情</span><span style="color:#9c2b26">${relTierName(rr.aff)} ${rr.aff}</span></div>
           <div class="bar red"><i style="width:${rr.aff}%"></i></div>
         </div>
-        <div style="flex:0 0 auto;color:#6d6052;font-size:12px">性向：${biasName(def.bias)}</div>
+        <div style="flex:0 0 auto;color:#6d6052;font-size:12px">心性：${biasName(def.bias)}</div>
       </div>
       ${extra}
       <div class="btn-row" style="margin-top:14px">
