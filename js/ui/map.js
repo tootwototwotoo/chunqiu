@@ -7,6 +7,7 @@ import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 import { today, esc } from '../util.js';
 import { onClick, stateColor, stateName, cityTag } from './common.js';
 import { drawTerritory } from './territory.js';
+import { policySummary } from '../systems/policy.js';
 
 let selected = null;
 
@@ -44,6 +45,7 @@ export function mount(root, st, app) {
             </div>`).join('')}
         </div>
         ${st.world.hegemon ? `<div class="footnote">当今天下，${stateName(st.world.hegemon)}国为诸侯之长。</div>` : ''}
+        <div class="footnote">本国国策：${(() => { const s2 = policySummary(st); return s2.cur ? `${s2.cur.policy.name}（余 ${s2.cur.left} 日）· ${s2.text}` : '无'; })()}</div>
       </div>
     </div>
   </div>`;
@@ -130,7 +132,7 @@ function cityCardHtml(st, cityId, plan, cur) {
       <div>人口 <b>${c.pop}千</b></div>
       <div>所属 <b>${stateName(owner)}</b></div>
       <div>特产 <b>${GOODS[c.good]?.name ?? '—'}</b></div>
-      <div>国势 <b>${st.world.power[owner] ?? 0}</b></div>
+      <div>国势 <b>${st.world.power[owner] ?? 0}</b> <small style="color:#6d6052">${(((st.world.power[owner] ?? 30) - 40) / 4).toFixed(0)}%</small></div>
       <div>国爵 <b>${STATES[owner]?.peer === '王' ? '王畿' : (STATES[owner]?.peer ?? '—')}</b></div>
     </div>
     <div class="hero-tags" style="margin-bottom:8px">

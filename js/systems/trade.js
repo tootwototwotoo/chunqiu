@@ -3,15 +3,25 @@ import { GOODS, JADE } from '../data/goods.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
 import { player, addMoney, addGoods, goodsCount, caravanFree, addLog, R, basePriceOf } from '../state.js';
 import { ri, clamp } from '../util.js';
+import { currentPolicy } from './policy.js';
 
 export function priceAt(st, cityId, goodId) {
   return st.world.prices[cityId]?.[goodId] ?? basePriceOf(st, cityId, goodId);
 }
 
+export function policyPriceMod(st, goodId) {
+  const pol = currentPolicy(st);
+  if (!pol) return 1;
+  if (pol.id === 'farm' && goodId === 'su') return 0.88;
+  if (pol.id === 'trade') return 0.97;
+  return 1;
+}
+
 export function levyOf(st) {
   const sk = player(st).skills.shanggu ?? 0;
   const base = player(st).profession === 'shangren' ? 0.9 : 0.82;
-  return clamp(base + sk * 0.012, 0.8, 0.99);
+  const pol = currentPolicy(st)?.id === 'trade' ? 0.04 : 0;
+  return clamp(base + sk * 0.012 + pol, 0.8, 0.99);
 }
 
 export function canBuy(st, goodId, qty) {
@@ -28,7 +38,7 @@ export function buy(st, goodId, qty) {
   const err = canBuy(st, goodId, qty);
   if (err) return { ok: false, msg: err };
   const cid = player(st).cityId;
-  const price = priceAt(st, cid, goodId);
+  const price = Math.round(priceAt(st, cid, goodId) * policyPriceMod(st, goodId));
   addMoney(st, -Math.round(price * qty), true);
   addGoods(st, goodId, qty);
   // 买入抬价
@@ -44,7 +54,7 @@ export function sell(st, goodId, qty) {
   if (qty <= 0) return { ok: false, msg: '数量不足。' };
   if (inv < qty) return { ok: false, msg: '货不够。' };
   const cid = player(st).cityId;
-  const price = priceAt(st, cid, goodId);
+  const price = Math.round(priceAt(st, cid, goodId) * policyPriceMod(st, goodId));
   const gain = Math.round(price * qty * levyOf(st));
   addGoods(st, goodId, -qty);
   addMoney(st, gain, true);

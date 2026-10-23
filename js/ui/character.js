@@ -8,6 +8,7 @@ import { NPC_MAP } from '../data/npcs.js';
 import { EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
 import { trainingModal } from './training.js';
 import { peerageSummary } from '../systems/peerage.js';
+import { policySummary } from '../systems/policy.js';
 import { esc, diffTier, clamp } from '../util.js';
 
 export function mount(root, st, app) {
@@ -118,6 +119,8 @@ function careerPanelHtml(st) {
         <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)} <small style="color:#6d6052">食邑${CITY_MAP[p.peerage.fief]?.name ?? ''} · 月入${PEERAGES[p.peerage.rank].income}金</small>` : '未受封'}</dd>
         <dt>册命</dt><dd>${trialDesc}</dd>
         <dt>功勋</dt><dd>${p.merit}${next ? ` / ${next.merit}` : ''}</dd>
+        <dt>国势</dt><dd>${STATES[p.stateId]?.name ?? ''} ${st.world.power[p.stateId] ?? 0} <small style="color:#6d6052">物价 ${(((st.world.power[p.stateId] ?? 30) - 40) / 4).toFixed(1)}%</small></dd>
+        <dt>国策</dt><dd>${(() => { const s2 = policySummary(st); return s2.cur ? `${s2.cur.policy.name}（余 ${s2.cur.left} 日）` : '无'; })()}</dd>
       </div>
       <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
       <div class="footnote">${next ? `距「${next.name}」还需功勋 ${Math.max(0, next.merit - p.merit)}；每月初按功勋擢升一级。` : '已至极品「执政」。'}</div>

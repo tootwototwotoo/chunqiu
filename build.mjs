@@ -24,8 +24,12 @@ let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 if (!html.includes('href="css/style.css"')) throw new Error('index.html 中未找到样式表引用');
 if (!html.includes('src="js/main.js"')) throw new Error('index.html 中未找到入口脚本引用');
 
-html = html.replace('<link rel="stylesheet" href="css/style.css">', `<style>\n${css}\n</style>`);
-html = html.replace('<script type="module" src="js/main.js"></script>', `<script>\n${js}\n</script>`);
+html = html.replace('<link rel="stylesheet" href="css/style.css">', () => `<style>
+${css}
+</style>`);
+html = html.replace('<script type="module" src="js/main.js"></script>', () => `<script>
+${js}
+</script>`);
 html = html.replace('直接打开单文件版 <b>chunqiu.html</b>', '直接打开单文件版 <b>chunqiu.html</b>');
 
 fs.writeFileSync(path.join(root, 'chunqiu.html'), html);

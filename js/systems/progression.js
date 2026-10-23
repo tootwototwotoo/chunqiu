@@ -3,6 +3,7 @@ import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, PEERAGES, peerageName } from '../
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R, rel } from '../state.js';
 import { ri, clamp, diffTier } from '../util.js';
+import { currentPolicy } from './policy.js';
 
 export function checkPromotion(st) {
   const p = player(st);
@@ -19,6 +20,7 @@ export function checkPromotion(st) {
 }
 
 const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
+
 
 function rankForMerit(merit) {
   let rank = 1;
@@ -123,7 +125,9 @@ export function joinCampaign(st) {
   if (!p.stateId) return { ok: false, msg: '未仕于国，无从军之命。' };
   addStamina(st, -18);
   const skill = skillLevel(st, 'bingfa');
-  const roll = skill * 4 + p.stats.wu * 0.4 + p.stats.zhi * 0.3 + R.int(st, 0, 25);
+  const powerMod = ((st.world.power[p.stateId] ?? 50) - 50) * 0.35;
+  const policyMod = currentPolicy(st)?.id === 'army' ? 8 : 0;
+  const roll = skill * 4 + p.stats.wu * 0.4 + p.stats.zhi * 0.3 + powerMod + policyMod + R.int(st, 0, 25);
   const foeState = R.pick(st, Object.keys(STATES).filter(s => s !== p.stateId && s !== 'zhou'));
   if (roll >= 52) {
     const merit = 12 + Math.floor(roll / 3);

@@ -7,7 +7,7 @@ import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHeal
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { canSeekOffice, markOfficeAttempt, advise, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
+import { canSeekOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
@@ -15,6 +15,8 @@ import { TOPIC_NAMES } from '../data/debates/index.js';
 import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
 import { openTrialGame } from './trials.js';
 import { audienceModal } from './audience.js';
+import { councilModal } from './council.js';
+import { currentPolicy, policySummary } from '../systems/policy.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
 import { trainingModal } from './training.js';
@@ -195,17 +197,14 @@ function buildActions(st, app, c, owner) {
     }
     if (p.stateId) {
       add({
-        id: 'advise', name: '献策于朝', cost: '1日 · 8力',
-        desc: '以智略谋国，提升本国势力，积累功勋。',
-        disabled: p.stamina < 8,
+        id: 'advise', name: '献策于朝', cost: '1日',
+        desc: (() => {
+          const pol = currentPolicy(st);
+          return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
+        })(),
         run: () => {
-          const res = advise(st);
           const adv = advanceDays(st, 1);
-          app.modal({
-            title: '献策', narrow: true, body: `<p>${res.msg}</p>`,
-            foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }],
-          });
-          app.after(adv);
+          councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
       });
       add({
@@ -296,14 +295,14 @@ function buildActions(st, app, c, owner) {
     }
     if (p.stateId) {
       add({
-        id: 'advise', name: '献策于朝', cost: '1日 · 8力',
-        desc: '以权谋之策动国君，增国势、积功勋。',
-        disabled: p.stamina < 8,
+        id: 'advise', name: '献策于朝', cost: '1日',
+        desc: (() => {
+          const pol = currentPolicy(st);
+          return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
+        })(),
         run: () => {
-          const res = advise(st);
           const adv = advanceDays(st, 1);
-          app.modal({ title: '献策', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }] });
-          app.after(adv);
+          councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
       });
     }
@@ -637,5 +636,6 @@ function profPanelHtml(st, app, c) {
       <dt>${p.profession === 'shuike' ? '盟约' : '胜绩'}</dt><dd>${p.profession === 'shuike' ? p.missions : st.stats.duelWins}</dd>
     </div>
     <div class="footnote">${p.stateId ? '献策、从军、巡守皆可积累功勋，功勋既厚，自得擢升。' : '先谋出仕，方可一展抱负。'}</div>
+    ${p.stateId ? `<div class="divider"></div><div class="section-title">国策</div><div class="kv"><dt>现行</dt><dd>${(() => { const s2 = policySummary(st); return s2.cur ? `${s2.cur.policy.name}（余 ${s2.cur.left} 日）` : '无'; })()}</dd><dt>成效</dt><dd>${policySummary(st).text}</dd></div>` : ''}
   </div>`;
 }

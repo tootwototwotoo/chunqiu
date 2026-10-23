@@ -2,6 +2,7 @@
 import { SKILL_DEFS } from '../data/defs.js';
 import { skillLevel, addSkillExp, addStamina, R } from '../state.js';
 import { advanceDays } from '../systems/calendar.js';
+import { policyMods } from '../systems/policy.js';
 import {
   startSkillGame, recordHit, answerChoice, answerPrice, answerMath, matchPair,
   finalizeSkillGame, trainingExp, skillGameSummary, FORM_LIST, FORM_INFO, ARG_OPTIONS, BIAS_NAMES,
@@ -173,7 +174,8 @@ function finishTraining(ctx) {
   const { st, g, lv, name } = ctx;
   finalizeSkillGame(st, g);
   const bonus = ctx.opts.bonus ? 2 : 0;
-  const exp = trainingExp(lv, g.quality, bonus);
+  let exp = trainingExp(lv, g.quality, bonus);
+  if (ctx.skillKey === 'biancai' && policyMods(st).biancaiExp > 1) exp = Math.round(exp * policyMods(st).biancaiExp);
   const lucky = g.quality === 'perfect' && R.chance(st, 0.25);
   const total = exp + (lucky ? 4 : 0);
   const res0 = advanceDays(st, 1, {});

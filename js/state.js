@@ -54,6 +54,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       power: { ...Object.fromEntries(Object.values(STATES).map(s => [s.id, s.power])), ...(eraDef.power ?? {}) },
       prices: {},
       hegemon: '',
+      policy: null,
       alliances: [],
       wars: [],
       jade: {
@@ -405,6 +406,7 @@ export function migrateState(st) {
   st.player.evidence = Array.isArray(st.player.evidence) ? st.player.evidence.filter(x => typeof x === 'string') : [];
   st.flags ||= {};
   if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
+  st.world.policy ||= null;
   st.world.jade ||= { price: JADE.basePrice, sold: 0, cities: {} };
   st.world.jade.price ||= JADE.basePrice;
   st.world.jade.cities ||= {};
