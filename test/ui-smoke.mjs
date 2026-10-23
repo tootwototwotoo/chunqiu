@@ -136,6 +136,7 @@ for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['char
   ok(document.querySelector('#hud-nav button.active')?.dataset.screen === key, `导航高亮 ${key}`);
   if (key === 'map') ok(!!document.querySelector('#map-svg'), '舆图 SVG 渲染');
   else ok(screenText().length > 20, `界面 ${key} 有内容`);
+  if (key === 'city') ok(!screenText().includes('美玉'), '市价一览不列玉');
 }
 click('#hud-nav [data-screen="city"]');
 
@@ -143,6 +144,7 @@ click('#hud-nav [data-screen="city"]');
 click('[data-act="market"]');
 ok(!!$('.modal'), '市集弹窗');
 ok($('.modal-body').textContent.includes('粟'), '市集列有货物');
+ok(!$('.modal-body').textContent.includes('美玉'), '市集买卖不含玉');
 click('.modal-foot .btn');
 await wait();
 

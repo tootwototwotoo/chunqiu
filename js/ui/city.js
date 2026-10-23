@@ -65,7 +65,7 @@ export function mount(root, st, app) {
       <div class="divider"></div>
       <div class="section-title">市价一览 <span class="hint">本地特产最贱</span></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px 14px;font-size:13px">
-        ${Object.keys(GOODS).slice(0, 8).map(g => {
+        ${Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
           const price = priceAt(st, c.id, g);
           return `<div style="display:flex;justify-content:space-between;border-bottom:1px dotted rgba(120,95,60,.25);padding:3px 0">
             <span>${GOODS[g].name}</span><b style="color:${c.good === g ? '#4d6f56' : '#6d6052'}">${price}</b></div>`;
@@ -257,7 +257,7 @@ function buildActions(st, app, c, owner) {
       disabled: p.money < 10,
       run: () => {
         addMoney(st, -10, true);
-        const rows = Object.keys(GOODS).map(g => {
+        const rows = Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
           const here = priceAt(st, c.id, g);
           let best = null;
           for (const cc of Object.values(CITY_MAP)) {
