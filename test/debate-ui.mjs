@@ -26,6 +26,9 @@ let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
 
 const st = newGame({ name: '辩士', profession: 'shuike', seed: 9 });
+st.player.skills.suanshu = 10;
+st.player.stats.zhi = 100;
+st.player.stamina = 100;
 app.startGame(st);
 let ended = null;
 debateModal(app, st, { name: '县令', title: '县宰', bias: 'li' }, {
@@ -38,26 +41,26 @@ ok($$('.debate-opt').length === 3, '每轮三个选项');
 ok($('.modal').textContent.includes('认同度 50'), '初始认同度 50');
 ok($('.modal').textContent.includes('第 1 / 3 轮'), '显示轮次');
 ok(!!$('.debate-opt.match'), '合心性的思路有标记');
-ok(!!$('[data-evidence]'), '有出示证据按钮');
+ok(!!$('[data-acquire]'), '未掌握时可查访证据');
 ok($('.debate-speech').textContent.length > 4, '显示对方顾虑');
 
-// 第一轮用错证据：不消耗
+// 查访取得证据
+$('[data-acquire]').click();
+await wait(50);
+ok(st.player.evidence.includes('relief_ev'), '查访后证据入库');
+ok(!!$('[data-evidence]'), '掌握后可出示证据');
+
+// 出示相关证据
 $('[data-evidence]').click();
-await wait(30);
-ok($('.modal').textContent.includes('认同度 50'), '用错证据不加分');
-ok(!$('[data-evidence]').disabled, '用错证据不消耗');
+await wait(40);
+ok($('.modal').textContent.includes('认同度 60'), '证据 +10');
 
 // 选切中且合心性的一项
 $('.debate-opt.match').click();
 await wait(40);
-ok($('.modal').textContent.includes('认同度 70'), '切中+合心性 → 70');
+ok($('.modal').textContent.includes('认同度 80'), '切中+合心性 → 80');
 ok($('.modal').textContent.includes('第 2 / 3 轮'), '进入第二轮');
-
-// 第二轮出示相关证据
-$('[data-evidence]').click();
-await wait(40);
-ok($('.modal').textContent.includes('认同度 80'), '相关证据 +10');
-ok($('[data-evidence]').disabled, '证据已消耗');
+ok(!$('[data-evidence]'), '本局证据已用，不再显示');
 
 // 完成剩余两轮
 while ($$('.debate-opt').length) {

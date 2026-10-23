@@ -1,12 +1,11 @@
-// 三回合论辩场景总表
+// 三回合论辩场景总表与证据元数据
 import domestic from './domestic.js';
 import diplomacy from './diplomacy.js';
 import military from './military.js';
 import court from './court.js';
 import trade from './trade.js';
 
-export const DEBATES = [...domestic, ...diplomacy, ...military, ...court, ...trade];
-export const DEBATE_BY_ID = Object.fromEntries(DEBATES.map(d => [d.id, d]));
+const RAW = [...domestic, ...diplomacy, ...military, ...court, ...trade];
 
 export const TAGS = {
   li: { name: '讲利害', heart: '好利' },
@@ -19,9 +18,63 @@ export const CATEGORY_NAMES = {
 };
 export const OPPOSITE = { li: 'yi', yi: 'li', ming: 'shi', shi: 'ming' };
 
+export const TOPIC_NAMES = {
+  grain: '粮草', water: '水利', construction: '工程', army: '军务',
+  diplomacy: '邦交', law: '刑律', trade: '商贸', ritual: '礼制',
+  people: '民生', land: '田界', tax: '赋税', court: '朝政', misc: '杂事',
+};
+
+// 证据按主题跨场景使用：粮草证据可解粮草之虑，但不能拿来论工程
+const TOPIC_BY_ID = {
+  relief: 'grain', flood: 'water', wall: 'construction', tax: 'tax',
+  officials: 'law', academy: 'ritual', refugees: 'people', clans: 'law',
+  fields: 'land', prices: 'grain',
+  alliance: 'diplomacy', passage: 'diplomacy', marriage: 'diplomacy',
+  hostage: 'diplomacy', meeting: 'diplomacy', tribute: 'diplomacy',
+  mediator: 'diplomacy', fugitive: 'law', border: 'land', market: 'trade',
+  surrender: 'army', truce: 'army', pursuit: 'army', siege: 'army',
+  recruit: 'army', grain: 'grain', deserters: 'army', exchange: 'army',
+  reward: 'army', captives: 'army',
+  landcase: 'land', injustice: 'law', impeach: 'law', succession: 'ritual',
+  corruption: 'law', ritual: 'ritual', law: 'law', merits: 'court',
+  hunt: 'people', recommend: 'people',
+  seedloan: 'grain', saltiron: 'trade', inflation: 'grain', caravan: 'trade',
+  strike: 'trade', manumit: 'people', water: 'water', fraud: 'trade',
+  hoarding: 'grain', pirates: 'trade',
+};
+
+const SKILL_BY_CATEGORY = {
+  domestic: 'suanshu', diplomacy: 'biancai', military: 'bingfa', court: 'quanmou', trade: 'shanggu',
+};
+const PRICE_BY_CATEGORY = {
+  domestic: 60, diplomacy: 90, military: 80, court: 100, trade: 50,
+};
+
+// 三种获取方式轮流分配，互不重叠
+RAW.forEach((d, i) => {
+  d.topic = TOPIC_BY_ID[d.id] ?? 'misc';
+  d.concerns.forEach(c => { c.topic = c.topic ?? d.topic; });
+  const ev = d.evidence;
+  ev.id = `${d.id}_ev`;
+  ev.topic = d.topic;
+  const type = ['investigate', 'npc', 'market'][i % 3];
+  ev.source = type === 'investigate'
+    ? { type, skill: SKILL_BY_CATEGORY[d.category], dc: 44 }
+    : type === 'market'
+      ? { type, price: PRICE_BY_CATEGORY[d.category] }
+      : { type };
+});
+
+export const DEBATES = RAW;
+export const DEBATE_BY_ID = Object.fromEntries(DEBATES.map(d => [d.id, d]));
+export const EVIDENCE_BY_ID = Object.fromEntries(DEBATES.map(d => [
+  d.evidence.id,
+  { ...d.evidence, scenarioId: d.id, category: d.category },
+]));
+
 export function validateDebates(list = DEBATES) {
   const errors = [];
-  const ids = new Set();
+  const ids = new Set(), evIds = new Set();
   if (list.length < 50) errors.push(`场景不足：${list.length}/50`);
   for (const d of list) {
     const where = d.id || '(无 id)';
@@ -29,6 +82,7 @@ export function validateDebates(list = DEBATES) {
     ids.add(d.id);
     if (!['li', 'yi', 'ming', 'shi'].includes(d.heart)) errors.push(`${where}：心性非法`);
     if (!['domestic', 'diplomacy', 'military', 'court', 'trade'].includes(d.category)) errors.push(`${where}：分类非法`);
+    if (!TOPIC_NAMES[d.topic]) errors.push(`${where}：主题非法`);
     if (!Array.isArray(d.concerns) || d.concerns.length !== 3) { errors.push(`${where}：须有 3 个顾虑`); continue; }
     for (const [ci, c] of d.concerns.entries()) {
       if (!c.q) errors.push(`${where} 第${ci + 1}轮：缺少台词`);
@@ -42,7 +96,15 @@ export function validateDebates(list = DEBATES) {
       if (levels.filter(l => l === 'evade').length !== 1) errors.push(`${where} 第${ci + 1}轮：回避项须为 1`);
       if (!c.options.every(o => o.text && o.reply)) errors.push(`${where} 第${ci + 1}轮：选项缺文本或反应`);
     }
-    if (!d.evidence || d.evidence.concern < 0 || d.evidence.concern > 2) errors.push(`${where}：证据缺失或指向错误`);
+    const ev = d.evidence;
+    if (!ev || !ev.id || !ev.name || !ev.topic) errors.push(`${where}：证据缺失`);
+    else {
+      if (evIds.has(ev.id)) errors.push(`${where}：证据 id 重复`);
+      evIds.add(ev.id);
+      if (!['investigate', 'npc', 'market'].includes(ev.source?.type)) errors.push(`${where}：证据来源非法`);
+      if (ev.source?.type === 'investigate' && !ev.source.skill) errors.push(`${where}：查访证据缺技能`);
+      if (ev.source?.type === 'market' && !(ev.source.price > 0)) errors.push(`${where}：购买证据缺价格`);
+    }
     if (!d.outcomes?.success || !d.outcomes?.compromise || !d.outcomes?.fail) errors.push(`${where}：结局文本不全`);
     if (!d.effects?.success) errors.push(`${where}：成功效果缺失`);
     if (d.authority && d.followup) {

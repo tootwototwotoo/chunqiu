@@ -93,10 +93,12 @@ ok(screenText().includes('五等爵'), '人物界面列出五等爵');
 
 // 五等爵显示
 app.st.player.peerage = { rank: 0, fief: 'luoyi', year: app.st.time.year };
+app.st.player.evidence.push('relief_ev');
 app.nav('character');
 ok(screenText().includes('男爵'), '人物界面显示五等爵');
 ok(screenText().includes('食邑'), '显示食邑月入');
 ok(screenText().includes('册命'), '显示册命试炼栏');
+ok(screenText().includes('邻县余粮清册'), '人物界面单列证据');
 
 // 册命试炼界面（围捕）
 app.st.player.cityId = 'luoyi';

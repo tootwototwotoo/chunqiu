@@ -455,3 +455,6 @@ body.title-mode .screen > * { width: 100%; }
 .debate-mark{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(60,94,120,.7)}
 .debate-mark-label{position:absolute;top:-15px;transform:translateX(-50%);font-size:10px;color:var(--ink-3)}
 .debate-opt.match small{color:var(--jade)}
+
+.evidence-row{padding:7px 0;border-bottom:1px dashed rgba(120,95,60,.22)}
+.evidence-row:last-child{border-bottom:0}

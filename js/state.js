@@ -39,7 +39,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       stats: { ...prof.start.stats },
       skills: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0, ...prof.start.skills },
       skillExp: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0 },
-      merit: 0, rank: 0, peerage: null, peerageTrial: null, peerageFails: 0, peerageHistory: [],
+      merit: 0, rank: 0, peerage: null, peerageTrial: null, peerageFails: 0, peerageHistory: [], evidence: [],
       cards: [], relations: {},
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
@@ -193,6 +193,16 @@ export function meetNpc(st, npcId) {
     addLog(st, `识得${NPC_MAP[npcId].name}，录于名鉴。`, 'gain');
   }
   return r;
+}
+export function hasEvidence(st, id) {
+  return (st.player.evidence ?? []).includes(id);
+}
+export function addEvidence(st, id) {
+  if (!id) return false;
+  st.player.evidence ||= [];
+  if (st.player.evidence.includes(id)) return false;
+  st.player.evidence.push(id);
+  return true;
 }
 export function addStamina(st, v) {
   const p = st.player;
@@ -385,6 +395,7 @@ export function migrateState(st) {
   st.player.peerageTrial ||= null;
   st.player.peerageFails ||= 0;
   st.player.peerageHistory ||= [];
+  st.player.evidence = Array.isArray(st.player.evidence) ? st.player.evidence.filter(x => typeof x === 'string') : [];
   return st;
 }
 

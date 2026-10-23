@@ -1,6 +1,6 @@
 // 三回合论辩：计分、证据、结局与后续差事
-import { newGame } from '../js/state.js';
-import { startDebate, debateChoose, useEvidence, settleDebate } from '../js/systems/debate.js';
+import { newGame, addEvidence, hasEvidence } from '../js/state.js';
+import { startDebate, debateChoose, useEvidence, acquireEvidence, settleDebate } from '../js/systems/debate.js';
 import { DEBATE_BY_ID, DEBATES, validateDebates, OPPOSITE } from '../js/data/debates/index.js';
 
 let fails = 0;
@@ -66,23 +66,58 @@ const idx = (c, level, tag) => c.options.findIndex(o => o.level === level && o.t
   ok(h.base === 15 && h.heartMod === 0, '切中但思路不合心性 → +15', JSON.stringify(h));
 }
 
-// 证据：用错不消耗，用对 +10
+// 证据：未掌握不能出示；主题匹配才有效；可跨场景
 {
   const { st, d } = setup();
   const ev = d.scenario.evidence;
-  const wrong = useEvidence(st, d);
-  ok(!wrong.ok && !d.evidenceUsed, '用错顾虑不消耗证据', wrong.msg);
-  while (d.round - 1 < ev.concern) {
-    const c = d.scenario.concerns[d.round - 1];
-    debateChoose(st, d, idx(c, 'reason', 'yi'));
-  }
+  const missing = useEvidence(st, d, ev.id);
+  ok(!missing.ok && !d.evidenceUsed, '未掌握证据不能出示');
+  addEvidence(st, ev.id);
+  addEvidence(st, 'wall_ev');
+  const wrong = useEvidence(st, d, 'wall_ev');
+  ok(!wrong.ok && !d.evidenceUsed, '主题不符的证据不能出示', wrong.msg);
   const before = d.agreement;
-  const right = useEvidence(st, d);
-  ok(right.ok && d.evidenceUsed, '相关顾虑可出示证据');
+  const right = useEvidence(st, d, ev.id);
+  ok(right.ok && d.evidenceUsed, '相关证据可出示');
   ok(d.agreement === Math.min(100, before + 10), '证据 +10', String(d.agreement - before));
-  const c = d.scenario.concerns[d.round - 1];
-  debateChoose(st, d, idx(c, 'reason', 'li'));
+  const c = d.scenario.concerns[0];
+  debateChoose(st, d, idx(c, 'reason', 'yi'));
   ok(d.history.at(-1).evidence === 10, '证据计入明细');
+}
+{
+  const { st, d } = setup('relief');
+  addEvidence(st, 'prices_ev');
+  const r = useEvidence(st, d, 'prices_ev');
+  ok(r.ok, '同主题证据可跨场景使用', r.msg);
+}
+
+// 获取方式：查访 / 打听 / 购买
+{
+  const a = setup('relief');
+  a.st.player.skills.suanshu = 10;
+  a.st.player.stats.zhi = 100;
+  a.st.player.stamina = 100;
+  const r = acquireEvidence(a.st, a.d);
+  ok(r.ok && hasEvidence(a.st, a.d.scenario.evidence.id), '查访可获得证据', r.msg);
+
+  const f = setup('relief');
+  f.st.player.skills.suanshu = 0;
+  f.st.player.stats.zhi = 0;
+  f.st.player.fame = 0;
+  f.st.player.stamina = 100;
+  const bad = acquireEvidence(f.st, f.d);
+  ok(!bad.ok && (f.st.flags.evidenceCooldown ?? 0) > 0, '查访失败进入 1 日冷却');
+
+  const n = setup('flood');
+  n.st.player.cityId = 'linzi';
+  n.st.player.stamina = 100;
+  const nr = acquireEvidence(n.st, n.d);
+  ok(nr.ok, '向城中人物打听可获得证据', nr.msg);
+
+  const m = setup('wall');
+  m.st.player.money = 1000;
+  const mr = acquireEvidence(m.st, m.d);
+  ok(mr.ok && m.st.player.money < 1000, '市集购买可获得证据', mr.msg);
 }
 
 // 三档结局

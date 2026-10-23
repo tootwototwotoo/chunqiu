@@ -1,7 +1,7 @@
 // 三回合论辩：认同度、三选一、证据与三档结局
-import { DEBATES, DEBATE_BY_ID, TAGS, OPPOSITE } from '../data/debates/index.js';
+import { DEBATES, DEBATE_BY_ID, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
 import { CITY_MAP } from '../data/world.js';
-import { player, addFame, addRel, addMoney, addMerit, addLog, R } from '../state.js';
+import { player, addFame, addRel, addMoney, addMerit, addLog, addStamina, addEvidence, hasEvidence, npcsHere, skillLevel, R } from '../state.js';
 import { clamp } from '../util.js';
 
 const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
@@ -58,19 +58,62 @@ export function currentConcern(d) {
   return d.scenario.concerns[d.round - 1] ?? null;
 }
 
-export function useEvidence(st, d) {
+export function useEvidence(st, d, evidenceId) {
   if (d.over) return { ok: false, msg: '论辩已结束。' };
   if (d.evidenceUsed) return { ok: false, msg: '本局已经出示过证据。' };
-  const ev = d.scenario.evidence;
-  if (!ev) return { ok: false, msg: '你并无可用证据。' };
-  if (ev.concern !== d.round - 1) {
-    return { ok: false, msg: `「${ev.name}」与眼下所虑无关。` };
+  const ev = EVIDENCE_BY_ID[evidenceId];
+  if (!ev) return { ok: false, msg: '并无此证据。' };
+  if (!hasEvidence(st, evidenceId)) return { ok: false, msg: '你尚未掌握此证据。' };
+  const topic = currentConcern(d)?.topic ?? d.scenario.topic;
+  if (ev.topic !== topic) {
+    return { ok: false, msg: `「${ev.name}」与眼下所虑（${TOPIC_NAMES[topic] ?? topic}）无关。` };
   }
   d.evidenceUsed = true;
   d.evidenceApplied = true;
   d.agreement = clamp(d.agreement + EVIDENCE_BONUS, 0, 100);
   d.log.push(`你出示「${ev.name}」：${ev.text}【证据】认同+${EVIDENCE_BONUS}`);
   return { ok: true, msg: `出示「${ev.name}」，认同度 +${EVIDENCE_BONUS}。` };
+}
+
+export function acquireEvidence(st, d) {
+  const ev = d.scenario.evidence;
+  if (hasEvidence(st, ev.id)) return { ok: false, msg: '你已掌握此证据。' };
+  const src = ev.source ?? { type: 'investigate', skill: 'quanmou', dc: 44 };
+  const now = dayOf(st.time);
+  if (src.type === 'investigate') {
+    const cd = st.flags.evidenceCooldown ?? 0;
+    if (cd > now) return { ok: false, msg: `查访尚无头绪，${cd - now} 日后再试。` };
+    if (player(st).stamina < 8) return { ok: false, msg: '体力不足，无法查访。' };
+    addStamina(st, -8);
+    const lv = skillLevel(st, src.skill);
+    const roll = lv * 5 + player(st).stats.zhi * 0.25 + player(st).fame * 0.2 + R.int(st, 0, 22);
+    if (roll >= (src.dc ?? 44)) {
+      addEvidence(st, ev.id);
+      addLog(st, `查访得证：「${ev.name}」。`, 'gain');
+      return { ok: true, evidence: ev, msg: `查访有所得，掌握「${ev.name}」。` };
+    }
+    st.flags.evidenceCooldown = now + 1;
+    addLog(st, `查访「${ev.name}」无功而返。`);
+    return { ok: false, msg: `查访无功，需 1 日后才能再查。` };
+  }
+  if (src.type === 'npc') {
+    const here = npcsHere(st);
+    if (!here.length) return { ok: false, msg: '城中无人可打听。' };
+    if (player(st).stamina < 6) return { ok: false, msg: '体力不足，无法打听。' };
+    addStamina(st, -6);
+    addEvidence(st, ev.id);
+    addLog(st, `向${here[0].def.name}打听，得「${ev.name}」。`, 'gain');
+    return { ok: true, evidence: ev, msg: `向${here[0].def.name}打听，掌握「${ev.name}」。` };
+  }
+  if (src.type === 'market') {
+    const price = src.price ?? 60;
+    if (player(st).money < price) return { ok: false, msg: `书肆要价 ${price} 金，囊中不足。` };
+    addMoney(st, -price);
+    addEvidence(st, ev.id);
+    addLog(st, `花 ${price} 金购得「${ev.name}」。`, 'gain');
+    return { ok: true, evidence: ev, msg: `购得「${ev.name}」。` };
+  }
+  return { ok: false, msg: '无从获取此证据。' };
 }
 
 export function debateChoose(st, d, index) {

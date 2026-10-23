@@ -5,6 +5,7 @@ import { GOODS } from '../data/goods.js';
 import { player, age, fullTitle, careerTitle, skillLevel, rel, skillExpNeed } from '../state.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
+import { EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
 import { trainingModal } from './training.js';
 import { officeChance } from '../systems/progression.js';
 import { peerageSummary } from '../systems/peerage.js';
@@ -52,6 +53,18 @@ export function mount(root, st, app) {
       </div>
 
       ${careerPanelHtml(st)}
+
+      <div class="panel">
+        <div class="section-title">证据 <span class="hint">${p.evidence?.length ?? 0} 件</span></div>
+        ${(p.evidence ?? []).length ? (p.evidence ?? []).map(id => {
+          const e = EVIDENCE_BY_ID[id];
+          if (!e) return '';
+          return `<div class="evidence-row">
+            <div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(e.name)}</b><span class="tag">${TOPIC_NAMES[e.topic] ?? e.topic}</span></div>
+            <div class="footnote">${esc(e.text)}</div>
+          </div>`;
+        }).join('') : '<div class="empty">尚无证据。可在论辩中查访、打听或购买。</div>'}
+      </div>
 
       <div class="panel">
         <div class="section-title">交游</div>
