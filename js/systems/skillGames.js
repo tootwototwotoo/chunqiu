@@ -26,7 +26,7 @@ export const FORM_INFO = FORMS;
 export const FORM_LIST = FORM_IDS.map(id => ({ id, ...FORMS[id] }));
 const counterOf = (enemy) => FORM_IDS.find(k => FORMS[k].beats === enemy);
 
-const BIAS = { li: '好利', yi: '重义', ming: '好名', shi: '尚势' };
+const BIAS = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
 const ARG_OPTS = [
   { id: 'li', name: '言利', hint: '以通商之利动之' },
   { id: 'yi', name: '晓义', hint: '以礼义相责' },

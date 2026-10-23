@@ -26,7 +26,7 @@ export const TRIAL_VARIANTS = [
     desc: '鲁人重礼义。你须在席间以言辞动之，使两国通好，又不失国体。',
     targetCity: 'qufu', params: { rounds: 6, goal: 100, suspicionMax: 80, bias: 'yi' } },
   { id: 'neg_chu', rank: 1, engine: 'neg', title: '通使于楚',
-    desc: '楚人尚势。面对令尹的咄咄逼人，你须以利害与形势周旋。',
+    desc: '楚人慕强，重实力与形势。面对令尹的咄咄逼人，你须以利害与形势周旋。',
     targetCity: 'ying', params: { rounds: 6, goal: 105, suspicionMax: 80, bias: 'shi' } },
   { id: 'neg_song', rank: 1, engine: 'neg', title: '说宋结盟',
     desc: '宋人好名。若能给宋君一个体面的名分，盟约或可一举而定。',

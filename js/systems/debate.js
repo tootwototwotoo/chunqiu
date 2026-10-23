@@ -9,8 +9,14 @@ export const ARGS = {
   shi:  { name: '陈势', hint: '以形势迫之', opp: 'ming' },
 };
 
-const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '尚势' };
+const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
 export const biasName = (b) => BIAS_NAME[b] ?? '难测';
+export const BIAS_TIP = {
+  li: '看重实际利益，宜以「言利」动之',
+  yi: '看重礼义名节，宜以「晓义」动之',
+  ming: '看重声名评价，宜以「动名」动之',
+  shi: '看重实力与形势，宜以「陈势」动之',
+};
 
 const LINES = {
   li: [

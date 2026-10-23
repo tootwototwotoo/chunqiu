@@ -54,7 +54,7 @@ function showCard(app, st, id) {
         ${statLine('武艺', n.stats.wu)}${statLine('智略', n.stats.zhi)}
         ${statLine('政略', n.stats.zheng)}${statLine('魅力', n.stats.mei)}
       </div>
-      <div class="footnote" style="margin-top:10px">所擅：${(n.teach ?? []).map(k => k).join('、') || '—'} · 心性：${{ li: '好利', yi: '重义', ming: '好名', shi: '尚势' }[n.bias]} · 交情：${relTierName(r.aff)}</div>`,
+      <div class="footnote" style="margin-top:10px">所擅：${(n.teach ?? []).map(k => k).join('、') || '—'} · 心性：${biasName(n.bias)}（${BIAS_TIP[n.bias] ?? ''}） · 交情：${relTierName(r.aff)}</div>`,
     foot: [{ label: '关闭', close: true }],
   });
 }

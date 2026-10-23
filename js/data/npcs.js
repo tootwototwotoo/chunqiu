@@ -1,6 +1,6 @@
 // 列国人物。birth/death 为负的公元前年份，null 表示不详（按出场年份判断）。
 // role: ruler 国君 / minister 卿相 / general 将帅 / scholar 名士 / merchant 富商 / retainer 门客
-// bias: li 好利 / yi 重义 / ming 好名 / shi 尚势  —— 游说时的突破口
+// bias: li 好利 / yi 重义 / ming 好名 / shi 慕强（重实力与形势） —— 游说时的突破口
 // pref: 偏爱的礼物；teach: 可传授的技能
 
 export const NPCS = [

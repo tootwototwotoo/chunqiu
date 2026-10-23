@@ -3,7 +3,7 @@ import { NPC_MAP } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, rel, npcsHere, addRel, addFame, addMoney, addMerit, skillLevel } from '../state.js';
 import { talk, giveGift, learnFrom, teachInfo, giftCandidates, affName, affTier, npcDuelInfo, npcDebateInfo } from '../systems/relations.js';
-import { biasName } from '../systems/debate.js';
+import { biasName, BIAS_TIP } from '../systems/debate.js';
 import { duelModal, debateModal } from './minigames.js';
 import { skillName, onClick, avatar, relTierName } from './common.js';
 import { esc } from '../util.js';
@@ -38,7 +38,7 @@ export function openNpc(app, st, npcId) {
           <div style="display:flex;justify-content:space-between"><span>交情</span><span style="color:#9c2b26">${relTierName(rr.aff)} ${rr.aff}</span></div>
           <div class="bar red"><i style="width:${rr.aff}%"></i></div>
         </div>
-        <div style="flex:0 0 auto;color:#6d6052;font-size:12px">心性：${biasName(def.bias)}</div>
+        <div style="flex:0 0 auto;color:#6d6052;font-size:12px;max-width:190px;text-align:right" title="${BIAS_TIP[def.bias] ?? ''}">心性：${biasName(def.bias)}<br><span style="font-size:10.5px;color:#8d8478">${BIAS_TIP[def.bias] ?? ''}</span></div>
       </div>
       ${extra}
       <div class="btn-row" style="margin-top:14px">
