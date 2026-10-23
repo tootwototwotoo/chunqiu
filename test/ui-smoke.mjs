@@ -150,8 +150,7 @@ ok(skillBtns.length === 8, '修习可选八艺');
 skillBtns[0].click();
 await wait(40);
 ok(!!$('#mg-bar'), '修习小游戏开始');
-click('.modal-foot .btn'); // 止
-await wait(30);
+for (let i = 0; i < 3; i++) { click('.modal-foot .btn'); await wait(25); } // 三连斩
 ok($('.modal-body').textContent.includes('经验'), '修习结算');
 click('.modal-foot .btn'); // 继续
 await wait(30);

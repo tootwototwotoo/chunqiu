@@ -420,3 +420,17 @@ body.title-mode .screen > * { width: 100%; }
 .rite-chip{display:inline-block;padding:5px 10px;border:1px solid var(--line);background:rgba(255,251,240,.9);font-size:13.5px;border-radius:2px}
 .rite-chip.done{background:rgba(77,111,86,.16);border-color:rgba(77,111,86,.55);color:var(--jade)}
 .rite-arrow{color:var(--ink-3);font-size:12px}
+
+
+/* ---------- 修习：射靶与配对 ---------- */
+.target-track{position:relative;height:54px;margin:12px 0;border:1px solid var(--line);background:linear-gradient(180deg,#efe4cb,#e3d3ae);overflow:hidden}
+.target-center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(156,43,38,.55);transform:translateX(-1px)}
+.target-center:before{content:"靶心";position:absolute;top:2px;left:4px;font-size:10px;color:#9c2b26;letter-spacing:1px}
+.target-dot{position:absolute;top:50%;left:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#c9554b,#8a2621);box-shadow:0 2px 8px rgba(90,30,20,.4);transition:left .05s linear}
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.match-btn{display:block;width:100%;text-align:center;border:1px solid var(--line);background:rgba(255,251,240,.85);
+  padding:9px 8px;font-family:var(--serif);font-size:13.5px;margin-bottom:7px;border-radius:2px;transition:.14s}
+.match-btn:hover:not(:disabled){border-color:var(--gold);background:#fffaf0}
+.match-btn.sel{border-color:var(--seal);box-shadow:0 0 0 1px var(--seal) inset;background:#fff7e8}
+.match-btn.done{opacity:.45;border-color:rgba(77,111,86,.55);color:var(--jade);cursor:default}

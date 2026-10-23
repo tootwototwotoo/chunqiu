@@ -12,7 +12,8 @@ import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
 import { openTrialGame } from './trials.js';
-import { duelModal, debateModal, trainingModal } from './minigames.js';
+import { duelModal, debateModal } from './minigames.js';
+import { trainingModal } from './training.js';
 import { marketModal } from './market.js';
 import { openBoard } from './quests.js';
 import { openNpc } from './npc.js';
@@ -477,7 +478,7 @@ function openTrain(app, st, c) {
         ${Object.keys(SKILL_DEFS).map(k => {
           const b = bonusFor(k);
           return `<button class="choice-btn" data-k="${k}">${SKILL_DEFS[k].name}
-            <small>${SKILL_DEFS[k].where} · 现有 ${p.skills[k] ?? 0} 级${b ? ' · <span style="color:#9c2b26">地利 +' + b + '</span>' : ''}</small></button>`;
+            <small>${SKILL_DEFS[k].where} · 现有 ${p.skills[k] ?? 0} 级${b ? ' · <span style="color:#9c2b26">地利（经验 +2）</span>' : ''}</small></button>`;
         }).join('')}
       </div>`,
     foot: [{ label: '关闭', close: true }],

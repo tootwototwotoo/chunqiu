@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node serve.cjs",
     "serve": "node serve.cjs",
-    "test": "node test/smoke.mjs && node test/history.mjs && node test/quests.mjs && node test/merit.mjs && node test/office.mjs && node test/peerage.mjs && node test/travel-quests.mjs && node test/world.mjs && node test/migrate.mjs && node test/autosave.mjs && node test/ui-smoke.mjs && node test/board-ui.mjs && node test/trials-ui.mjs && node test/standalone.mjs",
+    "test": "node test/smoke.mjs && node test/history.mjs && node test/quests.mjs && node test/merit.mjs && node test/office.mjs && node test/peerage.mjs && node test/travel-quests.mjs && node test/world.mjs && node test/migrate.mjs && node test/autosave.mjs && node test/skillgames.mjs && node test/ui-smoke.mjs && node test/board-ui.mjs && node test/trials-ui.mjs && node test/training-ui.mjs && node test/standalone.mjs",
     "build": "node build.mjs"
   },
   "devDependencies": {

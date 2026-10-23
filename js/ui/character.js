@@ -5,7 +5,7 @@ import { GOODS } from '../data/goods.js';
 import { player, age, fullTitle, careerTitle, skillLevel, rel, skillExpNeed } from '../state.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
-import { trainingModal } from './minigames.js';
+import { trainingModal } from './training.js';
 import { officeChance } from '../systems/progression.js';
 import { peerageSummary } from '../systems/peerage.js';
 import { esc, diffTier, clamp } from '../util.js';
