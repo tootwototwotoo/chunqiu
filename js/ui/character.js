@@ -7,6 +7,7 @@ import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { trainingModal } from './minigames.js';
 import { officeChance } from '../systems/progression.js';
+import { peerageSummary } from '../systems/peerage.js';
 import { esc, diffTier, clamp } from '../util.js';
 
 export function mount(root, st, app) {
@@ -87,13 +88,23 @@ function careerPanelHtml(st) {
   const cur = serving ? p.rank : 0;
   const next = RANKS[cur + 1];
   const pct = next ? Math.min(100, Math.round((p.merit / next.merit) * 100)) : 100;
+  const sum = peerageSummary(st);
+  const trialDesc = (() => {
+    if (!sum.next) return '已至公爵，无可再封。';
+    if (!sum.trial) return `未领受 · 往洛邑领受${sum.next.name}爵试炼`;
+    if (sum.trial.status === 'done') return `已成（评价 ${sum.trial.performance}）· 回洛邑请封，成算约 ${Math.round(sum.chance * 100)}%`;
+    if (sum.trial.status === 'pending') return `新试炼「${sum.variant?.title ?? ''}」· ${sum.cooldown} 日后可领受`;
+    const target = sum.trialTarget ? CITY_MAP[sum.trialTarget]?.name : '洛邑';
+    return `进行中「${sum.variant?.title ?? ''}」· 须至${target}开始`;
+  })();
   return `<div class="panel">
     <div class="section-title">仕途</div>
     ${serving ? `
       <div class="kv">
         <dt>所仕</dt><dd>${STATES[p.stateId].name}国</dd>
         <dt>官阶</dt><dd>${RANKS[cur].name} <small style="color:#6d6052">月俸 ${RANKS[cur].pay} 金</small></dd>
-        <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)} <small style="color:#6d6052">食邑${CITY_MAP[p.peerage.fief]?.name ?? ''} · 月入${PEERAGES[p.peerage.rank].income}金</small>` : '未受封 <small style="color:#6d6052">于洛邑请封</small>'}</dd>
+        <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)} <small style="color:#6d6052">食邑${CITY_MAP[p.peerage.fief]?.name ?? ''} · 月入${PEERAGES[p.peerage.rank].income}金</small>` : '未受封'}</dd>
+        <dt>册命</dt><dd>${trialDesc}</dd>
         <dt>功勋</dt><dd>${p.merit}${next ? ` / ${next.merit}` : ''}</dd>
       </div>
       <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
@@ -105,7 +116,7 @@ function careerPanelHtml(st) {
         <dt>成算</dt><dd>约 ${Math.round(officeChance(st) * 100)}%</dd>
       </div>
       <div class="footnote">亦可与卿相结好（交情 50 以上），请其举荐直接入仕。布衣所积功勋在出仕时不会作废。<br>
-      官阶至卿、执政后，可往洛邑请周天子册命，受封男→子→伯→侯→公五等爵，另有食邑月入。</div>
+      五等爵须先在洛邑领受「册命之试」，完成专属试炼后再请封；每次未准都会另命新试。</div>
     `}
     <div class="divider"></div>
     <div class="footnote" style="line-height:1.8">官阶：${RANKS.slice(1).map(r => `${r.name}(${r.merit})`).join(' → ')}<br>

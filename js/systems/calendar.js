@@ -8,6 +8,7 @@ import { NPC_MAP, npcAlive } from '../data/npcs.js';
 import { collectTimeline, rollRandomEvent } from './events.js';
 import { expireQuests } from './quests.js';
 import { checkPromotion } from './progression.js';
+import { checkTrialExpiry } from './peerage.js';
 import { yearLabel, monthLabel, clamp, ri } from '../util.js';
 
 export const DAYS_PER_MONTH = 30;
@@ -77,6 +78,9 @@ function onMonth(st, out) {
   // 差事过期
   const exp = expireQuests(st);
   for (const q of exp) out.notes.push(`差事「${q.title}」逾期未成，信誉受损。`);
+  // 册命试炼逾期
+  const failedTrial = checkTrialExpiry(st);
+  if (failedTrial) out.notes.push(`册命之试逾期，另命「${failedTrial.title}」。`);
   // 历史事件
   for (const ev of collectTimeline(st)) out.events.push(ev);
   // 随机事件

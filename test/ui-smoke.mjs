@@ -84,17 +84,39 @@ ok(screenText().includes('月俸'), '仕途面板显示月俸');
 ok(screenText().includes('爵位'), '人物界面单列爵位');
 ok(screenText().includes('五等爵'), '人物界面列出五等爵');
 
-// 五等爵册命
-const { requestPeerage } = await import('../js/systems/progression.js');
-app.st.player.cityId = 'luoyi';
-app.st.player.merit = 900;
-app.st.player.fame = 60;
-app.st.player.money = 1000;
-const peerRes = requestPeerage(app.st);
-ok(peerRes.ok, '可请封五等爵', peerRes.msg);
+// 五等爵显示
+app.st.player.peerage = { rank: 0, fief: 'luoyi', year: app.st.time.year };
 app.nav('character');
 ok(screenText().includes('男爵'), '人物界面显示五等爵');
 ok(screenText().includes('食邑'), '显示食邑月入');
+ok(screenText().includes('册命'), '显示册命试炼栏');
+
+// 册命试炼界面（围捕）
+app.st.player.cityId = 'luoyi';
+app.st.player.stateId = 'qi';
+app.st.player.merit = 900;
+app.st.player.fame = 60;
+app.st.player.money = 1000;
+app.st.player.peerage = null;
+app.st.player.peerageTrial = { rank: 0, variantId: 'hunt_bandit', targetCity: 'luoyi', status: 'active', availableDay: 0, startedDay: 0, exp: null, performance: null };
+app.nav('city');
+ok(!!$('[data-act="trial_start"]'), '城中有「开始册命之试」');
+click('[data-act="trial_start"]');
+await wait(40);
+ok(!!$('.trial-grid'), '围捕小游戏渲染');
+for (let i = 0; i < 40 && $('.trial-grid') && !$('.modal-foot .btn'); i++) {
+  const cells = $$('.trial-cell').filter(b => !b.disabled);
+  if (!cells.length) break;
+  cells[0].click();
+  await wait(15);
+}
+ok(!!$('.modal-foot .btn'), '试炼可结算');
+click('.modal-foot .btn');
+await wait(80);
+ok(!!$('.modal'), '复命弹窗');
+click('.modal-foot .btn');
+await wait(80);
+ok(app.st.player.peerageTrial.status === 'done', '试炼结果写入存档');
 
 // 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
 for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {

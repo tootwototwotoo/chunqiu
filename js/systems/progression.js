@@ -74,42 +74,6 @@ export function seekOffice(st, stateId) {
   };
 }
 
-// ---------- 五等爵：男 → 子 → 伯 → 侯 → 公 ----------
-export function peerageNext(st) {
-  const p = player(st);
-  const cur = p.peerage ? p.peerage.rank : -1;
-  const next = PEERAGES[cur + 1];
-  return next ? { idx: cur + 1, next } : null;
-}
-
-export function canRequestPeerage(st) {
-  const p = player(st);
-  if (!['youxia', 'shuike', 'xuezhe'].includes(p.profession)) return { ok: false, msg: '商贾不入册命。' };
-  if (!p.stateId) return { ok: false, msg: '须先出仕立功，方可请封。' };
-  if (p.cityId !== 'luoyi') return { ok: false, msg: '册命须至洛邑，请于周天子。' };
-  const info = peerageNext(st);
-  if (!info) return { ok: false, msg: '已至公爵，无可再封。' };
-  if (p.merit < info.next.merit) return { ok: false, msg: `功勋不足（${p.merit}/${info.next.merit}）。` };
-  if (p.fame < info.next.fame) return { ok: false, msg: `名声不足（${p.fame}/${info.next.fame}）。` };
-  if (p.money < 300) return { ok: false, msg: '贽礼需金三百。' };
-  return { ok: true, next: info.next, idx: info.idx };
-}
-
-export function requestPeerage(st) {
-  const chk = canRequestPeerage(st);
-  if (!chk.ok) return chk;
-  const p = player(st);
-  addMoney(st, -300);
-  const fief = p.homeCity ?? p.cityId;
-  p.peerage = { rank: chk.idx, fief, year: st.time.year };
-  addFame(st, 8);
-  addLog(st, `周天子册命，受封${chk.next.name}爵，食邑${CITY_MAP[fief].name}。`, 'big');
-  return {
-    ok: true, peer: chk.next, idx: chk.idx, fief,
-    msg: `周天子册命：受封${chk.next.name}爵，食邑${CITY_MAP[fief].name}，每月食禄${chk.next.income}金。`,
-  };
-}
-
 export function npcRulerOf(st, stateId) {
   const ownerOf = (cityId) => st.world.owner[cityId] ?? CITY_MAP[cityId]?.state;
   const found = Object.values(st.npc).find(n => n.alive && n.city && ownerOf(n.city) === stateId);

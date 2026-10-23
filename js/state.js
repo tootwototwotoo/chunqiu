@@ -38,7 +38,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       stats: { ...prof.start.stats },
       skills: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0, ...prof.start.skills },
       skillExp: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0 },
-      merit: 0, rank: 0, peerage: null,
+      merit: 0, rank: 0, peerage: null, peerageTrial: null, peerageFails: 0, peerageHistory: [],
       cards: [], relations: {},
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
@@ -381,6 +381,9 @@ export function migrateState(st) {
   if (st.player.peerage && (st.player.peerage.rank == null || st.player.peerage.rank < 0 || st.player.peerage.rank >= PEERAGES.length)) {
     st.player.peerage = null;
   }
+  st.player.peerageTrial ||= null;
+  st.player.peerageFails ||= 0;
+  st.player.peerageHistory ||= [];
   return st;
 }
 

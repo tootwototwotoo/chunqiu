@@ -7,9 +7,11 @@ import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHeal
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft, canRequestPeerage, requestPeerage } from '../systems/progression.js';
+import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
+import { canAcceptTrial, acceptTrial, canStartTrial, canPetition, petition, peerageSummary } from '../systems/peerage.js';
+import { openTrialGame } from './trials.js';
 import { duelModal, debateModal, trainingModal } from './minigames.js';
 import { marketModal } from './market.js';
 import { openBoard } from './quests.js';
@@ -362,32 +364,102 @@ function buildActions(st, app, c, owner) {
     });
   }
 
-  // 洛邑请封：五等爵（男→公），须已出仕并达到功勋/名声
-  if (['youxia', 'shuike', 'xuezhe'].includes(p.profession) && c.id === 'luoyi') {
-    const chk = canRequestPeerage(st);
-    const nextPeer = PEERAGES[(p.peerage?.rank ?? -1) + 1];
-    add({
-      id: 'peerage', name: '请封于周', cost: '300金 · 1日',
-      desc: chk.ok
-        ? `请封${chk.next.name}爵：功勋${chk.next.merit}、名声${chk.next.fame}，条件已备。`
-        : nextPeer
-          ? `${chk.msg}（下一爵：${nextPeer.name}爵，需功勋${nextPeer.merit}、名声${nextPeer.fame}）`
-          : chk.msg,
-      disabled: !chk.ok,
-      run: () => {
-        const res = requestPeerage(st);
-        const adv = advanceDays(st, 1);
-        app.modal({
-          title: res.ok ? '册命' : '请封', wide: false,
-          body: `<p>${res.msg}</p>${res.ok ? '<div class="footnote">五等爵独立于官阶，按月食禄，并计入结局评价。</div>' : ''}`,
-          foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }],
-        });
-        app.after({ notes: adv.notes, events: adv.events, died: adv.died });
-      },
+  for (const a of trialActions(st, app, c)) add(a);
+
+  return acts;
+}
+
+
+function trialActions(st, app, c) {
+  const p = player(st);
+  const out = [];
+  if (!['youxia', 'shuike', 'xuezhe'].includes(p.profession)) return out;
+  const sum = peerageSummary(st);
+  const atLuoyi = c.id === 'luoyi';
+
+  if (atLuoyi) {
+    const acc = canAcceptTrial(st);
+    if (acc.ok) {
+      out.push({
+        id: 'trial_accept', name: '领受册命之试', cost: '1日',
+        desc: `目标${acc.next.name}爵 · ${['乡邑之试', '邦交之试', '国政之试', '霸业之试', '天下秩序'][acc.idx]}：${sum.next ? `需功勋${acc.next.merit}、名声${acc.next.fame}` : ''}`,
+        run: () => {
+          const res = acceptTrial(st);
+          if (!res.ok) { app.toast(res.msg, 'war'); return; }
+          const adv = advanceDays(st, 1);
+          const target = res.variant.targetCity ? CITY_MAP[res.variant.targetCity].name : '洛邑';
+          app.modal({
+            title: '领受册命之试',
+            sub: res.variant.title,
+            body: `<p>${esc(res.variant.desc)}</p>
+              <div class="kv"><dt>地点</dt><dd>${target}</dd><dt>限期</dt><dd>${res.trial.exp != null ? Math.max(0, res.trial.exp - (st.time.year + 722) * 360 - (st.time.month - 1) * 30 - st.time.day) : '—'} 日</dd></div>
+              <div class="footnote">至${target}后即可开始；逾期则试炼失败，周室另命新试。</div>`,
+            foot: [{ label: '知道了', cls: 'btn primary', onClick: h => { h.close(); app.after({ notes: adv.notes, events: adv.events }); } }],
+          });
+        },
+      });
+    } else if (sum.trial?.status === 'pending' && sum.cooldown > 0) {
+      out.push({
+        id: 'trial_wait', name: '周室议而未决', cost: `${sum.cooldown}日`,
+        desc: `新试炼「${sum.variant?.title ?? '待定'}」须待${sum.cooldown}日后方可领受。`,
+        disabled: true, run: () => {},
+      });
+    }
+  }
+
+  const stChk = canStartTrial(st);
+  if (stChk.ok) {
+    out.push({
+      id: 'trial_start', name: '开始册命之试', cost: '即刻',
+      desc: `${stChk.variant.title}：${stChk.variant.desc}`,
+      run: () => openTrialGame(app, st),
     });
   }
 
-  return acts;
+  if (atLuoyi) {
+    const pet = canPetition(st);
+    if (pet.ok) {
+      out.push({
+        id: 'trial_petition', name: '请封于周', cost: '300金',
+        desc: `请封${pet.next.name}爵 · 成算约${Math.round(pet.chance * 100)}%${sum.fails ? ` · 已${sum.fails}次未准` : ''}`,
+        run: () => openPetition(app, st),
+      });
+    } else if (sum.trial?.status === 'done') {
+      out.push({ id: 'trial_petition_blocked', name: '请封于周', cost: '条件不足', desc: pet.msg, disabled: true, run: () => {} });
+    }
+  }
+  return out;
+}
+
+function openPetition(app, st) {
+  const chk = canPetition(st);
+  if (!chk.ok) { app.toast(chk.msg, 'war'); return; }
+  const sum = peerageSummary(st);
+  const pct = Math.round(chk.chance * 100);
+  app.modal({
+    title: '请封于周', sub: `目标：${chk.next.name}爵`, wide: false,
+    body: `<p>试炼「${sum.variant?.title ?? ''}」已成，评价 <b>${sum.trial?.performance ?? 0}</b>。</p>
+      <div class="kv">
+        <dt>成算</dt><dd>${pct}%${sum.guarantee ? '（天子感其诚，必准）' : ''}</dd>
+        <dt>诚意</dt><dd>${sum.fails} 次未准${sum.fails ? `（+${Math.min(24, sum.fails * 8)}%）` : ''}</dd>
+        <dt>贽礼</dt><dd>300 金（未准退半）</dd>
+      </div>
+      <div class="footnote">未准则名声小损，周室另命新试；五次未准后，第六次必得册命。</div>`,
+    foot: [
+      { label: '再候时机', close: true },
+      { label: '请封', cls: 'btn primary', onClick: (h) => {
+        h.close();
+        const res = petition(st);
+        if (!res.ok) { app.toast(res.msg, 'war'); return; }
+        app.modal({
+          title: res.success ? '册命' : '未准',
+          body: `<p>${res.msg}</p>${res.success ? `<div class="footnote">受封${res.peer.name}爵，食邑${CITY_MAP[res.fief].name}，每月食禄${res.peer.income}金。</div>` : '<div class="footnote">名声-2，贽礼退半；新试炼已下。</div>'}`,
+          foot: [{ label: '继续', cls: 'btn primary', onClick: hh => { hh.close(); app.after({}); } }],
+        });
+        app.refreshHud();
+      } },
+    ],
+  });
 }
 
 function openTrain(app, st, c) {
