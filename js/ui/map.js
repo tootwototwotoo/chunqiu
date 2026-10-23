@@ -118,6 +118,7 @@ function cityCardHtml(st, cityId, plan, cur) {
       <div>所属 <b>${stateName(owner)}</b></div>
       <div>特产 <b>${GOODS[c.good]?.name ?? '—'}</b></div>
       <div>国势 <b>${st.world.power[owner] ?? 0}</b></div>
+      <div>国爵 <b>${STATES[owner]?.peer === '王' ? '王畿' : (STATES[owner]?.peer ?? '—')}</b></div>
     </div>
     <div class="hero-tags" style="margin-bottom:8px">
       ${(c.tags ?? []).map(t => `<span class="tag">${tags[t] ?? t}</span>`).join('')}

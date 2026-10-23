@@ -1,7 +1,7 @@
 // 时间推进、月份结算、年龄与死亡
 import { START_YEAR, player, addLog, addMoney, addHealth, addStamina, initPrices, priceSet, basePriceOf,
   careerTitle, age, rankName, R, aliveNpcs, npcDef, rel, saveGame, AUTO_SAVE_KEY, AUTO_SAVE_ERROR } from '../state.js';
-import { RANKS } from '../data/defs.js';
+import { RANKS, PEERAGES } from '../data/defs.js';
 import { CITIES, CITY_MAP, STATES } from '../data/world.js';
 import { GOODS } from '../data/goods.js';
 import { NPC_MAP, npcAlive } from '../data/npcs.js';
@@ -128,6 +128,13 @@ function monthIncome(st, out) {
     if (pay > 0) {
       addMoney(st, pay, true);
       out.notes.push(`领受${STATES[p.stateId].name}国俸禄 ${pay} 金。`);
+    }
+  }
+  if (p.peerage) {
+    const peer = PEERAGES[p.peerage.rank];
+    if (peer) {
+      addMoney(st, peer.income, true);
+      out.notes.push(`食邑${CITY_MAP[p.peerage.fief]?.name ?? ''}食禄 ${peer.income} 金。`);
     }
   }
   if (p.profession === 'shangren') {

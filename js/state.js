@@ -1,5 +1,5 @@
 // 游戏状态：创建、存档、常用读写
-import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_MAX, ERAS } from './data/defs.js';
+import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
 import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
@@ -38,7 +38,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       stats: { ...prof.start.stats },
       skills: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0, ...prof.start.skills },
       skillExp: { jianshu: 0, sheshu: 0, bingfa: 0, biancai: 0, quanmou: 0, shanggu: 0, suanshu: 0, xuewen: 0 },
-      merit: 0, rank: 0,
+      merit: 0, rank: 0, peerage: null,
       cards: [], relations: {},
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
@@ -115,12 +115,14 @@ export function careerTitle(st) {
   return '';
 }
 
+const peerSuffix = (p) => (p.peerage ? `·${PEERAGES[p.peerage.rank]?.name ?? ''}爵` : '');
+
 export function fullTitle(st) {
   const p = st.player;
   if (p.profession === 'shangren') return `${PROFESSIONS.shangren.name}·${careerTitle(st)}`;
-  if (p.profession === 'xuezhe') return `${p.doctrine ? p.doctrine : '学者'}·${careerTitle(st)}`;
-  if (p.profession === 'shuike') return p.stateId ? `${STATES[p.stateId].name}国${rankName(st)}` : '游士';
-  return p.stateId ? `${STATES[p.stateId].name}国${rankName(st)}` : '布衣游侠';
+  if (p.profession === 'xuezhe') return `${p.doctrine ? p.doctrine : '学者'}·${careerTitle(st)}${peerSuffix(p)}`;
+  if (p.profession === 'shuike') return (p.stateId ? `${STATES[p.stateId].name}国${rankName(st)}` : '游士') + peerSuffix(p);
+  return (p.stateId ? `${STATES[p.stateId].name}国${rankName(st)}` : '布衣游侠') + peerSuffix(p);
 }
 
 export function skillLevel(st, k) { return st.player.skills[k] ?? 0; }
@@ -375,6 +377,10 @@ export function migrateState(st) {
     }
   }
   st.quests ||= { active: [], done: [], board: null, boardDay: -99, offers: [] };
+  st.player.peerage ||= null;
+  if (st.player.peerage && (st.player.peerage.rank == null || st.player.peerage.rank < 0 || st.player.peerage.rank >= PEERAGES.length)) {
+    st.player.peerage = null;
+  }
   return st;
 }
 

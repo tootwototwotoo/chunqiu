@@ -78,8 +78,22 @@ for (let i = 0; i < 20 && !(officeRes && officeRes.ok); i++) {
 }
 ok(!!officeRes && officeRes.ok, '可以出仕', officeRes && officeRes.msg);
 app.nav('character');
-ok(screenText().includes('爵位'), '出仕后人物界面显示爵位');
+ok(screenText().includes('官阶'), '出仕后人物界面显示官阶');
 ok(screenText().includes('月俸'), '仕途面板显示月俸');
+ok(screenText().includes('爵位'), '人物界面单列爵位');
+ok(screenText().includes('五等爵'), '人物界面列出五等爵');
+
+// 五等爵册命
+const { requestPeerage } = await import('../js/systems/progression.js');
+app.st.player.cityId = 'luoyi';
+app.st.player.merit = 900;
+app.st.player.fame = 60;
+app.st.player.money = 1000;
+const peerRes = requestPeerage(app.st);
+ok(peerRes.ok, '可请封五等爵', peerRes.msg);
+app.nav('character');
+ok(screenText().includes('男爵'), '人物界面显示五等爵');
+ok(screenText().includes('食邑'), '显示食邑月入');
 
 // 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
 for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {

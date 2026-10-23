@@ -1,13 +1,13 @@
 // 城中：诸般行动
 import { CITY_MAP, STATES, cityState } from '../data/world.js';
 import { GOODS } from '../data/goods.js';
-import { SKILL_DEFS } from '../data/defs.js';
+import { SKILL_DEFS, PEERAGES, peerageName } from '../data/defs.js';
 import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHealth, addLog,
   skillLevel, R, isMerchant, isWarrior, isDiplomat, isScholar, addRel } from '../state.js';
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft } from '../systems/progression.js';
+import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft, canRequestPeerage, requestPeerage } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { duelModal, debateModal, trainingModal } from './minigames.js';
@@ -33,6 +33,7 @@ export function mount(root, st, app) {
         ${(c.tags ?? []).map(t => `<span class="tag">${{ market: '市集', academy: '学宫', barracks: '校场', court: '朝廷' }[t] ?? t}</span>`).join('')}
         <span class="tag gray">人口 ${c.pop}千</span>
         <span class="tag gray">国势 ${st.world.power[owner] ?? 0}</span>
+        ${STATES[owner]?.peer && STATES[owner].peer !== '王' ? `<span class="tag">${STATES[owner].peer}爵</span>` : '<span class="tag">王畿</span>'}
       </div>
     </div>
     <div style="text-align:right;font-size:13px;color:#6d6052;line-height:1.9">
@@ -361,6 +362,31 @@ function buildActions(st, app, c, owner) {
     });
   }
 
+  // 洛邑请封：五等爵（男→公），须已出仕并达到功勋/名声
+  if (['youxia', 'shuike', 'xuezhe'].includes(p.profession) && c.id === 'luoyi') {
+    const chk = canRequestPeerage(st);
+    const nextPeer = PEERAGES[(p.peerage?.rank ?? -1) + 1];
+    add({
+      id: 'peerage', name: '请封于周', cost: '300金 · 1日',
+      desc: chk.ok
+        ? `请封${chk.next.name}爵：功勋${chk.next.merit}、名声${chk.next.fame}，条件已备。`
+        : nextPeer
+          ? `${chk.msg}（下一爵：${nextPeer.name}爵，需功勋${nextPeer.merit}、名声${nextPeer.fame}）`
+          : chk.msg,
+      disabled: !chk.ok,
+      run: () => {
+        const res = requestPeerage(st);
+        const adv = advanceDays(st, 1);
+        app.modal({
+          title: res.ok ? '册命' : '请封', wide: false,
+          body: `<p>${res.msg}</p>${res.ok ? '<div class="footnote">五等爵独立于官阶，按月食禄，并计入结局评价。</div>' : ''}`,
+          foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }],
+        });
+        app.after({ notes: adv.notes, events: adv.events, died: adv.died });
+      },
+    });
+  }
+
   return acts;
 }
 
@@ -477,7 +503,8 @@ function profPanelHtml(st, app, c) {
     <div class="section-title">${p.profession === 'shuike' ? '纵横' : '仕途'}</div>
     <div class="kv">
       <dt>所仕</dt><dd>${p.stateId ? STATES[p.stateId].name : '未仕'}</dd>
-      <dt>爵位</dt><dd>${p.stateId ? ['布衣','士','中士','上士','大夫','中大夫','上大夫','卿','执政'][p.rank] : '—'}</dd>
+      <dt>官阶</dt><dd>${p.stateId ? ['布衣','士','中士','上士','大夫','中大夫','上大夫','卿','执政'][p.rank] : '—'}</dd>
+      <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)}·食邑${CITY_MAP[p.peerage.fief]?.name ?? ''}` : '未受封'}</dd>
       <dt>功勋</dt><dd>${p.merit}</dd>
       <dt>${p.profession === 'shuike' ? '盟约' : '胜绩'}</dt><dd>${p.profession === 'shuike' ? p.missions : st.stats.duelWins}</dd>
     </div>

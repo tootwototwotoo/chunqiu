@@ -1,9 +1,9 @@
 // 人物面板
 import { skillRowHtml, onClick, statLine, stateName, cityName, avatar, relTierName } from './common.js';
-import { SKILL_DEFS, STAT_DEFS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, skillTier } from '../data/defs.js';
+import { SKILL_DEFS, STAT_DEFS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, skillTier, PEERAGES, peerageName } from '../data/defs.js';
 import { GOODS } from '../data/goods.js';
 import { player, age, fullTitle, careerTitle, skillLevel, rel, skillExpNeed } from '../state.js';
-import { STATES } from '../data/world.js';
+import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { trainingModal } from './minigames.js';
 import { officeChance } from '../systems/progression.js';
@@ -92,7 +92,8 @@ function careerPanelHtml(st) {
     ${serving ? `
       <div class="kv">
         <dt>所仕</dt><dd>${STATES[p.stateId].name}国</dd>
-        <dt>爵位</dt><dd>${RANKS[cur].name} <small style="color:#6d6052">月俸 ${RANKS[cur].pay} 金</small></dd>
+        <dt>官阶</dt><dd>${RANKS[cur].name} <small style="color:#6d6052">月俸 ${RANKS[cur].pay} 金</small></dd>
+        <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)} <small style="color:#6d6052">食邑${CITY_MAP[p.peerage.fief]?.name ?? ''} · 月入${PEERAGES[p.peerage.rank].income}金</small>` : '未受封 <small style="color:#6d6052">于洛邑请封</small>'}</dd>
         <dt>功勋</dt><dd>${p.merit}${next ? ` / ${next.merit}` : ''}</dd>
       </div>
       <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
@@ -103,9 +104,11 @@ function careerPanelHtml(st) {
         <dt>求仕</dt><dd>名声 ≥ 8，往有朝廷的都城谒见国君</dd>
         <dt>成算</dt><dd>约 ${Math.round(officeChance(st) * 100)}%</dd>
       </div>
-      <div class="footnote">亦可与卿相结好（交情 50 以上），请其举荐直接入仕。布衣所积功勋在出仕时不会作废。</div>
+      <div class="footnote">亦可与卿相结好（交情 50 以上），请其举荐直接入仕。布衣所积功勋在出仕时不会作废。<br>
+      官阶至卿、执政后，可往洛邑请周天子册命，受封男→子→伯→侯→公五等爵，另有食邑月入。</div>
     `}
     <div class="divider"></div>
-    <div class="footnote" style="line-height:1.8">爵位：${RANKS.slice(1).map(r => `${r.name}(${r.merit})`).join(' → ')}</div>
+    <div class="footnote" style="line-height:1.8">官阶：${RANKS.slice(1).map(r => `${r.name}(${r.merit})`).join(' → ')}<br>
+    五等爵：${PEERAGES.map(x => `${x.name}(${x.merit}功勋/${x.fame}名声)`).join(' → ')}</div>
   </div>`;
 }
