@@ -1,14 +1,12 @@
 // 存档与设置
-import { saveGame, loadGame, deleteSave, hasSave, player, age, fullTitle } from '../state.js';
+import { saveGame, loadGame, deleteSave, hasSave, player, age, fullTitle, AUTO_SAVE_KEY } from '../state.js';
 import { onClick } from './common.js';
 import { gameDate } from './common.js';
 import { openHelp } from './title.js';
 import { esc } from '../util.js';
 
 export function mount(root, st, app) {
-  const readAuto = () => {
-    try { return JSON.parse(localStorage.getItem('chunqiu_lieguozhi_auto') || 'null'); } catch { return null; }
-  };
+  const readAuto = () => loadGame(AUTO_SAVE_KEY);
   const auto = readAuto();
   root.innerHTML = `
   <div class="cols" style="grid-template-columns:1fr 1fr">
@@ -45,7 +43,7 @@ export function mount(root, st, app) {
       </div>
       <div class="divider"></div>
       <div class="section-title">自动存档</div>
-      <div class="desc" style="margin-top:0">${auto ? `每月自动记录于简册。最近：${esc(auto.player?.name ?? '—')} · ${auto.time ? `前${-auto.time.year}年` : ''}` : '尚无自动存档。'}</div>
+      <div class="desc" style="margin-top:0">${auto ? `每月初自动记录于简册。最近：${esc(auto.player.name)} · ${gameDate(auto.time)} ${auto.time.day}日` : '尚无可用自动存档。'}</div>
       <div class="btn-row">
         <button class="btn sm" data-act="auto">读取自动存档</button>
       </div>

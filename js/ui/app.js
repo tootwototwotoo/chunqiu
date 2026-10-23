@@ -1,5 +1,5 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
-import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState } from '../state.js';
+import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState, AUTO_SAVE_ERROR } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent } from '../systems/events.js';
 import { esc } from '../util.js';
@@ -217,8 +217,9 @@ class App {
     const st = this.st;
     if (res.notes?.length) {
       for (const n of res.notes.slice(0, 4)) {
-        this.log(n);
-        if (opts.toast !== false) this.toast(n);
+        const kind = n === AUTO_SAVE_ERROR ? 'war' : '';
+        this.log(n, kind);
+        if (opts.toast !== false) this.toast(n, kind);
       }
     }
     if (res.quests?.length) {
@@ -312,7 +313,7 @@ class App {
 
   save(silent = false) {
     const ok = saveGame(this.st);
-    if (!silent) this.toast(ok ? '已存档' : '存档失败', ok ? 'gain' : 'war');
+    if (!silent) this.toast(ok ? '已存档' : '存档失败：浏览器存储不可用或空间不足，请导出备份。', ok ? 'gain' : 'war');
     if (ok) this.log('记事已录于简册。');
   }
 }

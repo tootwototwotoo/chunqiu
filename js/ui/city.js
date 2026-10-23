@@ -154,8 +154,8 @@ function buildActions(st, app, c, owner) {
           sub: '演武较技，点到为止',
           settleOpts: { fame: 3, money: 25 + p.fame },
           onEnd: (won) => {
-            advanceDays(st, 1);
-            app.after({ notes: [won ? '演武得胜，彩头入手。' : '演武落败，众人唏嘘。'] });
+            const adv = advanceDays(st, 1);
+            app.after({ ...adv, notes: [...adv.notes, won ? '演武得胜，彩头入手。' : '演武落败，众人唏嘘。'] });
           },
         });
       },
@@ -182,12 +182,12 @@ function buildActions(st, app, c, owner) {
         disabled: p.stamina < 8,
         run: () => {
           const res = advise(st);
-          advanceDays(st, 1);
+          const adv = advanceDays(st, 1);
           app.modal({
             title: '献策', narrow: true, body: `<p>${res.msg}</p>`,
             foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }],
           });
-          app.after({});
+          app.after(adv);
         },
       });
       add({
@@ -283,9 +283,9 @@ function buildActions(st, app, c, owner) {
         disabled: p.stamina < 8,
         run: () => {
           const res = advise(st);
-          advanceDays(st, 1);
+          const adv = advanceDays(st, 1);
           app.modal({ title: '献策', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '继续', cls: 'btn primary', onClick: h => h.close() }] });
-          app.after({});
+          app.after(adv);
         },
       });
     }

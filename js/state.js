@@ -7,6 +7,8 @@ import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
 export const SAVE_KEY = 'chunqiu_lieguozhi_save_v1';
+export const AUTO_SAVE_KEY = 'chunqiu_lieguozhi_auto';
+export const AUTO_SAVE_ERROR = '自动存档失败：浏览器存储不可用或空间不足，请在存档页导出备份。';
 export const START_YEAR = -722;
 const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
@@ -243,13 +245,17 @@ function store() {
     return localStorage;
   } catch { return null; }
 }
-export function saveGame(st) {
+export function saveGame(st, key = SAVE_KEY) {
   try {
     const ls = store();
     if (!ls) throw new Error('localStorage unavailable');
-    ls.setItem(SAVE_KEY, JSON.stringify(st));
+    // 保证同一毫秒内连续保存也有确定顺序，且重开更早年代不会误选旧档。
+    const savedAt = Math.max(Date.now(), ...[SAVE_KEY, AUTO_SAVE_KEY].map(k => (loadGame(k)?.savedAt ?? 0) + 1));
+    if (!Number.isSafeInteger(savedAt)) throw new Error('保存时间超出范围');
+    ls.setItem(key, JSON.stringify({ ...st, savedAt }));
+    st.savedAt = savedAt;
     return true;
-  } catch (e) { console.error(e); return false; }
+  } catch { return false; }
 }
 export function migrateState(st) {
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -261,6 +267,7 @@ export function migrateState(st) {
   ensure(Number.isInteger(t.year) && Number.isInteger(t.month) && t.month >= 1 && t.month <= 12
     && Number.isInteger(t.day) && t.day >= 1 && t.day <= 30);
   ensure(st.version == null || st.version === 1);
+  ensure(st.savedAt === undefined || (Number.isSafeInteger(st.savedAt) && st.savedAt > 0));
   const defaults = newGame({ name: p.name, profession: p.profession, seed: 1, era: st.era });
   defaults.player.visitedCities = [p.homeCity ?? defaults.player.homeCity, p.cityId];
   // 可选字段缺失时补齐；字段存在但类型损坏时拒绝，不能替换当前游戏。
@@ -370,17 +377,24 @@ export function migrateState(st) {
   return st;
 }
 
-export function loadGame() {
+export function loadGame(key = SAVE_KEY) {
   try {
-    const raw = store()?.getItem(SAVE_KEY);
+    const raw = store()?.getItem(key);
     if (!raw) return null;
     const st = JSON.parse(raw);
     if (!st || !st.player || !st.time) return null;
     return migrateState(st);
-  } catch (e) { console.error(e); return null; }
+  } catch { return null; }
+}
+export function loadLatestGame() {
+  const saves = [loadGame(), loadGame(AUTO_SAVE_KEY)].filter(Boolean);
+  // 旧档没有实际保存时间，回退到游戏年月日；相同日期优先保留手动档。
+  saves.sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0)
+    || b.time.year - a.time.year || b.time.month - a.time.month || b.time.day - a.time.day);
+  return saves[0] ?? null;
 }
 export function hasSave() {
-  try { return !!store()?.getItem(SAVE_KEY); } catch { return false; }
+  return !!loadLatestGame();
 }
 export function deleteSave() {
   try { store()?.removeItem(SAVE_KEY); } catch { /* ignore */ }

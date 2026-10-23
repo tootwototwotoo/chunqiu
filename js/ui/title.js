@@ -1,5 +1,5 @@
 // 标题、开局创建、结局
-import { newGame, hasSave, loadGame, deleteSave, age } from '../state.js';
+import { newGame, hasSave, loadLatestGame, deleteSave, age } from '../state.js';
 import { PROFESSIONS, ERAS } from '../data/defs.js';
 import { CITIES } from '../data/world.js';
 import { onClick, gameDate } from './common.js';
@@ -18,7 +18,7 @@ export function mount(root, st, app) {
     onClick(root, '[data-act="new"]', () => { mode = 'create'; app.showTitle(); });
     onClick(root, '[data-act="help"]', () => openHelp(app));
     onClick(root, '[data-act="continue"]', () => {
-      const saved = loadGame();
+      const saved = loadLatestGame();
       if (!saved) { app.toast('未找到存档', 'war'); return; }
       mode = 'main';
       app.startGame(saved);

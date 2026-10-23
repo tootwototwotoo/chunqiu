@@ -1,6 +1,6 @@
 // 时间推进、月份结算、年龄与死亡
 import { START_YEAR, player, addLog, addMoney, addHealth, addStamina, initPrices, priceSet, basePriceOf,
-  careerTitle, age, rankName, R, aliveNpcs, npcDef, rel } from '../state.js';
+  careerTitle, age, rankName, R, aliveNpcs, npcDef, rel, saveGame, AUTO_SAVE_KEY, AUTO_SAVE_ERROR } from '../state.js';
 import { RANKS } from '../data/defs.js';
 import { CITIES, CITY_MAP, STATES } from '../data/world.js';
 import { GOODS } from '../data/goods.js';
@@ -89,9 +89,9 @@ function onMonth(st, out) {
   if (promo) out.promotions.push(promo);
   // 自动存档
   if (!st.flags.noAutosave) {
-    try {
-      if (typeof localStorage !== 'undefined') localStorage.setItem('chunqiu_lieguozhi_auto', JSON.stringify(st));
-    } catch { /* 存储不可用时静默 */ }
+    if (!saveGame(st, AUTO_SAVE_KEY) && !out.notes.includes(AUTO_SAVE_ERROR)) {
+      out.notes.unshift(AUTO_SAVE_ERROR); // 确保长行动中也能看到提示，多个跨月只提示一次。
+    }
   }
 }
 
