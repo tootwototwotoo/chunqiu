@@ -72,7 +72,7 @@ const TEMPLATES = {
   supply(st, city) {
     const target = pickTarget(st, city);
     const plan = travelDeadline(st, city, target);
-    const goodId = R.pick(st, Object.keys(GOODS));
+    const goodId = R.pick(st, Object.keys(GOODS).filter(g => g !== 'yu'));
     const qty = 3 + R.int(st, 0, 4);
     const p = priceAt(st, target.id, goodId);
     const g = giverOf(st, city);

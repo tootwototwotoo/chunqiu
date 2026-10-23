@@ -2,7 +2,7 @@
 import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
 import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
-import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
+import { GOODS, demandOf, LOCAL_SPECIALTY, JADE } from './data/goods.js';
 import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
@@ -56,6 +56,10 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       hegemon: '',
       alliances: [],
       wars: [],
+      jade: {
+        price: JADE.basePrice, sold: 0,
+        cities: Object.fromEntries(JADE.cities.map(id => [id, { nextDay: 0 }])),
+      },
     },
     npc: buildNpcs(eraDef.year),
     quests: { active: [], done: [], board: null, boardDay: -99 },
@@ -398,6 +402,12 @@ export function migrateState(st) {
   st.player.evidence = Array.isArray(st.player.evidence) ? st.player.evidence.filter(x => typeof x === 'string') : [];
   st.flags ||= {};
   if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
+  st.world.jade ||= { price: JADE.basePrice, sold: 0, cities: {} };
+  st.world.jade.price ||= JADE.basePrice;
+  st.world.jade.cities ||= {};
+  for (const id of JADE.cities) {
+    if (!st.world.jade.cities[id]) st.world.jade.cities[id] = { nextDay: 0 };
+  }
   return st;
 }
 

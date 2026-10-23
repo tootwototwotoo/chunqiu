@@ -1,8 +1,8 @@
 // 市集买卖
-import { GOODS } from '../data/goods.js';
+import { GOODS, JADE } from '../data/goods.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
 import { player, basePriceOf, caravanFree, goodsCount, R } from '../state.js';
-import { buy, sell, priceAt, levyOf, bestMarkets, inventoryRows } from '../systems/trade.js';
+import { buy, sell, priceAt, levyOf, bestMarkets, inventoryRows, jadeStatus, buyJade } from '../systems/trade.js';
 import { onClick, cityName } from './common.js';
 import { esc } from '../util.js';
 import { BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
@@ -22,8 +22,9 @@ export function marketModal(app, st) {
     const p = player(st);
     const inv = p.inventory;
     const tabs = [['buy', '买入'], ['sell', '卖出'], ['info', '行情']];
+    if (JADE.cities.includes(p.cityId)) tabs.push(['jade', '珍玉']);
     if (BOOKSHOPS.includes(p.cityId)) tabs.push(['book', '书肆']);
-    const rows = Object.keys(GOODS).map(g => {
+    const rows = Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
       const good = GOODS[g];
       const price = priceAt(st, p.cityId, g);
       const base = basePriceOf(st, p.cityId, g);
@@ -48,7 +49,20 @@ export function marketModal(app, st) {
         ${tabs.map(([k, n]) => `<button class="btn sm ${tab === k ? 'primary' : ''}" data-tab="${k}">${n}</button>`).join('')}
         <span style="margin-left:auto;font-size:12.5px;color:#6d6052">金 ${p.money} · 行囊 ${goodsCount(st)}/${p.caravan}（余 ${caravanFree(st)}）</span>
       </div>`;
-    if (tab === 'book') {
+    if (tab === 'jade') {
+      const js = jadeStatus(st, p.cityId);
+      body += `<div class="footnote">天下美玉至多八块，一城仅藏一块。购后三十日方会再得，且此后玉价逐次上涨。</div>
+        <div class="panel" style="padding:12px 14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <b style="font-size:17px">美玉</b>
+            <span style="color:${js.available ? '#9c2b26' : '#6d6052'};font-size:18px">${js.price} 金</span>
+          </div>
+          <div class="footnote">${js.available ? '本城尚有一块，可购。' : `本城已售罄，${js.left} 日后才会再有。`}</div>
+          <div class="btn-row" style="margin-top:8px">
+            <button class="btn primary" data-buy-jade ${js.available && p.money >= js.price ? '' : 'disabled'}>购玉</button>
+          </div>
+        </div>`;
+    } else if (tab === 'book') {
       const evs = marketHere(st, p.cityId);
       body += `<div class="footnote">书肆出售账册、书信与旧档，买下后可在此后论辩中按主题使用。</div>`;
       body += evs.length ? `<table class="table"><thead><tr><th>名称</th><th>主题</th><th class="num">价格</th><th style="text-align:right">购买</th></tr></thead><tbody>
@@ -59,7 +73,7 @@ export function marketModal(app, st) {
     } else if (tab === 'info') {
       const sk = p.skills.shanggu ?? 0;
       body += `<div class="footnote">商贾之能：可见 ${Math.min(5, 1 + Math.floor(sk / 2))} 处行情。牙钱 ${(100 - levyOf(st) * 100).toFixed(1)}%。</div>`;
-      const cards = Object.keys(GOODS).map(g => {
+      const cards = Object.keys(GOODS).filter(g => g !== 'yu').map(g => {
         const mk = bestMarkets(st, g, 4);
         const cur = priceAt(st, p.cityId, g);
         return `<div class="panel" style="padding:10px 12px;margin-bottom:8px">
@@ -80,6 +94,14 @@ export function marketModal(app, st) {
     h.setBody(body);
 
     onClick(h.bodyEl, '[data-tab]', (el) => { tab = el.dataset.tab; render(); });
+    onClick(h.bodyEl, '[data-buy-jade]', () => {
+      const r = buyJade(st, p.cityId);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.toast(r.msg, 'gain');
+      app.log(r.msg, 'gain');
+      app.refreshHud();
+      render(r.msg);
+    });
     onClick(h.bodyEl, '[data-buy-ev]', (el) => {
       const r = buyEvidence(st, el.dataset.buyEv);
       if (!r.ok) { app.toast(r.msg, 'war'); return; }

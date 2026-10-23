@@ -75,16 +75,37 @@ export function giftValue(def, goodId) {
   const g = GOODS[goodId];
   if (!g) return 0;
   const match = def.pref === goodId;
-  return Math.round((g.base / 9) * (match ? 2.4 : 0.9));
+  // 价值压平：便宜货也有心意，贵重物不再一枚顶十次交往
+  const raw = Math.round((3 + g.base / 25) * (match ? 1.6 : 1.0));
+  // 顶级珍物也换不来无限情谊：单次赠礼有上限
+  return Math.min(match ? 20 : 12, raw);
+}
+
+export function giftBlockReason(st, npcId) {
+  const r = rel(st, npcId);
+  if (r.aff >= 75) return '情谊已深，非财货可增。';
+  st.flags.lastGift ||= {};
+  const day = dayOf(st.time);
+  const last = st.flags.lastGift[npcId] ?? 0;
+  if (last && day - last < 10) return `近日已受君之礼，${10 - (day - last)} 日后再来罢。`;
+  return null;
 }
 
 export function giveGift(st, npcId, goodId) {
   const def = NPC_MAP[npcId];
   const inv = player(st).inventory[goodId] ?? 0;
   if (inv <= 0) return { ok: false, msg: '你并无此物。' };
+  const blocked = giftBlockReason(st, npcId);
+  if (blocked) return { ok: false, msg: blocked };
   addGoods(st, goodId, -1);
   meetNpc(st, npcId);
-  const v = giftValue(def, goodId);
+  st.flags.lastGift ||= {};
+  st.flags.lastGift[npcId] = dayOf(st.time);
+  const base = giftValue(def, goodId);
+  const cap = giftValue(def, goodId) >= 20 ? 20 : 12;
+  const rolled = Math.min(cap, Math.round(base * (0.8 + R.next(st) * 0.4)));
+  const v = Math.min(rolled, Math.max(0, 75 - rel(st, npcId).aff));
+  if (v <= 0) return { ok: false, msg: '情谊已深，非财货可增。' };
   addRel(st, npcId, v);
   const r = rel(st, npcId);
   const match = def.pref === goodId;
@@ -158,8 +179,11 @@ export function teachInfo(st, npcId) {
 
 export function giftCandidates(st, npcId) {
   const def = NPC_MAP[npcId];
+  const blocked = giftBlockReason(st, npcId);
   return Object.keys(GOODS).map(g => ({
     id: g, name: GOODS[g].name, have: player(st).inventory[g] ?? 0,
-    pref: def.pref === g, gain: giftValue(def, g),
+    pref: def.pref === g,
+    gain: blocked ? 0 : Math.min(giftValue(def, g), Math.max(0, 75 - rel(st, npcId).aff)),
+    blocked,
   }));
 }

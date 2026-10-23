@@ -52,7 +52,7 @@ export function openNpc(app, st, npcId) {
         <button class="btn" data-act="duel" ${atHome ? '' : 'disabled'}>切磋</button>
         <button class="btn" data-act="debate" ${atHome ? '' : 'disabled'}>论辩</button>
         ${evs.length ? `<button class="btn" data-act="ask" ${atHome && rr.aff > 20 ? '' : 'disabled'}>打听消息</button>` : ''}
-        ${rr.aff >= 50 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
+        ${rr.aff >= 75 && player(st).fame >= 20 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
       </div>
       ${!atHome ? '<div class="footnote">此人不在你所在之城，须先行前往。</div>' : ''}
     `);
@@ -69,7 +69,9 @@ export function openNpc(app, st, npcId) {
     });
 
     onClick(h.bodyEl, '[data-act="gift"]', () => {
-      const list = giftCandidates(st, npcId).filter(g => g.have > 0);
+      const all = giftCandidates(st, npcId);
+      const list = all.filter(g => g.have > 0);
+      if (list.length && list[0].blocked) { render(`<div class="footnote">${list[0].blocked}</div>`); return; }
       const html = list.length ? `
         <div class="section-title">择一物相赠</div>
         <div class="choices">
@@ -157,7 +159,7 @@ export function openNpc(app, st, npcId) {
 
     onClick(h.bodyEl, '[data-act="recommend"]', () => {
       const rr = rel(st, npcId);
-      if (rr.aff < 50) { render('<div class="footnote">交情尚浅，对方不肯举荐。</div>'); return; }
+      if (rr.aff < 75 || player(st).fame < 20) { render('<div class="footnote">交情或名声不足，对方不肯举荐。</div>'); return; }
       const p = player(st);
       if (p.stateId === def.state) {
         addMerit(st, 15);

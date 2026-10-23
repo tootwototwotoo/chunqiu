@@ -7,7 +7,7 @@ export const GOODS = {
   si:      { name: '丝', unit: '匹', base: 66, bulk: 1 },
   ma:      { name: '马', unit: '匹', base: 140, bulk: 2 },
   qi:      { name: '漆', unit: '桶', base: 44, bulk: 1 },
-  yu:      { name: '玉', unit: '双', base: 210, bulk: 1 },
+  yu:      { name: '玉', unit: '双', base: 500, bulk: 1 },
   ge:      { name: '革', unit: '张', base: 48, bulk: 1 },
 };
 
@@ -57,3 +57,13 @@ const DEMAND_BASE = {
 };
 
 export const demandOf = (cityId, goodId) => DEMAND_BASE[cityId]?.[goodId] ?? 1;
+
+
+// 珍稀玉石：全国最多 8 块，一城最多 1 块；买后 30 日补货，价格逐次上涨
+export const JADE = {
+  cities: ['luoyi', 'xinzheng', 'linzi', 'qufu', 'ying', 'yong', 'jiang', 'tao'],
+  basePrice: 500,
+  restockDays: 30,
+  priceStep: 1.1,
+  maxStock: 8,
+};
