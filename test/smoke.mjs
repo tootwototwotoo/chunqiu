@@ -6,7 +6,8 @@ import { refreshBoard, acceptQuest, checkArrivalQuests, expireQuests, resolveChe
 import { buy, sell } from '../js/systems/trade.js';
 import { startDuel, duelAct, settleDuel, makeWanderer, makeBanditChief } from '../js/systems/combat.js';
 import { startDebate, debateChoose, settleDebate } from '../js/systems/debate.js';
-import { seekOffice, advise, joinCampaign, checkPromotion, computeEnding } from '../js/systems/progression.js';
+import { seekOffice, joinCampaign, checkPromotion, computeEnding } from '../js/systems/progression.js';
+import { canAdvise, pickIssue, adviseOutcome } from '../js/systems/policy.js';
 import { talk, giveGift, learnFrom, giftCandidates } from '../js/systems/relations.js';
 import { collectTimeline } from '../js/systems/events.js';
 import { CITIES, CITY_MAP } from '../js/data/world.js';
@@ -101,7 +102,10 @@ for (const prof of ['youxia', 'shangren', 'shuike', 'xuezhe']) {
   for (let k = 0; k < 3; k++) st.quests.done.push({ id: `sm${k}`, title: `差事${k}`, status: 'done', reward: {} });
   const office = seekOffice(st, 'qi');
   if (office.ok) {
-    advise(st);
+    if (canAdvise(st).ok) {
+      const issue = pickIssue(st);
+      adviseOutcome(st, issue, 0, 'li');
+    }
     joinCampaign(st);
     const promo = checkPromotion(st);
   }

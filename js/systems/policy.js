@@ -1,6 +1,6 @@
 // 朝议与国策：议题生成、三选一、国策生效与到期
 import { R, addLog, addMerit, addFame } from '../state.js';
-import { TOPIC_NAMES } from '../data/debates/index.js';
+import { CITY_MAP } from '../data/world.js';
 
 export const POLICY_DAYS = 90;
 export const ADVISE_COOLDOWN = 10;
@@ -137,6 +137,9 @@ export function pickIssue(st) {
 export function canAdvise(st) {
   const p = st.player;
   if (!p.stateId) return { ok: false, msg: '尚未出仕。' };
+  const city = CITY_MAP[p.cityId];
+  if (!city || !city.tags.includes('court')) return { ok: false, msg: '献策须入本国朝堂。' };
+  if (st.world.owner[p.cityId] !== p.stateId) return { ok: false, msg: '此处非本国朝堂，献策须归国入朝。' };
   const last = st.flags.lastAdvise ?? -999;
   const wait = ADVISE_COOLDOWN - (dayOf(st.time) - last);
   if (wait > 0) return { ok: false, msg: `朝议方毕，${wait} 日后可再陈。` };

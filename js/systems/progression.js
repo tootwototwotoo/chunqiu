@@ -100,29 +100,13 @@ export function npcRulerOf(st, stateId) {
 }
 
 // 献策：提升本国势力
-export function advise(st) {
-  const p = player(st);
-  if (!p.stateId) return { ok: false, msg: '尚未出仕。' };
-  const now = dayOf(st.time);
-  if (st.flags.lastAdvise && now - st.flags.lastAdvise < 30) return { ok: false, msg: '朝议方毕，一月之内不宜再陈。' };
-  st.flags.lastAdvise = now;
-  const roll = p.stats.zhi * 0.5 + p.stats.zheng * 0.4 + skillLevel(st, 'quanmou') * 3 + R.int(st, 0, 15);
-  addStamina(st, -8);
-  if (roll >= 46) {
-    const gain = 1 + Math.floor(roll / 40);
-    st.world.power[p.stateId] = clamp((st.world.power[p.stateId] ?? 30) + gain, 5, 100);
-    addMerit(st, 8 + gain * 4, true);
-    addFame(st, 1, true);
-    addLog(st, `献策于朝，${STATES[p.stateId].name}国势增${gain}。`, 'gain');
-    return { ok: true, msg: `你的方略被采纳，${STATES[p.stateId].name}国势+${gain}，功勋+${8 + gain * 4}。` };
-  }
-  return { ok: false, msg: '执政摇头：「腐儒之见。」' };
-}
-
 // 从军出征（简化的战阵判定）
 export function joinCampaign(st) {
   const p = player(st);
   if (!p.stateId) return { ok: false, msg: '未仕于国，无从军之命。' };
+  const city = CITY_MAP[p.cityId];
+  if (!city || !city.tags.includes('barracks')) return { ok: false, msg: '须于本国兵营领命出征。' };
+  if (st.world.owner[p.cityId] !== p.stateId) return { ok: false, msg: '此处非本国兵营，出征须归国领命。' };
   addStamina(st, -18);
   const skill = skillLevel(st, 'bingfa');
   const powerMod = ((st.world.power[p.stateId] ?? 50) - 50) * 0.35;

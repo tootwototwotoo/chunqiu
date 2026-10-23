@@ -5,6 +5,8 @@ import {
   policyMods, tickPolicy, POLICY_DAYS, HEART_POLICY,
 } from '../js/systems/policy.js';
 import { priceAt, levyOf } from '../js/systems/trade.js';
+import { CITY_MAP } from '../js/data/world.js';
+import { joinCampaign } from '../js/systems/progression.js';
 import { advanceDays } from '../js/systems/calendar.js';
 
 let fails = 0;
@@ -85,6 +87,31 @@ function force(grade) {
   const merit = st.player.merit;
   tickPolicy(st, { notes: [] });
   ok(st.player.merit === merit + 2, '兴学每月功勋 +2');
+}
+
+// 位置校验：须在本国朝堂
+{
+  const st = newGame({ name: '士', profession: 'youxia', seed: 5 });
+  st.player.stateId = 'jin';
+  st.player.cityId = 'jiang';
+  ok(canAdvise(st).ok, '本国朝堂可献策');
+
+  st.player.cityId = 'ying';
+  const r = canAdvise(st);
+  ok(!r.ok && r.msg.includes('归国'), '他国朝堂不可献策', r.msg);
+
+  const other = Object.keys(st.world.owner).find(id => st.world.owner[id] === 'jin' && id !== 'jiang' && !CITY_MAP[id].tags.includes('court'));
+  if (other) {
+    st.player.cityId = other;
+    const r2 = canAdvise(st);
+    ok(!r2.ok && r2.msg.includes('朝堂'), '本国非朝堂不可献策', r2.msg);
+  }
+
+  const bar = Object.keys(st.world.owner).find(id => st.world.owner[id] === 'jin' && CITY_MAP[id].tags.includes('barracks'));
+  st.player.cityId = bar;
+  ok(joinCampaign(st).ok, '本国兵营可出征');
+  st.player.cityId = 'ying';
+  ok(!joinCampaign(st).ok, '他国兵营不可出征');
 }
 
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n国策系统通过 ✓');
