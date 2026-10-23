@@ -195,31 +195,24 @@ function buildActions(st, app, c, owner) {
         run: () => openOfficeAudience(app, st, owner),
       });
     }
-    if (p.stateId) {
+    if (p.stateId === owner && c.tags.includes('court')) {
       add({
         id: 'advise', name: '献策于朝', cost: '1日',
-        desc: !c.tags.includes('court')
-          ? '献策须入本国朝堂。'
-          : p.stateId !== owner
-            ? `此处乃${stateName(owner)}国朝堂，非本国之朝。献策须归国入朝。`
-            : (() => {
-              const pol = currentPolicy(st);
-              return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
-            })(),
-        disabled: !c.tags.includes('court') || p.stateId !== owner,
+        desc: (() => {
+          const pol = currentPolicy(st);
+          return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
+        })(),
         run: () => {
           const adv = advanceDays(st, 1);
           councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
       });
+    }
+    if (p.stateId === owner && c.tags.includes('barracks')) {
       add({
         id: 'campaign', name: '从军出征', cost: '20日 · 18力',
-        desc: !c.tags.includes('barracks')
-          ? '须于本国兵营领命出征。'
-          : p.stateId !== owner
-            ? `此乃${stateName(owner)}国兵营，非本国之军。出征须归国领命。`
-            : '随本国之师征伐他国，以兵法决胜，功勋与赏赐俱厚。',
-        disabled: p.stamina < 18 || !c.tags.includes('barracks') || p.stateId !== owner,
+        desc: '随本国之师征伐他国，以兵法决胜，功勋与赏赐俱厚。',
+        disabled: p.stamina < 18,
         run: () => {
           const res = joinCampaign(st);
           const adv = advanceDays(st, 20);
@@ -302,18 +295,13 @@ function buildActions(st, app, c, owner) {
         run: () => openOfficeAudience(app, st, owner),
       });
     }
-    if (p.stateId) {
+    if (p.stateId === owner && c.tags.includes('court')) {
       add({
         id: 'advise', name: '献策于朝', cost: '1日',
-        desc: !c.tags.includes('court')
-          ? '献策须入本国朝堂。'
-          : p.stateId !== owner
-            ? `此处乃${stateName(owner)}国朝堂，非本国之朝。献策须归国入朝。`
-            : (() => {
-              const pol = currentPolicy(st);
-              return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
-            })(),
-        disabled: !c.tags.includes('court') || p.stateId !== owner,
+        desc: (() => {
+          const pol = currentPolicy(st);
+          return pol ? `当前国策「${pol.policy.name}」余 ${pol.left} 日；改策将作废旧策并倒扣功勋。` : '入朝议政，三选一定国策，持续 60~90 日。';
+        })(),
         run: () => {
           const adv = advanceDays(st, 1);
           councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
