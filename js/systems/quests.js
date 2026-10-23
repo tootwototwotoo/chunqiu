@@ -149,6 +149,8 @@ const KIND_BY_PROF = {
   xuezhe: ['lecture', 'lecture', 'persuade', 'escort'],
 };
 
+const canEarnMerit = (st) => ['youxia', 'shuike', 'xuezhe'].includes(player(st).profession);
+
 export function refreshBoard(st, force = false) {
   const now = absDay(st.time);
   const cid = player(st).cityId;
@@ -168,6 +170,7 @@ export function refreshBoard(st, force = false) {
     q.id = nid();
     q.status = 'board';
     q.cityId = cid;
+    if (q.reward && !canEarnMerit(st)) delete q.reward.merit; // 商人无从仕途，不列功勋
     offers.push(q);
   }
   if (offers.length < 2) {
@@ -244,12 +247,16 @@ export function completeQuest(st, q, success = true) {
   const rw = q.reward ?? {};
   if (rw.money) addMoney(st, rw.money, true);
   if (rw.fame) addFame(st, rw.fame, true);
-  if (rw.merit && player(st).stateId) addMerit(st, rw.merit, true);
+  // 功勋对可出仕的三途（游侠/说客/学者）始终累积，出仕后即用于晋升
+  const meritGain = rw.merit && canEarnMerit(st) ? rw.merit : 0;
+  if (meritGain) addMerit(st, meritGain, true);
   if (rw.rel && q.npcId) addRel(st, q.npcId, rw.rel);
   if (q.kind === 'persuade') st.player.missions += 1;
   if (q.kind === 'lecture') st.player.disciples += 1;
-  addLog(st, `差事「${q.title}」成。得金${rw.money ?? 0}，名声+${rw.fame ?? 0}。`, 'gain');
-  return { ok: true, reward: rw };
+  const parts = [`得金${rw.money ?? 0}`, `名声+${rw.fame ?? 0}`];
+  if (meritGain) parts.push(`功勋+${meritGain}`);
+  addLog(st, `差事「${q.title}」成。${parts.join('，')}。`, 'gain');
+  return { ok: true, reward: rw, merit: meritGain };
 }
 
 // 清理历史存档中残留的已完成差事，去重
@@ -298,16 +305,15 @@ export function resolveCheck(st, q) {
   const stat = q.checkSkill === 'xuewen' ? p.stats.zhi : p.stats.wu;
   const roll = lv * 5 + stat * 0.4 + R.int(st, 0, 22);
   const ok = roll >= (q.dc ?? 40);
-  if (ok) completeQuest(st, q, true);
-  else completeQuest(st, q, false);
-  return { ok, roll };
+  const res = ok ? completeQuest(st, q, true) : completeQuest(st, q, false);
+  return { ok, roll, reward: res.reward, merit: res.merit };
 }
 
-export function questRewardText(q) {
+export function questRewardText(q, st = null) {
   const rw = q.reward ?? {};
   const parts = [];
   if (rw.money) parts.push(`金${rw.money}`);
   if (rw.fame) parts.push(`名声+${rw.fame}`);
-  if (rw.merit) parts.push(`功勋+${rw.merit}`);
+  if (rw.merit && (!st || canEarnMerit(st))) parts.push(`功勋+${rw.merit}`);
   return parts.join('、') || '薄礼';
 }

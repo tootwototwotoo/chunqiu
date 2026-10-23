@@ -5,7 +5,7 @@ import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingE
 import { esc } from '../util.js';
 import { computeEnding } from '../systems/progression.js';
 import { startDuel, makeWanderer } from '../systems/combat.js';
-import { sanitizeQuests } from '../systems/quests.js';
+import { sanitizeQuests, questRewardText } from '../systems/quests.js';
 import { onClick } from './common.js';
 import * as titleScreen from './title.js';
 import * as mapScreen from './map.js';
@@ -224,8 +224,9 @@ class App {
     }
     if (res.quests?.length) {
       for (const q of res.quests) {
-        this.toast(`差事「${q.title}」已成`, 'gain');
-        this.log(`差事「${q.title}」已成。`, 'gain');
+        const detail = questRewardText(q, this.st);
+        this.toast(`差事「${q.title}」已成：${detail}`, 'gain');
+        this.log(`差事「${q.title}」已成：${detail}。`, 'gain');
       }
     }
     if (res.promotions?.length) {

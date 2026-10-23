@@ -95,7 +95,8 @@ function bindBoard(app, st, root) {
         sub: q.title, settleOpts: { fame: 2 },
         onEnd: (won) => {
           completeQuest(st, q, won);
-          app.after({ notes: [won ? `「${q.title}」成了。` : `「${q.title}」未成。`] });
+          const detail = won ? `：${questRewardText(q, st)}` : '';
+          app.after({ notes: [won ? `「${q.title}」成了${detail}。` : `「${q.title}」未成。`] });
           app.render();
         },
       });
@@ -106,7 +107,8 @@ function bindBoard(app, st, root) {
         settleOpts: { fame: 3 },
         onEnd: (won) => {
           completeQuest(st, q, won);
-          app.after({ notes: [won ? `「${q.title}」成了。` : `「${q.title}」未成。`] });
+          const detail = won ? `：${questRewardText(q, st)}` : '';
+          app.after({ notes: [won ? `「${q.title}」成了${detail}。` : `「${q.title}」未成。`] });
           app.render();
         },
       });
@@ -115,6 +117,7 @@ function bindBoard(app, st, root) {
       app.modal({
         title: q.title, narrow: true,
         body: `<p>${r.ok ? '你办得妥当，差事顺遂。' : '事情办得并不顺手。'}</p>
+          ${r.ok ? `<div class="footnote" style="color:#4d6f56">${questRewardText(q, st)}</div>` : ''}
           <div class="footnote">判定 ${r.ok ? '成' : '不成'}（${r.roll}）</div>`,
         foot: [{ label: '继续', cls: 'btn primary', onClick: h => { h.close(); app.render(); } }],
       });

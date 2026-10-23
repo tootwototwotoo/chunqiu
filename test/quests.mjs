@@ -1,6 +1,7 @@
 // 差事结算与去重回归测试
-import { newGame } from '../js/state.js';
-import { completeQuest, sanitizeQuests, checkArrivalQuests } from '../js/systems/quests.js';
+import { newGame, player } from '../js/state.js';
+import { completeQuest, sanitizeQuests, checkArrivalQuests, refreshBoard } from '../js/systems/quests.js';
+import { seekOffice } from '../js/systems/progression.js';
 
 let fails = 0;
 const ok = (c, m) => { console.log(`${c ? '✓' : '✗'} ${m}`); if (!c) fails++; };

@@ -20,6 +20,12 @@ export function checkPromotion(st) {
 
 const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
+function rankForMerit(merit) {
+  let rank = 1;
+  for (let i = 1; i < RANKS.length; i++) if (merit >= RANKS[i].merit) rank = i;
+  return rank;
+}
+
 export function seekOffice(st, stateId) {
   const p = player(st);
   if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
@@ -31,12 +37,19 @@ export function seekOffice(st, stateId) {
   const prevState = p.stateId;
   if (roll >= 52) {
     p.stateId = stateId;
-    p.merit = Math.round(p.merit * 0.25);
-    p.rank = p.rank > 0 && prevState === stateId ? p.rank : 1;
-    addLog(st, `谒见${STATES[stateId].name}君，拜为士。`, 'big');
+    if (prevState && prevState !== stateId) {
+      // 改仕他国：旧功减半，须从士重新做起
+      p.merit = Math.round(p.merit * 0.5);
+      p.rank = 1;
+    } else {
+      // 初次出仕：布衣时积累的功勋不抹去，按功勋授予初爵（最高上士）
+      p.rank = Math.max(1, Math.min(3, rankForMerit(p.merit)));
+      if (p.merit < 10) p.merit = 10;
+    }
+    addLog(st, `谒见${STATES[stateId].name}君，拜为${RANKS[p.rank].name}。`, 'big');
     addFame(st, 3);
     addRel(st, npcRulerOf(st, stateId), 8);
-    return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国士。`, state: stateId };
+    return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国${RANKS[p.rank].name}。`, state: stateId, rank: p.rank };
   }
   addStamina(st, -5);
   return { ok: false, msg: '国君不见，门吏只让你在廊下候了半日。' };
