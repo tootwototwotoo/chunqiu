@@ -335,8 +335,11 @@ export function migrateState(st) {
     st.quests[q] ??= [];
     ensure(Array.isArray(st.quests[q]));
     for (const quest of st.quests[q]) {
-      ensure(object(quest) && typeof quest.id === 'string' && typeof quest.title === 'string'
-        && ['travel', 'combat', 'debate', 'check'].includes(quest.mode));
+      ensure(object(quest) && typeof quest.id === 'string' && typeof quest.title === 'string');
+      // 已了差事允许缺 mode（旧档/测试存档）；进行中与榜上必须有合法 mode
+      if (q !== 'done' || quest.mode != null) {
+        ensure(['travel', 'combat', 'debate', 'check', 'followup'].includes(quest.mode));
+      }
       for (const key of ['targetCity', 'originCity', 'cityId']) {
         if (quest[key] != null) ensure(own(CITY_MAP, quest[key]));
       }
