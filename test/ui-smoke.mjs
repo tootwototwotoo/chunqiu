@@ -63,6 +63,24 @@ ok(screenText().includes('管仲'), '人物界面交游显示人名');
 ok(screenText().includes('季梁'), '人物界面显示多人');
 ok(!screenText().includes('undefined'), '交游区无 undefined');
 
+// 仕途面板与出仕
+ok(screenText().includes('仕途'), '人物界面有仕途面板');
+const { seekOffice, officeChance } = await import('../js/systems/progression.js');
+ok(officeChance(app.st) > 0.5, '初始求仕成算大于五成');
+app.st.player.fame = 60;
+app.st.player.stats.zheng = 90;
+app.st.player.stats.mei = 90;
+app.st.player.skills.biancai = 6;
+let officeRes = null;
+for (let i = 0; i < 20 && !(officeRes && officeRes.ok); i++) {
+  delete app.st.flags.lastOffice;
+  officeRes = seekOffice(app.st, 'qi');
+}
+ok(!!officeRes && officeRes.ok, '可以出仕', officeRes && officeRes.msg);
+app.nav('character');
+ok(screenText().includes('爵位'), '出仕后人物界面显示爵位');
+ok(screenText().includes('月俸'), '仕途面板显示月俸');
+
 // 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
 for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {
   const btn = document.querySelector(`#hud-nav [data-screen="${key}"]`);
@@ -190,8 +208,17 @@ if (res.events.length) {
   app.after(res);
   ok(!!$('.modal'), '时间推进后展示事件弹窗');
   // 手动走事件队列
-  for (let i = 0; i < 40 && ($('.modal') || app.queue.length); i++) {
-    if ($('.choice-btn')) { $('.choice-btn').click(); await wait(15); }
+  for (let i = 0; i < 60 && ($('.modal') || app.queue.length); i++) {
+    // 随机事件可能触发决斗/辩论弹窗，先把小游戏走完
+    if ($('.move-grid')) {
+      const moves = $$('.move-btn');
+      if (moves.length) { click(moves[i % 4]); await wait(25); continue; }
+    }
+    if ($('.debate-opts')) {
+      const opts = $$('.debate-opt');
+      if (opts.length) { click(opts[i % 4]); await wait(25); continue; }
+    }
+    if ($('.choice-btn')) { $('.choice-btn').click(); await wait(15); continue; }
     const b = $('.modal-foot .btn') || $('.modal-close');
     if (b) b.click();
     await wait(60); // 下一事件在关闭弹窗后异步入场

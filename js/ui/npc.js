@@ -47,7 +47,7 @@ export function openNpc(app, st, npcId) {
         <button class="btn" data-act="learn" ${atHome ? '' : 'disabled'}>问学</button>
         <button class="btn" data-act="duel" ${atHome ? '' : 'disabled'}>切磋</button>
         <button class="btn" data-act="debate" ${atHome ? '' : 'disabled'}>论辩</button>
-        ${rr.aff >= 60 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
+        ${rr.aff >= 50 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
       </div>
       ${!atHome ? '<div class="footnote">此人不在你所在之城，须先行前往。</div>' : ''}
     `);
@@ -123,7 +123,7 @@ export function openNpc(app, st, npcId) {
 
     onClick(h.bodyEl, '[data-act="recommend"]', () => {
       const rr = rel(st, npcId);
-      if (rr.aff < 60) { render('<div class="footnote">交情尚浅，对方不肯举荐。</div>'); return; }
+      if (rr.aff < 50) { render('<div class="footnote">交情尚浅，对方不肯举荐。</div>'); return; }
       const p = player(st);
       if (p.stateId === def.state) {
         addMerit(st, 15);

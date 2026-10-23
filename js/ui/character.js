@@ -6,6 +6,7 @@ import { player, age, fullTitle, careerTitle, skillLevel, rel, skillExpNeed } fr
 import { STATES } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { trainingModal } from './minigames.js';
+import { officeChance } from '../systems/progression.js';
 import { esc, diffTier, clamp } from '../util.js';
 
 export function mount(root, st, app) {
@@ -49,6 +50,8 @@ export function mount(root, st, app) {
           <div style="font-size:13px">${p.works.map(w => `${esc(w.title)}（前${-w.year}年）`).join('、')}</div>` : ''}
       </div>
 
+      ${careerPanelHtml(st)}
+
       <div class="panel">
         <div class="section-title">交游</div>
         ${Object.entries(p.relations).filter(([, r]) => r.met && r.aff > 0).sort((a, b) => b[1].aff - a[1].aff).slice(0, 6).map(([id, r]) => {
@@ -69,3 +72,40 @@ export function mount(root, st, app) {
   });
 }
 
+
+
+function careerPanelHtml(st) {
+  const p = player(st);
+  const canServe = ['youxia', 'shuike', 'xuezhe'].includes(p.profession);
+  if (!canServe) {
+    return `<div class="panel">
+      <div class="section-title">仕途</div>
+      <div class="footnote">商贾不入仕途——以商致富，名号随金钱而进：贩夫 → 行商 → 坐贾 → 巨商 → 富商 → 陶朱之富。</div>
+    </div>`;
+  }
+  const serving = !!p.stateId;
+  const cur = serving ? p.rank : 0;
+  const next = RANKS[cur + 1];
+  const pct = next ? Math.min(100, Math.round((p.merit / next.merit) * 100)) : 100;
+  return `<div class="panel">
+    <div class="section-title">仕途</div>
+    ${serving ? `
+      <div class="kv">
+        <dt>所仕</dt><dd>${STATES[p.stateId].name}国</dd>
+        <dt>爵位</dt><dd>${RANKS[cur].name} <small style="color:#6d6052">月俸 ${RANKS[cur].pay} 金</small></dd>
+        <dt>功勋</dt><dd>${p.merit}${next ? ` / ${next.merit}` : ''}</dd>
+      </div>
+      <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
+      <div class="footnote">${next ? `距「${next.name}」还需功勋 ${Math.max(0, next.merit - p.merit)}；每月初按功勋擢升一级。` : '已至极品「执政」。'}</div>
+    ` : `
+      <div class="kv">
+        <dt>身份</dt><dd>布衣</dd>
+        <dt>求仕</dt><dd>名声 ≥ 8，往有朝廷的都城谒见国君</dd>
+        <dt>成算</dt><dd>约 ${Math.round(officeChance(st) * 100)}%</dd>
+      </div>
+      <div class="footnote">亦可与卿相结好（交情 50 以上），请其举荐直接入仕。布衣所积功勋在出仕时不会作废。</div>
+    `}
+    <div class="divider"></div>
+    <div class="footnote" style="line-height:1.8">爵位：${RANKS.slice(1).map(r => `${r.name}(${r.merit})`).join(' → ')}</div>
+  </div>`;
+}

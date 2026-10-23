@@ -7,7 +7,7 @@ import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHeal
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { seekOffice, advise, joinCampaign } from '../systems/progression.js';
+import { seekOffice, advise, joinCampaign, officeChance, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { duelModal, debateModal, trainingModal } from './minigames.js';
@@ -161,15 +161,22 @@ function buildActions(st, app, c, owner) {
       },
     });
     if (c.tags.includes('court')) {
+      const cd = officeCooldownLeft(st);
+      const pct = Math.round(officeChance(st) * 100);
       add({
-        id: 'office', name: '谒见国君', cost: '半日',
-        desc: p.stateId === owner ? '已在朝中，可献策议事。' : `求仕于${stateName(owner)}，需名声八以上。`,
-        disabled: p.stateId === owner,
+        id: 'office', name: '谒见国君', cost: cd ? `${cd}日后` : '半日',
+        desc: p.stateId === owner
+          ? '已在朝中，可献策议事。'
+          : p.fame < 8
+            ? `名声不足（${p.fame}/8），先接差事扬名。`
+            : `求仕于${stateName(owner)} · 成算约${pct}%${cd ? ` · ${cd}日后可再谒见` : ''}`,
+        disabled: p.stateId === owner || p.fame < 8 || cd > 0,
         run: () => {
           const res = seekOffice(st, owner);
           app.modal({
             title: res.ok ? '拜官' : '求见', narrow: true,
-            body: `<p>${res.msg}</p>`, foot: [{ label: '知道了', cls: 'btn primary', onClick: h => h.close() }],
+            body: `<p>${res.msg}</p>`,
+            foot: [{ label: res.ok ? '谢恩' : '知道了', cls: 'btn primary', onClick: h => h.close() }],
           });
           app.after({});
         },
@@ -268,7 +275,7 @@ function buildActions(st, app, c, owner) {
     if (c.tags.includes('court') && p.stateId !== owner) {
       add({
         id: 'office', name: '谒见国君', cost: '半日',
-        desc: `求仕于${stateName(owner)}，以辩才干禄。`,
+        desc: `求仕于${stateName(owner)}，以辩才干禄 · 成算约${Math.round(officeChance(st) * 100)}%。`,
         run: () => {
           const res = seekOffice(st, owner);
           app.modal({ title: '求见', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '知道了', cls: 'btn primary', onClick: h => h.close() }] });
@@ -344,7 +351,8 @@ function buildActions(st, app, c, owner) {
   if (!['merchant'].includes(p.profession) && c.tags.includes('court') && p.stateId !== owner && !acts.some(a => a.id === 'office')) {
     add({
       id: 'office', name: '谒见国君', cost: '半日',
-      desc: `求仕于${stateName(owner)}，需名声八以上。`,
+      desc: p.fame < 8 ? `名声不足（${p.fame}/8），先接差事扬名。` : `求仕于${stateName(owner)} · 成算约${Math.round(officeChance(st) * 100)}%。`,
+      disabled: p.fame < 8,
       run: () => {
         const res = seekOffice(st, owner);
         app.modal({ title: '求见', narrow: true, body: `<p>${res.msg}</p>`, foot: [{ label: '知道了', cls: 'btn primary', onClick: h => h.close() }] });

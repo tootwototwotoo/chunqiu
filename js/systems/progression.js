@@ -26,6 +26,20 @@ function rankForMerit(merit) {
   return rank;
 }
 
+const OFFICE_DC = 55;
+
+// 求仕成算：政略、魅力、名声、辩才共同决定
+export function officeChance(st) {
+  const p = player(st);
+  const score = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2;
+  return Math.max(0.05, Math.min(0.95, (score + 20 - OFFICE_DC) / 20));
+}
+
+export function officeCooldownLeft(st) {
+  if (!st.flags.lastOffice) return 0;
+  return Math.max(0, 10 - (dayOf(st.time) - st.flags.lastOffice));
+}
+
 export function seekOffice(st, stateId) {
   const p = player(st);
   if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
@@ -33,9 +47,10 @@ export function seekOffice(st, stateId) {
   const now = dayOf(st.time);
   if (st.flags.lastOffice && now - st.flags.lastOffice < 10) return { ok: false, msg: '门吏挡驾：「君且待旬日再来。」' };
   st.flags.lastOffice = now;
-  const roll = p.stats.zheng * 0.55 + p.stats.mei * 0.35 + p.fame * 0.5 + skillLevel(st, 'biancai') * 2 + R.int(st, 0, 18);
+  const roll = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2 + R.int(st, 0, 20);
+  const chancePct = Math.round(officeChance(st) * 100);
   const prevState = p.stateId;
-  if (roll >= 52) {
+  if (roll >= OFFICE_DC) {
     p.stateId = stateId;
     if (prevState && prevState !== stateId) {
       // 改仕他国：旧功减半，须从士重新做起
@@ -53,7 +68,10 @@ export function seekOffice(st, stateId) {
     return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国${RANKS[p.rank].name}。`, state: stateId, rank: p.rank };
   }
   addStamina(st, -5);
-  return { ok: false, msg: '国君不见，门吏只让你在廊下候了半日。' };
+  return {
+    ok: false, chance: chancePct,
+    msg: `国君不见，门吏只让你在廊下候了半日。（成算约${chancePct}%）可先修习辩才、累积名声，或结好卿相请其举荐。`,
+  };
 }
 
 export function npcRulerOf(st, stateId) {
