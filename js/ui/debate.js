@@ -81,9 +81,8 @@ function bodyHtml(st, d) {
     <div class="debate-speech">${esc(concern.q)}</div>
     <div class="debate-opts">
       ${concern.options.map((o, i) => `
-        <button class="debate-opt ${o.tag === d.heart ? 'match' : ''}" data-opt="${i}">
-          <b>${TAGS[o.tag].name}${o.tag === d.heart ? ' · 合其心性' : ''}</b>
-          <small>${esc(o.text)}</small>
+        <button class="debate-opt" data-opt="${i}">
+          <span class="opt-text">${esc(o.text)}</span>
         </button>`).join('')}
     </div>
     ${evidenceHtml(st, d, concern)}

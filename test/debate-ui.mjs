@@ -38,7 +38,9 @@ await wait(60);
 ok($$('.debate-opt').length === 3, '每轮三个选项');
 ok($('.modal').textContent.includes('认同度 50'), '初始认同度 50');
 ok($('.modal').textContent.includes('第 1 / 3 轮'), '显示轮次');
-ok(!!$('.debate-opt.match'), '合心性的思路有标记');
+ok(!!$('.debate-opt .opt-text'), '选项只显示台词');
+ok(!$('.debate-opt.match'), '选项不再标合心性');
+ok(!/讲利害|讲道义|引先例|陈形势|合其心性/.test($('.debate-opts').textContent), '选项不显示思路提示');
 ok(!!$('[data-evidence]'), '掌握后可出示证据');
 ok($('.debate-speech').textContent.length > 4, '显示对方顾虑');
 
@@ -48,9 +50,9 @@ await wait(40);
 ok($('.modal').textContent.includes('认同度 60'), '证据 +10');
 
 // 选切中且合心性的一项
-$('.debate-opt.match').click();
+$$('.debate-opt')[0].click();
 await wait(40);
-ok($('.modal').textContent.includes('认同度 80'), '切中+合心性 → 80');
+ok($('.modal').textContent.includes('认同度 80'), '切中选项 → 80');
 ok($('.modal').textContent.includes('第 2 / 3 轮'), '进入第二轮');
 ok(!$('[data-evidence]'), '本局证据已用，不再显示');
 

@@ -437,10 +437,7 @@ body.title-mode .screen > * { width: 100%; }
 
 
 /* ---------- 论辩：对症/相悖标记 ---------- */
-.debate-opt.match{border-color:rgba(77,111,86,.75);background:rgba(77,111,86,.10);box-shadow:0 0 0 1px rgba(77,111,86,.25) inset}
-.debate-opt.match:hover{border-color:var(--jade);background:rgba(77,111,86,.16)}
-.debate-opt.opp{border-color:rgba(156,43,38,.45);background:rgba(156,43,38,.06)}
-.debate-opt.opp small{color:#9c2b26}
+.debate-opt .opt-text{display:block;font-size:13.5px;line-height:1.7;color:var(--ink);text-align:left}
 
 
 /* ---------- 三回合论辩 ---------- */
@@ -454,7 +451,6 @@ body.title-mode .screen > * { width: 100%; }
 .debate-meter .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--azure),#7fa3bd);transition:width .4s}
 .debate-mark{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(60,94,120,.7)}
 .debate-mark-label{position:absolute;top:-15px;transform:translateX(-50%);font-size:10px;color:var(--ink-3)}
-.debate-opt.match small{color:var(--jade)}
 
 .evidence-row{padding:7px 0;border-bottom:1px dashed rgba(120,95,60,.22)}
 .evidence-row:last-child{border-bottom:0}
