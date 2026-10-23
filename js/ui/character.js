@@ -51,10 +51,10 @@ export function mount(root, st, app) {
 
       <div class="panel">
         <div class="section-title">交游</div>
-        ${Object.values(p.relations).filter(r => r.met && r.aff > 0).sort((a, b) => b.aff - a.aff).slice(0, 6).map(r => {
-          const nm = r.id ? (st.npc[r.id] ? r.id : r.id) : '';
+        ${Object.entries(p.relations).filter(([, r]) => r.met && r.aff > 0).sort((a, b) => b[1].aff - a[1].aff).slice(0, 6).map(([id, r]) => {
+          const def = NPC_MAP[id];
           return `<div class="rel-row"><div class="rel-mid">
-            <div class="rel-name">${npcNameOf(r.id)}</div>
+            <div class="rel-name">${def ? esc(def.name) : esc(id)}${def ? ` <span style="font-size:11px;color:#6d6052">${esc(def.title)}</span>` : ''}</div>
             <div class="bar red" style="margin-top:3px"><i style="width:${r.aff}%"></i></div>
           </div><span class="rel-tier">${relTierName(r.aff)}</span></div>`;
         }).join('') || '<div class="empty">尚无深交之人。</div>'}
@@ -69,4 +69,3 @@ export function mount(root, st, app) {
   });
 }
 
-const npcNameOf = (id) => NPC_MAP[id]?.name ?? id;

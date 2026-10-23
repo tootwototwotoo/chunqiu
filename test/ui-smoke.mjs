@@ -55,6 +55,14 @@ ok(!!$('.modal'), '开场弹窗');
 click('.modal-foot .btn');
 await wait();
 
+// 交游显示（回归：曾把 relations 的值当条目、人名渲染为 undefined）
+app.st.player.relations['guan_zhong'] = { aff: 40, met: true, gifts: 0 };
+app.st.player.relations['ji_liang'] = { aff: 22, met: true, gifts: 0 };
+app.nav('character');
+ok(screenText().includes('管仲'), '人物界面交游显示人名');
+ok(screenText().includes('季梁'), '人物界面显示多人');
+ok(!screenText().includes('undefined'), '交游区无 undefined');
+
 // 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
 for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {
   const btn = document.querySelector(`#hud-nav [data-screen="${key}"]`);
