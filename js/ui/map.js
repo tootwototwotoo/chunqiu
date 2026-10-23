@@ -6,6 +6,7 @@ import { player, npcsHere } from '../state.js';
 import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 import { today, esc } from '../util.js';
 import { onClick, stateColor, stateName, cityTag } from './common.js';
+import { drawTerritory } from './territory.js';
 
 let selected = null;
 
@@ -19,12 +20,14 @@ export function mount(root, st, app) {
   <div class="map-wrap">
     <div class="panel map-panel">
       <div class="map-svg-box">
+        <canvas id="map-territory" width="940" height="660"></canvas>
         ${mapSvg(st, cur, selected, path)}
       </div>
       <div class="map-legend">
         <span><i class="lg-dot" style="background:#9c2b26"></i>所在</span>
         <span><i class="lg-dot" style="background:#a67c34"></i>城邑</span>
         <span><i class="lg-dot" style="background:#7d97a6"></i>河川</span>
+        <span><i class="lg-dot" style="background:#a67c34;opacity:.5"></i>本国疆域</span>
         <span>点击城邑以观其详</span>
       </div>
     </div>
@@ -44,6 +47,8 @@ export function mount(root, st, app) {
       </div>
     </div>
   </div>`;
+
+  drawTerritory(root.querySelector('#map-territory'), st);
 
   onClick(root, '.map-city', (el) => {
     selected = el.dataset.city;
