@@ -85,7 +85,13 @@ function bindBoard(app, st, root) {
     if (!res.instant) {
       app.toast(res.msg ?? '已领受', 'gain');
       app.log(res.msg ?? '已领受差事。');
-      app.render();
+      // 榜文弹窗内领受后，立即把该条从榜上抹去；页面内则整体重绘
+      if (root.classList && root.classList.contains('modal-body')) {
+        root.innerHTML = boardOffersHtml(st);
+        bindBoard(app, st, root);
+      } else {
+        app.render();
+      }
       return;
     }
     const q = res.quest;
@@ -127,11 +133,15 @@ function bindBoard(app, st, root) {
 }
 
 // 城中的受托弹窗（不跳转）
+function boardOffersHtml(st) {
+  return (st.quests.offers ?? []).map(q => questCard(st, q, false, true)).join('') || '<div class="empty">今日无榜。</div>';
+}
+
 export function openBoard(app, st) {
   refreshBoard(st);
   const h = app.modal({
     title: '榜文', sub: `${CITY_MAP[player(st).cityId].name} · 受人托付`, wide: true,
-    body: `<div id="board-list">${(st.quests.offers ?? []).map(q => questCard(st, q, false, true)).join('') || '<div class="empty">今日无榜。</div>'}</div>`,
+    body: `<div id="board-list">${boardOffersHtml(st)}</div>`,
     foot: [{ label: '关闭', close: true }],
   });
   bindBoard(app, st, h.bodyEl);

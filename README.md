@@ -160,6 +160,7 @@ test/
   era.mjs               年代与在世人物校验
   ui-smoke.mjs          jsdom 真实 DOM 全界面点击测试
   trials-ui.mjs         五套册命试炼界面逐一点击到结算
+  board-ui.mjs          榜文领受后即时刷新
   debate-balance.mjs    辩论胜率曲线
   checkimports.mjs      ESM 导入/导出静态检查
 ```
