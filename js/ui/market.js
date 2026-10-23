@@ -64,7 +64,7 @@ export function marketModal(app, st) {
         </div>`;
     } else if (tab === 'book') {
       const evs = marketHere(st, p.cityId);
-      body += `<div class="footnote">书肆出售账册、书信与旧档，买下后可在此后论辩中按主题使用。</div>`;
+      body += `<div class="footnote">书肆出售账册、书信与旧档，价高而一劳永逸：买下后可在此后论辩中按主题反复使用，不会消耗。</div>`;
       body += evs.length ? `<table class="table"><thead><tr><th>名称</th><th>主题</th><th class="num">价格</th><th style="text-align:right">购买</th></tr></thead><tbody>
         ${evs.map(e => `<tr><td><b>${esc(e.name)}</b><div class="footnote" style="margin:0">${esc(e.text)}</div></td>
           <td>${TOPIC_NAMES[e.topic] ?? e.topic}</td><td class="num">${e.source.price} 金</td>

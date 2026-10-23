@@ -79,6 +79,7 @@ ok(Object.values(byType).every(n => n > 10), '三种来源各覆盖一部分', J
   const r = buyEvidence(st, ev.id);
   ok(r.ok && hasEvidence(st, ev.id), '购买成功入库', r.msg);
   ok(player(st).money === before - ev.source.price, '购买扣除金钱');
+  ok(ev.source.price >= 500, '书肆证物价不低于 500 金', String(ev.source.price));
 
   st.player.cityId = 'jiang';
   ok(marketHere(st, 'jiang').length === 0, '非大城无书肆');

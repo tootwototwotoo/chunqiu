@@ -79,7 +79,7 @@ export function buyEvidence(st, evidenceId) {
   if (!ev || ev.source.type !== 'market') return { ok: false, msg: '书肆不出售此物。' };
   if (ev.homeCity !== cityId || !BOOKSHOPS.includes(cityId)) return { ok: false, msg: '此城书肆没有此物。' };
   if (hasEvidence(st, evidenceId)) return { ok: false, msg: '你已掌握此证据。' };
-  const price = ev.source.price ?? 60;
+  const price = ev.source.price ?? 500;
   if (player(st).money < price) return { ok: false, msg: `要价 ${price} 金，囊中不足。` };
   addMoney(st, -price, true);
   addEvidence(st, evidenceId);
@@ -92,5 +92,5 @@ export function sourceLabel(ev) {
   if (!s) return '';
   if (s.type === 'investigate') return `查访 · ${TOPIC_NAMES[ev.topic] ?? ev.topic}`;
   if (s.type === 'npc') return `打听 · ${TOPIC_NAMES[ev.topic] ?? ev.topic}`;
-  return `购买 · ${s.price ?? 60} 金`;
+  return `购买 · ${s.price ?? 500} 金`;
 }

@@ -70,8 +70,9 @@ const TOPIC_BY_ID = {
 const SKILL_BY_CATEGORY = {
   domestic: 'suanshu', diplomacy: 'biancai', military: 'bingfa', court: 'quanmou', trade: 'shanggu',
 };
+// 书肆证物：一件可永久复用，故定价高，起步 500 金
 const PRICE_BY_CATEGORY = {
-  domestic: 60, diplomacy: 90, military: 80, court: 100, trade: 50,
+  trade: 500, domestic: 550, military: 600, diplomacy: 650, court: 700,
 };
 
 // 三种获取方式轮流分配，互不重叠
@@ -132,7 +133,7 @@ export function validateDebates(list = DEBATES) {
       evIds.add(ev.id);
       if (!['investigate', 'npc', 'market'].includes(ev.source?.type)) errors.push(`${where}：证据来源非法`);
       if (ev.source?.type === 'investigate' && !ev.source.skill) errors.push(`${where}：查访证据缺技能`);
-      if (ev.source?.type === 'market' && !(ev.source.price > 0)) errors.push(`${where}：购买证据缺价格`);
+      if (ev.source?.type === 'market' && !(ev.source.price >= 500)) errors.push(`${where}：购买证据价格不得低于 500 金`);
       if (ev.source?.type === 'npc' && !ev.source.npcId) errors.push(`${where}：打听证据缺 NPC`);
       if (ev.source?.type !== 'npc' && !ev.homeCity) errors.push(`${where}：证据缺所在城`);
       if (ev.source?.type === 'market' && !BOOKSHOPS.includes(ev.homeCity)) errors.push(`${where}：购买证据不在书肆城`);
