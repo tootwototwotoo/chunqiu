@@ -64,6 +64,6 @@ export const JADE = {
   cities: ['luoyi', 'xinzheng', 'linzi', 'qufu', 'ying', 'yong', 'jiang', 'tao'],
   basePrice: 500,
   restockDays: 30,
-  priceStep: 1.1,
+  priceStep: 1.15,
   maxStock: 8,
 };
