@@ -65,11 +65,11 @@ export const RANKS = [
 
 // 五等爵：男 → 子 → 伯 → 侯 → 公（周天子册命，食邑食禄）
 export const PEERAGES = [
-  { id: 'nan', name: '男', merit: 900,  fame: 60,  income: 40 },
-  { id: 'zi',  name: '子', merit: 1100, fame: 80,  income: 70 },
-  { id: 'bo',  name: '伯', merit: 1300, fame: 100, income: 110 },
-  { id: 'hou', name: '侯', merit: 1600, fame: 130, income: 160 },
-  { id: 'gong',name: '公', merit: 2000, fame: 160, income: 220 },
+  { id: 'nan', name: '男', merit: 1800, fame: 120, income: 40 },
+  { id: 'zi',  name: '子', merit: 2250, fame: 160, income: 70 },
+  { id: 'bo',  name: '伯', merit: 2750, fame: 200, income: 110 },
+  { id: 'hou', name: '侯', merit: 3350, fame: 250, income: 160 },
+  { id: 'gong',name: '公', merit: 4000, fame: 300, income: 220 },
 ];
 export const peerageName = (idx) => (idx == null || idx < 0 ? '未受封' : `${PEERAGES[idx]?.name ?? ''}爵`);
 

@@ -2,7 +2,7 @@
 import { newGame, player } from '../js/state.js';
 import {
   POLICIES, ISSUES, pickIssue, canAdvise, adviseOutcome, currentPolicy,
-  policyMods, tickPolicy, POLICY_DAYS, HEART_POLICY,
+  policyMods, tickPolicy, POLICY_DAYS, HEART_POLICY, keepPolicy,
 } from '../js/systems/policy.js';
 import { priceAt, levyOf } from '../js/systems/trade.js';
 import { CITY_MAP } from '../js/data/world.js';
@@ -87,6 +87,52 @@ function force(grade) {
   const merit = st.player.merit;
   tickPolicy(st, { notes: [] });
   ok(st.player.merit === merit + 2, '兴学每月功勋 +2');
+}
+
+
+// 维持旧策：不罚功勋、顺延期限
+{
+  const st = newGame({ name: '守', profession: 'youxia', seed: 13 });
+  st.player.stateId = 'qi'; st.player.cityId = 'linzi';
+  st.player.merit = 50;
+  const issue = ISSUES.find(i => i.id === 'grain_high');
+  const fit = issue.options.findIndex(o => o.fit);
+  adviseOutcome(st, issue, fit, 'li');
+  const before = st.player.merit;
+  const r = keepPolicy(st);
+  ok(r.ok, '有国策时可维持旧策');
+  ok(st.player.merit === before, '维持旧策不扣功勋', `${before} → ${st.player.merit}`);
+  ok(currentPolicy(st).id === 'farm', '国策保持不变');
+  ok(r.left >= 30, '维持后期限顺延', String(r.left));
+}
+
+// 续行同一国策不罚
+{
+  const st = newGame({ name: '续', profession: 'youxia', seed: 14 });
+  st.player.stateId = 'qi'; st.player.cityId = 'linzi';
+  st.player.merit = 100;
+  const issue = ISSUES.find(i => i.id === 'grain_high');
+  const fit = issue.options.findIndex(o => o.fit);
+  adviseOutcome(st, issue, fit, 'li');
+  const m0 = st.player.merit;
+  const r2 = adviseOutcome(st, issue, fit, 'li');
+  ok(r2.penalty === 0, '续行同策不罚', String(r2.penalty));
+  ok(r2.continued === true, '标记为续行');
+  ok(st.player.merit >= m0, '续行不亏功勋', `${m0} → ${st.player.merit}`);
+}
+
+// 改策仍照罚
+{
+  const st = newGame({ name: '改', profession: 'youxia', seed: 15 });
+  st.player.stateId = 'qi'; st.player.cityId = 'linzi';
+  st.player.merit = 200;
+  const is1 = ISSUES.find(i => i.id === 'grain_high');
+  adviseOutcome(st, is1, is1.options.findIndex(o => o.fit), 'li'); // farm
+  const is2 = ISSUES.find(i => i.id === 'treasury_low');
+  const before = st.player.merit;
+  const r3 = adviseOutcome(st, is2, 0, 'li'); // trade
+  ok(r3.penalty === 12, '改策倒扣 12', String(r3.penalty));
+  ok(before - st.player.merit >= 8, '改策净亏大于大用收益', String(before - st.player.merit));
 }
 
 // 位置校验：须在本国朝堂

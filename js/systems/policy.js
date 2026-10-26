@@ -146,18 +146,30 @@ export function canAdvise(st) {
   return { ok: true };
 }
 
+// 维持旧策：不要功勋，也不受改策惩罚，仅顺延 30 日
+export function keepPolicy(st) {
+  const cur = currentPolicy(st);
+  if (!cur) return { ok: false, msg: '本无国策，无所可维持。' };
+  st.flags.lastAdvise = dayOf(st.time);
+  st.world.policy = { ...st.world.policy, untilDay: Math.max(cur.untilDay, dayOf(st.time) + 30) };
+  addLog(st, `朝议无所改易，「${POLICIES[cur.id].name}」之策仍行。`);
+  return { ok: true, kept: true, policy: POLICIES[cur.id], left: currentPolicy(st).left };
+}
+
 export function adviseOutcome(st, issue, optionIndex, heart) {
   const p = st.player;
   const opt = issue.options[optionIndex];
   const cur = currentPolicy(st);
+  const same = cur && cur.id === opt.policy;
   let penalty = 0;
-  if (cur) {
+  if (cur && !same) {
     // 改策：剩余天数作废，倒扣功勋（大于大用收益 +8）
     penalty = 12;
     addMeritDelta(st, -penalty);
     st.world.policy = null;
     addLog(st, `中途改行「${POLICIES[opt.policy].name}」，旧策作废，功勋 -${penalty}。`, 'war');
   }
+  // 续行同一国策不罚：下面按判定结果顺延期限
   const heartFit = opt.policy === HEART_POLICY[heart] ? 8 : 0;
   const roll = p.stats.zhi * 0.35 + p.stats.zheng * 0.45 + (p.skills.quanmou ?? 0) * 3
     + (opt.fit ? 10 : 0) + heartFit + (st.world.power[p.stateId] - 50) * 0.2 + R.int(st, 0, 15);
@@ -171,9 +183,19 @@ export function adviseOutcome(st, issue, optionIndex, heart) {
   if (grade === 'fail') addFame(st, -1, true);
   const days = grade === 'great' ? 90 : grade === 'small' ? 60 : 0;
   if (days) {
-    st.world.policy = { id: opt.policy, untilDay: dayOf(st.time) + days, grade, startedDay: dayOf(st.time) };
+    if (same) {
+      // 续行：在现有期限上顺延，不覆盖进度
+      st.world.policy = {
+        id: opt.policy,
+        untilDay: Math.max(cur.untilDay, dayOf(st.time) + days),
+        grade, startedDay: cur.startedDay,
+      };
+      addLog(st, `续行「${POLICIES[opt.policy].name}」，期限顺延。`, 'gain');
+    } else {
+      st.world.policy = { id: opt.policy, untilDay: dayOf(st.time) + days, grade, startedDay: dayOf(st.time) };
+    }
   }
-  return { grade, roll, merit: net, penalty, days, option: opt, policy: POLICIES[opt.policy] };
+  return { grade, roll, merit: net, penalty, days, continued: !!same, option: opt, policy: POLICIES[opt.policy] };
 }
 
 export const HEART_POLICY = { li: 'trade', yi: 'people', ming: 'school', shi: 'army' };

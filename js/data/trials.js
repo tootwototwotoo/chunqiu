@@ -2,11 +2,11 @@
 // engine: hunt 围捕 / neg 折冲 / gov 治邑 / war 军略 / rite 定礼
 
 export const TRIAL_RANKS = [
-  { rank: 0, name: '男', theme: '乡邑之试', base: 0.60, floor: 0.10, days: 20, dc: 42 },
-  { rank: 1, name: '子', theme: '邦交之试', base: 0.55, floor: 0.10, days: 26, dc: 50 },
-  { rank: 2, name: '伯', theme: '国政之试', base: 0.50, floor: 0.15, days: 32, dc: 56 },
-  { rank: 3, name: '侯', theme: '霸业之试', base: 0.45, floor: 0.25, days: 38, dc: 62 },
-  { rank: 4, name: '公', theme: '天下秩序', base: 0.40, floor: 0.40, days: 45, dc: 68 },
+  { rank: 0, name: '男', theme: '乡邑之试', base: 0.74, floor: 0.30, days: 20, dc: 42 },
+  { rank: 1, name: '子', theme: '邦交之试', base: 0.70, floor: 0.34, days: 26, dc: 50 },
+  { rank: 2, name: '伯', theme: '国政之试', base: 0.66, floor: 0.38, days: 32, dc: 56 },
+  { rank: 3, name: '侯', theme: '霸业之试', base: 0.62, floor: 0.44, days: 38, dc: 62 },
+  { rank: 4, name: '公', theme: '天下秩序', base: 0.58, floor: 0.52, days: 45, dc: 68 },
 ];
 
 export const TRIAL_VARIANTS = [

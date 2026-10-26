@@ -1,5 +1,5 @@
 // 朝议：当前议题三选一，决定国策
-import { POLICIES, canAdvise, pickIssue, adviseOutcome, currentPolicy, policySummary, HEART_POLICY } from '../systems/policy.js';
+import { POLICIES, canAdvise, pickIssue, adviseOutcome, currentPolicy, policySummary, keepPolicy, HEART_POLICY } from '../systems/policy.js';
 import { audienceHeart, audienceRuler } from '../systems/audience.js';
 import { addMerit } from '../state.js';
 import { biasName } from '../systems/debate.js';
@@ -39,12 +39,28 @@ export function councilModal(app, st, stateId, opts = {}) {
             <small style="display:block;color:#6d6052;font-size:11.5px;margin-top:4px">${POLICIES[o.policy].name} · ${esc(POLICIES[o.policy].effect)}</small>
           </button>`).join('')}
       </div>
+      ${cur ? `<div class="btn-row" style="margin:6px 0"><button class="btn sm" data-keep>维持「${cur.policy.name}」，不加功勋亦不扣</button></div>` : ''}
       <div class="footnote">合心性：${POLICIES[HEART_POLICY[heart]].name}。判定受智略、政略、权谋、国势影响。</div>
       <div class="footnote">现行：${sum.cur ? `${sum.cur.policy.name}（余 ${sum.cur.left} 日）` : '无'}　${sum.text}</div>`);
     bind();
   };
 
   const bind = () => {
+    onClick(h.bodyEl, '[data-keep]', () => {
+      const r = keepPolicy(st);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      h.setBody(`
+        <div class="mg-result" style="color:#4d6f56;font-size:20px">仍行旧策</div>
+        <p style="line-height:1.9">你未另陈新议，只将旧策得失条陈一番。国君以为然，命依旧行之。</p>
+        <div class="footnote">「${r.policy.name}」顺延，余 ${r.left} 日。功勋无增无减。</div>`);
+      h.setFoot([{ label: '退下', cls: 'btn primary', onClick: () => {
+        h.close();
+        if (opts.onEnd) opts.onEnd(r);
+        else app.after({});
+        app.refreshHud();
+      } }]);
+      app.refreshHud();
+    });
     onClick(h.bodyEl, '[data-opt]', (el) => {
       const res = adviseOutcome(st, issue, Number(el.dataset.opt), heart);
       h.setBody(`

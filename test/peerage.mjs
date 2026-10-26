@@ -36,19 +36,19 @@ function ready(seed = 1) {
   st.player.homeCity = 'luoyi';
   st.player.stateId = 'qi';
   st.player.rank = 7;
-  st.player.merit = 900;
-  st.player.fame = 60;
+  st.player.merit = PEERAGES[0].merit;
+  st.player.fame = PEERAGES[0].fame;
   st.player.money = 1000;
   return st;
 }
 
 // 条件门槛
 const st0 = newGame({ name: '白身', profession: 'youxia', seed: 3 });
-st0.player.merit = 900; st0.player.fame = 60; st0.player.cityId = 'luoyi';
+st0.player.merit = PEERAGES[0].merit; st0.player.fame = PEERAGES[0].fame; st0.player.cityId = 'luoyi';
 ok(!canAcceptTrial(st0).ok, '未出仕不可领受试炼', canAcceptTrial(st0).msg);
 
 const stLow = ready(4);
-stLow.player.merit = 899;
+stLow.player.merit = PEERAGES[0].merit - 1;
 ok(!canAcceptTrial(stLow).ok, '功勋不足不可领受', canAcceptTrial(stLow).msg);
 
 // 领受与开始

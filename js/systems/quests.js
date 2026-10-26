@@ -65,7 +65,7 @@ const TEMPLATES = {
       desc: `${g.name}托你护送一队行旅前往${target.name}，路程约${plan.route}日，务必于限期之内抵达。`,
       giverName: g.name, npcId: g.npcId, originCity: city.id, targetCity: target.id,
       routeDays: plan.route, days: plan.days, exp: absDay(st.time) + plan.days,
-      reward: { money: 35 + plan.route * 6 + player(st).fame * 2, fame: 3, merit: 8, rel: g.npcId ? 6 : 0 },
+      reward: { money: 35 + plan.route * 6 + player(st).fame * 2, fame: 2, merit: 9, rel: g.npcId ? 6 : 0 },
       difficulty: 1,
     };
   },
@@ -87,7 +87,8 @@ const TEMPLATES = {
   },
   duel(st, city) {
     const g = giverOf(st, city);
-    const tier = 1 + Math.floor(player(st).fame / 25);
+    // 难度分档封顶，避免名声增长带动奖励指数膨胀
+    const tier = clamp(1 + Math.floor(player(st).fame / 40), 1, 5);
     const enemy = {
       name: R.pick(st, ['地方恶少', '横行剑客', '山中贼首', '亡命之徒']),
       wu: 40 + tier * 7 + R.int(st, 0, 8), skill: clamp(2 + tier, 1, 8),
@@ -97,7 +98,7 @@ const TEMPLATES = {
       desc: `${g.name}言：城中有一${enemy.name}，横行市肆，官府不能制。若能除此人，当有重谢。`,
       giverName: g.name, npcId: g.npcId, originCity: city.id,
       days: 20, exp: absDay(st.time) + 20, enemy,
-      reward: { money: 60 + tier * 30, fame: 4 + tier, merit: 12 + tier * 4, rel: g.npcId ? 8 : 0 },
+      reward: { money: 60 + tier * 30, fame: 2 + Math.ceil(tier / 2), merit: 10 + tier * 2, rel: g.npcId ? 8 : 0 },
       difficulty: tier,
     };
   },
@@ -116,7 +117,7 @@ const TEMPLATES = {
       targetState: other,
       days: 15, exp: absDay(st.time) + 15,
       difficulty: 38 + Math.round(player(st).fame * 0.2),
-      reward: { money: 70, fame: 5, merit: 10, rel: g.npcId ? 6 : 0 },
+      reward: { money: 70, fame: 3, merit: 14, rel: g.npcId ? 6 : 0 },
     };
   },
   lecture(st, city) {
@@ -127,7 +128,7 @@ const TEMPLATES = {
       giverName: g.name, npcId: g.npcId, originCity: city.id,
       days: 10, exp: absDay(st.time) + 10,
       checkSkill: 'xuewen', dc: 34 + player(st).fame * 0.25,
-      reward: { money: 30 + player(st).disciples * 3, fame: 5, merit: 6, rel: g.npcId ? 5 : 0 },
+      reward: { money: 30 + player(st).disciples * 3, fame: 3, merit: 12, rel: g.npcId ? 5 : 0 },
       difficulty: 1,
     };
   },
@@ -139,7 +140,7 @@ const TEMPLATES = {
       giverName: g.name, npcId: g.npcId, originCity: city.id,
       days: 12, exp: absDay(st.time) + 12,
       checkSkill: 'bingfa', dc: 32 + player(st).fame * 0.2,
-      reward: { money: 40, fame: 2, merit: 16, rel: g.npcId ? 6 : 0 },
+      reward: { money: 40, fame: 2, merit: 12, rel: g.npcId ? 6 : 0 },
       difficulty: 1,
     };
   },

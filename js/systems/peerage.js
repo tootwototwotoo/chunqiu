@@ -141,7 +141,7 @@ export function petitionChance(st) {
   const perf = tr?.status === 'done' ? (tr.performance ?? 50) : 0;
   const fameBonus = Math.min(0.10, p.fame / 2000);
   const rankBonus = (p.rank ?? 0) * 0.01;
-  const pity = Math.min(0.24, (p.peerageFails ?? 0) * 0.08);
+  const pity = Math.min(0.34, (p.peerageFails ?? 0) * 0.10);
   const bi = biPetitionBonus(st);
   const raw = meta.base + perf * 0.0035 + fameBonus + rankBonus + pity + bi;
   return clamp(raw, meta.floor, 0.95);
