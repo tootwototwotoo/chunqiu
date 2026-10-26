@@ -1,8 +1,7 @@
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { ERAS } from '../js/data/defs.js';
 import { advanceDays } from '../js/systems/calendar.js';
 import { NPC_MAP, npcAlive } from '../js/data/npcs.js';
-import { collectTimeline } from '../js/systems/events.js';
 
 for (const era of ERAS) {
   const st = newGame({ name: '试', profession: 'xuezhe', era: era.id, seed: 3 });

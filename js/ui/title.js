@@ -1,5 +1,5 @@
 // 标题、开局创建、结局
-import { newGame, hasSave, loadLatestGame, deleteSave, age } from '../state.js';
+import { newGame, hasSave, loadLatestGame, deleteSave } from '../state.js';
 import { PROFESSIONS, ERAS } from '../data/defs.js';
 import { CITIES } from '../data/world.js';
 import { onClick, gameDate } from './common.js';

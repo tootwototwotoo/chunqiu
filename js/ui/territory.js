@@ -1,6 +1,5 @@
 // 疆域层：以城邑为种子生成 Voronoi 势力范围，按所属国上色
 import { CITIES, STATES } from '../data/world.js';
-import { player } from '../state.js';
 
 const W = 940, H = 660;
 const STATE_IDS = Object.keys(STATES);

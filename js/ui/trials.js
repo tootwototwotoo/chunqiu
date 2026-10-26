@@ -110,15 +110,13 @@ function renderHunt(g) {
     return `<button class="trial-cell ${cls}" data-cell="${i}" ${d != null || g.done ? 'disabled' : ''}>${label}</button>`;
   }).join('');
   return `
-    <div class="mg-hint">搜捕次数 <b>${g.turns}</b> / ${g.maxTurns}　·　"近"表示相距 1~2，"远"表示更远</div>
+    <div class="mg-hint">搜捕次数 <b>${g.turns}</b> / ${g.maxTurns} · "近"表示相距 1~2，"远"表示更远</div>
     <div class="trial-grid" style="grid-template-columns:repeat(${g.n},1fr)">${cells}</div>
     <div class="combat-log">${g.log.slice(-6).map(l => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
 
 // ---------------- 折冲 ----------------
 function renderNeg(g) {
-  const pct = Math.min(100, (g.progress / g.goal) * 100);
-  const sup = Math.min(100, (g.suspicion / g.suspicionMax) * 100);
   return `
     <div class="mg-hint">第 ${Math.min(g.round, g.maxRounds)} / ${g.maxRounds} 轮</div>
     <div style="font-size:12.5px;color:#6d6052">盟约进度 <b>${g.progress}</b> / ${g.goal}</div>
@@ -154,7 +152,7 @@ function renderGov(g) {
 function renderWar(g) {
   const terrain = { plain: '平原', pass: '隘口', water: '水泽' }[g.terrain] ?? '原野';
   return `
-    <div class="mg-hint">第 ${Math.min(g.round, g.maxRounds)} / ${g.maxRounds} 阵　·　地形：${terrain}</div>
+    <div class="mg-hint">第 ${Math.min(g.round, g.maxRounds)} / ${g.maxRounds} 阵 · 地形：${terrain}</div>
     <div class="combat-hp">
       <div class="side"><div><b>我军</b> <span style="font-size:12px;color:#6d6052">兵 ${g.troops} 气 ${g.morale}</span></div>
         ${METER(g.troops, 100, 'green')}${METER(g.morale, 100, 'blue')}</div>
@@ -176,7 +174,7 @@ function renderRite(g) {
     ? `<span class="rite-chip done">${esc(order[i])}</span>`
     : `<span class="rite-chip">${g.revealed?.[i] ? esc(g.revealed[i]) : '？'}</span>`).join('<span class="rite-arrow">→</span>');
   return `
-    <div class="mg-hint">按正确次序排列仪节　·　余 ${g.attempts} 次机会　·　提示 ${g.hints - g.usedHints} 次</div>
+    <div class="mg-hint">按正确次序排列仪节 · 余 ${g.attempts} 次机会 · 提示 ${g.hints - g.usedHints} 次</div>
     <div class="rite-clues">
       ${g.clues.map(c => `<div>· 「${esc(c.before)}」在「${esc(c.after)}」之前</div>`).join('')}
     </div>

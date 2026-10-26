@@ -71,7 +71,6 @@ function barHtml(d) {
 
 function bodyHtml(st, d) {
   const concern = currentConcern(d);
-  const ev = d.scenario.evidence;
   return `
     <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#6d6052">
       <span>第 ${Math.min(d.round, 3)} / 3 轮</span>
@@ -124,7 +123,7 @@ function outcomeHtml(d, settled) {
     </table>
     ${settled.followup ? `<div class="footnote" style="color:#9c2b26">新增差事：「${esc(settled.followup.title)}」——${esc(settled.followup.desc)}</div>` : ''}
     ${settled.result === 'compromise' && !settled.followup ? '<div class="footnote">对方只肯口头应承，并未形成可托付的差事。</div>' : ''}
-    ${settled.effects ? `<div class="footnote">名声 ${fmt(settled.effects.fame)}　关系 ${fmt(settled.effects.rel)}${settled.effects.money ? `　金钱 ${fmt(settled.effects.money)}` : ''}${settled.effects.merit ? `　功勋 ${fmt(settled.effects.merit)}` : ''}</div>` : ''}`;
+    ${settled.effects ? `<div class="footnote">名声 ${fmt(settled.effects.fame)} 关系 ${fmt(settled.effects.rel)}${settled.effects.money ? ` 金钱 ${fmt(settled.effects.money)}` : ''}${settled.effects.merit ? ` 功勋 ${fmt(settled.effects.merit)}` : ''}</div>` : ''}`;
 }
 
 const fmt = (v) => (v == null ? '' : v > 0 ? `+${v}` : `${v}`);

@@ -1,5 +1,5 @@
 // 三回合论辩：计分、证据、结局与后续差事
-import { newGame, addEvidence, hasEvidence } from '../js/state.js';
+import { newGame, addEvidence } from '../js/state.js';
 import { startDebate, debateChoose, useEvidence, settleDebate } from '../js/systems/debate.js';
 import { DEBATE_BY_ID, DEBATES, validateDebates, OPPOSITE } from '../js/data/debates/index.js';
 

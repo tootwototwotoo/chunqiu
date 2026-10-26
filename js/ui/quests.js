@@ -1,13 +1,13 @@
 // 差事界面与受托弹窗
 import { CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
-import { player, npcsHere, addFame } from '../state.js';
+import { player } from '../state.js';
 import { refreshBoard, acceptQuest, completeQuest, resolveCheck, questRewardText, sanitizeQuests } from '../systems/quests.js';
 import { duelModal } from './minigames.js';
 import { debateModal } from './debate.js';
-import { onClick, cityName } from './common.js';
+import { onClick } from './common.js';
 import { esc } from '../util.js';
-import { absDay, dateLabel } from '../systems/calendar.js';
+import { absDay } from '../systems/calendar.js';
 import { shortestPath } from '../systems/pathfind.js';
 import { STATES } from '../data/world.js';
 

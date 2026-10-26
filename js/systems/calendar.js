@@ -1,6 +1,7 @@
 // 时间推进、月份结算、年龄与死亡
-import { START_YEAR, player, addLog, addMoney, addHealth, addStamina, initPrices, priceSet, basePriceOf,
-  careerTitle, age, rankName, R, aliveNpcs, npcDef, rel, saveGame, AUTO_SAVE_KEY, AUTO_SAVE_ERROR } from '../state.js';
+import {
+  addLog, addMoney, addHealth, addStamina, priceSet, basePriceOf, age, R, rel, saveGame, AUTO_SAVE_KEY, AUTO_SAVE_ERROR
+} from '../state.js';
 import { RANKS, PEERAGES } from '../data/defs.js';
 import { CITIES, CITY_MAP, STATES } from '../data/world.js';
 import { GOODS } from '../data/goods.js';
@@ -10,7 +11,7 @@ import { expireQuests } from './quests.js';
 import { checkPromotion } from './progression.js';
 import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
-import { yearLabel, monthLabel, clamp, ri } from '../util.js';
+import { yearLabel, monthLabel, clamp } from '../util.js';
 
 // 时间基准统一由 util 提供，避免与各系统各写一份而差 1 日
 import { DAYS_PER_MONTH, MONTHS_PER_YEAR, DAYS_PER_YEAR, absDay } from '../util.js';

@@ -1,14 +1,15 @@
 // 城中：诸般行动
-import { CITY_MAP, STATES, cityState } from '../data/world.js';
+import { CITY_MAP, STATES } from '../data/world.js';
 import { GOODS, PLAIN_GOODS } from '../data/goods.js';
-import { SKILL_DEFS, PEERAGES, peerageName } from '../data/defs.js';
-import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHealth, addLog,
-  skillLevel, R, isMerchant, isWarrior, isDiplomat, isScholar, addRel } from '../state.js';
+import { SKILL_DEFS, peerageName } from '../data/defs.js';
+import {
+  player, npcsHere, rel, addMoney, addFame, addStamina, addLog, skillLevel, R, isMerchant, isWarrior, isDiplomat, isScholar
+} from '../state.js';
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
 import { canSeekOffice, canTakeOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
-import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
+import { npcDebateInfo } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
 import { TOPIC_NAMES } from '../data/debates/index.js';
@@ -25,8 +26,8 @@ import { trainingModal } from './training.js';
 import { marketModal } from './market.js';
 import { openBoard } from './quests.js';
 import { openNpc } from './npc.js';
-import { onClick, stateColor, stateName, cityTag, relTierName, skillName } from './common.js';
-import { esc, ri, clamp } from '../util.js';
+import { onClick, stateColor, stateName, cityTag, relTierName } from './common.js';
+import { esc, clamp } from '../util.js';
 
 export function mount(root, st, app) {
   const c = CITY_MAP[player(st).cityId];
@@ -89,7 +90,7 @@ export function mount(root, st, app) {
           }).join('') || '<div class="empty">城中并无知名之士。</div>'}
         </div>
       </div>
-      ${profPanelHtml(st, app, c)}
+      ${profPanelHtml(st)}
     </div>
   </div>`;
 
@@ -624,7 +625,7 @@ function writeBook(app, st) {
   app.after({ notes: adv.notes, events: adv.events, died: adv.died });
 }
 
-function profPanelHtml(st, app, c) {
+function profPanelHtml(st) {
   const p = player(st);
   if (p.profession === 'shangren') {
     const income = p.shops.length * 55 + p.hired * 8;

@@ -1,6 +1,6 @@
 // 个人决斗
 import { R, player, skillLevel, addRel, addFame, addMoney, addMerit, addHealth, addStamina, addLog } from '../state.js';
-import { ri, clamp } from '../util.js';
+import { clamp } from '../util.js';
 import { WANDERER_NAMES } from '../data/npcs.js';
 
 export const MOVES = {
@@ -127,12 +127,14 @@ export function settleDuel(st, d, npcId, opts = {}) {
   st.stats.duels++;
   if (d.won) {
     st.stats.duelWins++;
+    // opts.reward 为决斗彩头/功勋，此前算出来却没发放
     const gain = opts.reward ?? (8 + R.int(st, 0, 10));
     addFame(st, opts.fame ?? 3);
     if (opts.money) addMoney(st, opts.money);
+    if (gain) addMerit(st, gain, true);
     if (npcId) addRel(st, npcId, opts.rel ?? 4);
     addLog(st, `与${d.e.name}交手，胜。`, 'gain');
-    return { won: true, money: opts.money ?? 0 };
+    return { won: true, money: opts.money ?? 0, merit: gain };
   }
   addHealth(st, -Math.round(8 + R.int(st, 0, 8)));
   addStamina(st, -10);

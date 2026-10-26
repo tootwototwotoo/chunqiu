@@ -21,7 +21,7 @@ window.addEventListener('error', (e) => errors.push(e.message));
 process.on('unhandledRejection', (e) => errors.push('unhandled: ' + e.message));
 
 const { app } = await import('../js/ui/app.js');
-const { newGame, player, saveGame, loadGame } = await import('../js/state.js');
+const { player, loadGame } = await import('../js/state.js');
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -129,7 +129,7 @@ await wait(80);
 ok(app.st.player.peerageTrial.status === 'done', '试炼结果写入存档');
 
 // 各界面：通过点击顶栏按钮切换（回归：曾漏绑导航事件）
-for (const [key, expect] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {
+for (const [key] of [['city', '诸般行事'], ['map', '城邑'], ['character', '四维'], ['quests', '差事'], ['relations', '交游'], ['cards', '名鉴'], ['save', '存档']]) {
   const btn = document.querySelector(`#hud-nav [data-screen="${key}"]`);
   ok(!!btn, `存在导航按钮 ${key}`);
   btn.click();
@@ -165,7 +165,7 @@ if (gemTab) {
   const buyGem = $$('[data-buy-gem]')[1]; // 明珠
   ok(!!buyGem, '珍宝可购');
   if (buyGem) { buyGem.click(); await wait(60); }
-  ok((app.st.player.inventory.zhu ?? 0) > 0, '购入珍宝入行囊');
+  ok((app.st.player.inventory.mingzhu ?? 0) > 0, '购入珍宝入行囊');
 }
 click('.modal-foot .btn');
 await wait();
@@ -173,7 +173,7 @@ await wait();
 // 献宝：本国朝堂 + 持有珍宝
 {
   const { addGoods } = await import('../js/state.js');
-  addGoods(app.st, 'zhu', 1);
+  addGoods(app.st, 'mingzhu', 1);
   app.st.player.stateId = 'qi';
   app.st.player.cityId = 'linzi';
   app.nav('city');
@@ -186,9 +186,9 @@ await wait();
     ok($('.modal-body').textContent.includes('明珠'), '献宝弹窗列出明珠');
     const doOffer = $('[data-offer]');
     ok(!!doOffer, '献宝可点');
-    const before = app.st.player.inventory.zhu ?? 0;
+    const before = app.st.player.inventory.mingzhu ?? 0;
     if (doOffer) { doOffer.click(); await wait(60); }
-    ok((app.st.player.inventory.zhu ?? 0) === before - 1, '献宝消耗一件珍宝', `${before} → ${app.st.player.inventory.zhu ?? 0}`);
+    ok((app.st.player.inventory.mingzhu ?? 0) === before - 1, '献宝消耗一件珍宝', `${before} → ${app.st.player.inventory.mingzhu ?? 0}`);
   }
   while ($('.modal')) { const b = $('.modal-foot .btn'); if (b) b.click(); await wait(60); }
   app.nav('city');

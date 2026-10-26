@@ -18,7 +18,6 @@ const { app } = await import('../js/ui/app.js');
 const { newGame, hasEvidence } = await import('../js/state.js');
 
 const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)];
 const click = (sel) => { const el = typeof sel === 'string' ? $(sel) : sel; if (!el) throw new Error('元素不存在'); el.click(); };
 const wait = (ms = 40) => new Promise(r => setTimeout(r, ms));
 let fails = 0;

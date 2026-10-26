@@ -2,7 +2,7 @@
 import { newGame } from '../js/state.js';
 import { AUDIENCE_QUESTIONS, AUDIENCE_FOLLOW_UPS } from '../js/data/audience.js';
 import { STATES } from '../js/data/world.js';
-import { audienceHeart, startAudience, audienceAnswer, currentQuestion, AUDIENCE_SUCCESS } from '../js/systems/audience.js';
+import { audienceHeart, startAudience, audienceAnswer, AUDIENCE_SUCCESS } from '../js/systems/audience.js';
 
 let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };

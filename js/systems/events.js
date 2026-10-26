@@ -3,9 +3,10 @@ import { TIMELINE, RANDOM_EVENTS } from '../data/events.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { GOODS } from '../data/goods.js';
 import { CITIES, CITY_MAP, STATES } from '../data/world.js';
-import { player, addMoney, addFame, addMerit, addStat, addSkillExp, addRel, addStamina,
-  addHealth, meetNpc, addLog, skillLevel, R, addGoods } from '../state.js';
-import { ri, clamp, weightedPick, yearLabel, monthLabel } from '../util.js';
+import {
+  player, addMoney, addFame, addMerit, addStat, addSkillExp, addRel, addStamina, addHealth, meetNpc, addLog, skillLevel
+} from '../state.js';
+import { ri, clamp, weightedPick } from '../util.js';
 import { absDay } from './calendar.js';
 
 function currentWhere(st) {
@@ -30,7 +31,6 @@ export function choiceAvailable(st, choice) {
  */
 export function applyEffects(st, effects = []) {
   const out = { notes: [], pendingDuel: null };
-  const p = player(st);
   for (const e of effects) {
     switch (e.t) {
       case 'money':

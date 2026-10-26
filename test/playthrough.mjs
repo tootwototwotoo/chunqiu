@@ -1,8 +1,8 @@
 // 仕途与结局的定向测试
 import { newGame, player } from '../js/state.js';
-import { refreshBoard, acceptQuest } from '../js/systems/quests.js';
+
 import { advanceDays } from '../js/systems/calendar.js';
-import { seekOffice, advise, joinCampaign, checkPromotion, computeEnding } from '../js/systems/progression.js';
+import { seekOffice, checkPromotion, computeEnding } from '../js/systems/progression.js';
 import { RANKS } from '../js/data/defs.js';
 
 const st = newGame({ name: '管仲之徒', profession: 'youxia', era: 'huan', seed: 21 });

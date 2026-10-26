@@ -1,7 +1,7 @@
 // 证据获取：查访 / 打听 / 购买（日常在城中完成）
 import { DEBATES, EVIDENCE_BY_ID, BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
 import { NPC_MAP } from '../data/npcs.js';
-import { player, addEvidence, hasEvidence, addStamina, addMoney, addLog, skillLevel, npcsHere, rel, R } from '../state.js';
+import { player, addEvidence, hasEvidence, addStamina, addMoney, addLog, skillLevel, rel, R } from '../state.js';
 
 const DAY = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 

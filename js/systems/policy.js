@@ -37,8 +37,8 @@ export const POLICIES = {
 export const ISSUES = [
   {
     id: 'grain_high', name: '粮价腾贵', topic: 'grain',
-    check: st => true,
-    weight: st => 3,
+    check: _st => true,
+    weight: _st => 3,
     q: '今岁粮价腾贵，民怨渐起，君将何以为政？',
     options: [
       { policy: 'farm', fit: true, text: '减赋劝农、开垦荒田，粮价自会渐平。', reply: '国君颔首：「治本之策，虽慢却稳。」' },
@@ -48,7 +48,7 @@ export const ISSUES = [
   },
   {
     id: 'treasury_low', name: '府库不足', topic: 'trade',
-    check: st => true, weight: st => 2,
+    check: _st => true, weight: _st => 2,
     q: '府库日虚，俸禄与军饷都将不继，君将何以处之？',
     options: [
       { policy: 'trade', fit: true, text: '轻税通商，使商旅辐辏，府库自然充实。', reply: '国君点头：「商旅愿来，税自然就有了。」' },
@@ -58,7 +58,7 @@ export const ISSUES = [
   },
   {
     id: 'border_war', name: '边患未息', topic: 'army',
-    check: st => true, weight: st => 2,
+    check: _st => true, weight: _st => 2,
     q: '邻国陈兵于境，边邑数警，君将何以应之？',
     options: [
       { policy: 'army', fit: true, text: '整军经武、修缮边塞，先立于不败之地。', reply: '国君目光一振：「有备，才谈得上和战。」' },
@@ -69,7 +69,7 @@ export const ISSUES = [
   {
     id: 'weak_state', name: '国势衰微', topic: 'court',
     check: st => (st.world.power[st.player.stateId] ?? 30) < 42,
-    weight: st => 4,
+    weight: _st => 4,
     q: '国势日蹙，诸侯轻我，君将何以振之？',
     options: [
       { policy: 'army', fit: true, text: '修武整军，先振国威，再图外事。', reply: '国君沉声道：「不振军威，说什么都没人听。」' },
@@ -79,7 +79,7 @@ export const ISSUES = [
   },
   {
     id: 'talent_lack', name: '朝中乏才', topic: 'people',
-    check: st => true, weight: st => 2,
+    check: _st => true, weight: _st => 2,
     q: '朝中乏才，政事壅滞，君将何以取士？',
     options: [
       { policy: 'school', fit: true, text: '设学宫、养士人，数年之后人才自出。', reply: '国君点头：「养士是百年之计，寡人愿等。」' },
@@ -89,7 +89,7 @@ export const ISSUES = [
   },
   {
     id: 'famine_hit', name: '饥荒流民', topic: 'people',
-    check: st => true, weight: st => 2,
+    check: _st => true, weight: _st => 2,
     q: '灾后流民塞道，仓廪将空，君将何以处之？',
     options: [
       { policy: 'people', fit: true, text: '开仓赈济、编户授田，先安其生。', reply: '国君颔首：「先让人活下去，才谈得上其他。」' },
@@ -109,7 +109,6 @@ export function currentPolicy(st) {
 
 export function policyMods(st) {
   const cur = currentPolicy(st);
-  const p = st.player;
   const out = { grainPrice: 0, famineHalve: false, levy: 0, caravan: 0, campaign: 0, fameMonthly: 0, meritMonthly: 0, biancaiExp: 1, priceDrift: 1 };
   if (!cur) return out;
   if (cur.id === 'farm') { out.grainPrice = -0.12; out.famineHalve = true; }

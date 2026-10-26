@@ -1,15 +1,13 @@
 // 五等爵：册命试炼、评价、请封概率与失败循环
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { STATES, CITY_MAP } from '../js/data/world.js';
-import { PEERAGES, peerageName } from '../js/data/defs.js';
+import { PEERAGES } from '../js/data/defs.js';
 import { TRIAL_RANKS, TRIAL_VARIANTS, variantsOfRank } from '../js/data/trials.js';
 import {
-  acceptTrial, canAcceptTrial, canStartTrial, finishTrial, petition, petitionChance,
-  canPetition, checkTrialExpiry, peerageNext, peerageSummary,
+  acceptTrial, canAcceptTrial, canStartTrial, finishTrial, petition, canPetition, checkTrialExpiry, peerageSummary
 } from '../js/systems/peerage.js';
 import {
-  startHunt, huntSearch, startNegotiation, negotiate, startGovernance, govern,
-  startBattle, battleRound, startRites, riteSubmit, evaluateGame, NEG_CARD_LIST, FORMATION_LIST,
+  startHunt, huntSearch, startNegotiation, negotiate, startGovernance, govern, startBattle, battleRound, startRites, riteSubmit, evaluateGame
 } from '../js/systems/trialGames.js';
 
 let fails = 0;
@@ -78,7 +76,7 @@ for (let seed = 1; seed <= 200 && !denied; seed++) {
 }
 ok(!!denied, '可以出现请封未准');
 if (denied) {
-  const { s, r } = denied;
+  const { s } = denied;
   ok(s.player.peerageFails === 1, '未准累计诚意', String(s.player.peerageFails));
   ok(s.player.money === 850, '贽礼退半（净耗150）', String(s.player.money));
   ok(s.player.peerageTrial.status === 'pending', '另命新试');

@@ -1,5 +1,5 @@
 // 存档与设置
-import { saveGame, loadGame, deleteSave, hasSave, player, age, fullTitle, AUTO_SAVE_KEY, loadAuto, autoSavedAt } from '../state.js';
+import { loadGame, deleteSave, player, age, fullTitle, loadAuto, autoSavedAt } from '../state.js';
 import { onClick } from './common.js';
 import { gameDate } from './common.js';
 import { openHelp } from './title.js';

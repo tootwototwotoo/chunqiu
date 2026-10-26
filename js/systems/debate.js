@@ -1,6 +1,6 @@
 // 三回合论辩：认同度、三选一、证据与三档结局
-import { DEBATES, DEBATE_BY_ID, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
-import { CITY_MAP } from '../data/world.js';
+import { DEBATES, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
+
 import { player, addFame, addRel, addMoney, addMerit, addLog, hasEvidence, R } from '../state.js';
 import { clamp, absDay } from '../util.js';
 
@@ -107,7 +107,7 @@ export function debateResult(d) {
   return d.result;
 }
 
-export function settleDebate(st, d, npcId, opts = {}) {
+export function settleDebate(st, d, npcId, _opts = {}) {
   st.stats.debates++;
   if (d.result === 'success') st.stats.debateWins++;
   const effects = { ...DEFAULT_EFFECTS[d.result], ...(d.scenario.effects?.[d.result] ?? {}) };

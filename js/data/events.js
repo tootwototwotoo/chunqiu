@@ -326,7 +326,6 @@ export const RANDOM_EVENTS = [
 
   { id: 'mentor', w: 6,
     when: st => {
-      const city = st.world.owner[st.player.cityId];
       return Object.values(st.npc).some(n => n.city === st.player.cityId && n.alive && n.role === 'scholar');
     },
     title: '贤者讲学', body: '城中有贤者开讲，士人毕集。你若往听，或可请益。',

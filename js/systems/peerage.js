@@ -1,5 +1,5 @@
 // 册命之试与五等爵：任务生成、评价、请封概率、失败循环
-import { PEERAGES, peerageName } from '../data/defs.js';
+import { PEERAGES } from '../data/defs.js';
 import { TRIAL_RANKS, TRIAL_BY_ID, variantsOfRank } from '../data/trials.js';
 import { CITY_MAP } from '../data/world.js';
 import { player, addLog, addMoney, addFame, addGoods, R } from '../state.js';

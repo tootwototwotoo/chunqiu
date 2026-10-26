@@ -1,10 +1,10 @@
 // 交游总览
 import { NPC_MAP } from '../data/npcs.js';
-import { CITY_MAP, STATES } from '../data/world.js';
-import { player, rel, skillLevel } from '../state.js';
+
+import { player, rel } from '../state.js';
 import { openNpc } from './npc.js';
 import { onClick, relTierName, cityName, stateColor } from './common.js';
-import { esc } from '../util.js';
+
 
 export function mount(root, st, app) {
   const met = Object.values(st.npc)

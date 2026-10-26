@@ -1,10 +1,10 @@
 // 市集买卖
-import { GOODS, PLAIN_GOODS, isTreasure } from '../data/goods.js';
+import { GOODS, PLAIN_GOODS } from '../data/goods.js';
 import { treasuresInCity } from '../data/treasures.js';
-import { CITIES, CITY_MAP } from '../data/world.js';
-import { player, basePriceOf, caravanFree, goodsCount, R } from '../state.js';
-import { buy, sell, priceAt, levyOf, bestMarkets, inventoryRows, treasureList, buyTreasure } from '../systems/trade.js';
-import { onClick, cityName } from './common.js';
+import { CITY_MAP } from '../data/world.js';
+import { player, basePriceOf, caravanFree, goodsCount } from '../state.js';
+import { buy, sell, priceAt, levyOf, bestMarkets, treasureList, buyTreasure } from '../systems/trade.js';
+import { onClick } from './common.js';
 import { esc } from '../util.js';
 import { BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
 import { marketHere, buyEvidence } from '../systems/evidence.js';

@@ -1,8 +1,8 @@
 // 人物面板
-import { skillRowHtml, onClick, statLine, stateName, cityName, avatar, relTierName } from './common.js';
-import { SKILL_DEFS, STAT_DEFS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, skillTier, PEERAGES, peerageName } from '../data/defs.js';
+import { skillRowHtml, onClick, statLine, stateName, cityName, relTierName } from './common.js';
+import { SKILL_DEFS, STAT_DEFS, RANKS, PEERAGES, peerageName } from '../data/defs.js';
 import { GOODS } from '../data/goods.js';
-import { player, age, fullTitle, careerTitle, skillLevel, rel, skillExpNeed } from '../state.js';
+import { player, age, fullTitle } from '../state.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { EVIDENCE_BY_ID, TOPIC_NAMES } from '../data/debates/index.js';
@@ -11,7 +11,7 @@ import { peerageSummary } from '../systems/peerage.js';
 import { policySummary } from '../systems/policy.js';
 import { treasureSummary } from '../systems/treasures.js';
 import { TREASURES } from '../data/treasures.js';
-import { esc, diffTier, clamp } from '../util.js';
+import { esc } from '../util.js';
 
 export function mount(root, st, app) {
   const p = player(st);

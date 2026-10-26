@@ -4,7 +4,7 @@ import { GOODS } from '../data/goods.js';
 import { biasName } from '../systems/debate.js';
 import { player, npcsHere } from '../state.js';
 import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
-import { esc } from '../util.js';
+
 import { onClick, stateColor, stateName, cityTag } from './common.js';
 import { drawTerritory } from './territory.js';
 import { policySummary } from '../systems/policy.js';

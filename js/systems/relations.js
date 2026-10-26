@@ -3,10 +3,11 @@ import { NPC_MAP } from '../data/npcs.js';
 import { GOODS } from '../data/goods.js';
 import { STATES } from '../data/world.js';
 import { SKILL_DEFS } from '../data/defs.js';
-import { player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addLog,
-  addSkillExp, skillLevel, R, npcsHere } from '../state.js';
-import { ri, clamp, GIFT_TIER_NAMES, absDay } from '../util.js';
-import { biasName } from './debate.js';
+import {
+  player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addLog, addSkillExp, skillLevel, R
+} from '../state.js';
+import { ri, GIFT_TIER_NAMES, absDay } from '../util.js';
+
 
 const GREET = {
   0: ['{n}抬眼看了看你，未置一词。', '{n}正在会客，只向你略一点头。', '你在阶下候了片刻，{n}才命人传见。'],
@@ -134,7 +135,6 @@ export function learnFrom(st, npcId, skill) {
   addMoney(st, -cost, true);
   addStamina(st, -12);
   const npcLv = def.skills?.[skill] ?? 3;
-  const myLv = skillLevel(st, skill);
   const exp = 26 + npcLv * 7 + ri(st, 0, 12);
   const res = addSkillExp(st, skill, exp);
   addRel(st, npcId, 2);

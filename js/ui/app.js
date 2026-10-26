@@ -1,10 +1,10 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
-import { addLog, saveGame, loadGame, hasSave, fullTitle, age, player, migrateState, AUTO_SAVE_ERROR, saveAuto } from '../state.js';
+import { addLog, saveGame, fullTitle, player, migrateState, AUTO_SAVE_ERROR, saveAuto } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent } from '../systems/events.js';
 import { esc } from '../util.js';
 import { computeEnding } from '../systems/progression.js';
-import { startDuel, makeWanderer } from '../systems/combat.js';
+
 import { sanitizeQuests, questRewardText } from '../systems/quests.js';
 import { onClick } from './common.js';
 import * as titleScreen from './title.js';

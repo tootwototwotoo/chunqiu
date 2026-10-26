@@ -7,21 +7,21 @@
 // 小游戏表现由「玩家技巧档位」直接注入 performance，不在此复刻小游戏本身。
 
 import { newGame, player, addStamina } from '../js/state.js';
-import { PEERAGES, RANKS } from '../js/data/defs.js';
-import { CITY_MAP, STATES } from '../js/data/world.js';
+import { PEERAGES } from '../js/data/defs.js';
+
 import { refreshBoard, acceptQuest, completeQuest, resolveCheck } from '../js/systems/quests.js';
 import { shortestPath } from '../js/systems/pathfind.js';
 import { travelTo } from '../js/systems/travel.js';
 import { advanceDays, absDay } from '../js/systems/calendar.js';
 import {
-  canSeekOffice, officeChance, markOfficeAttempt, checkPromotion, joinCampaign, seekOffice,
+  canSeekOffice, checkPromotion, joinCampaign, seekOffice
 } from '../js/systems/progression.js';
 import {
-  canAcceptTrial, acceptTrial, canStartTrial, finishTrial, canPetition, petition, failTrial,
+  canAcceptTrial, acceptTrial, canPetition, petition, failTrial
 } from '../js/systems/peerage.js';
 import { trialVariant } from '../js/systems/peerage.js';
-import { evaluateGame } from '../js/systems/trialGames.js';
-import { adviseOutcome, pickIssue, canAdvise, currentPolicy, keepPolicy, POLICY_DAYS } from '../js/systems/policy.js';
+
+import { adviseOutcome, pickIssue, canAdvise, currentPolicy, keepPolicy } from '../js/systems/policy.js';
 
 // ---------------- 参数 ----------------
 export const GOAL_RANK = 4; // 公爵
@@ -151,7 +151,7 @@ export function simulate({ profession, strategy, skill, seed }) {
     const p = st.player;
     if (p.stamina < 18) return false;
     const m0 = p.merit;
-    const res = joinCampaign(st);
+    joinCampaign(st);
     stat.meritCampaign += p.merit - m0;
     spend(20);
     return true;
@@ -250,7 +250,7 @@ export function simulate({ profession, strategy, skill, seed }) {
       return true;
     }
     if (!canPetition(st).ok) return false;
-    const res = petition(st);
+    petition(st);
     stat.petitions++;
     spend(1);
     return true;
@@ -304,7 +304,6 @@ export function simulate({ profession, strategy, skill, seed }) {
     }
 
     // 4) 攒功勋/名声/钱
-    const meritPerDay = p.merit / Math.max(1, stat.days);
     if (strategy === 'greedy' || p.stamina >= 40) {
       if (doQuest()) continue;
     }

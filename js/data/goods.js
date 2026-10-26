@@ -10,7 +10,7 @@ export const GOODS = {
   ge:      { name: '革', unit: '张', base: 48, bulk: 1 },
   // 珍宝：不在市集买卖，只在「珍宝」页以稀缺价出售
   yu:      { name: '美玉', unit: '双', base: 500, bulk: 1, treasure: true },
-  zhu:     { name: '明珠', unit: '颗', base: 900, bulk: 1, treasure: true },
+  mingzhu: { name: '明珠', unit: '颗', base: 900, bulk: 1, treasure: true },
   shan:    { name: '珊瑚树', unit: '株', base: 1400, bulk: 1, treasure: true },
   xijiao:  { name: '犀角', unit: '支', base: 2000, bulk: 1, treasure: true },
   xiang:   { name: '象牙', unit: '对', base: 2700, bulk: 1, treasure: true },
@@ -23,12 +23,13 @@ export const TREASURE_GOODS = Object.keys(GOODS).filter(g => GOODS[g].treasure);
 export const isTreasure = (g) => !!GOODS[g]?.treasure;
 
 // 城市产地：该货在此地便宜
+// 城池特产：只列普通货物。珍宝由珍宝市单独定价，不参与普通物价折扣。
 export const LOCAL_SPECIALTY = {
-  luoyi: 'yu', linzi: 'yan', qufu: 'si', jiang: 'ma', handan: 'tie',
-  yong: 'ma', ying: 'qi', shangqiu: 'ge', chaoge: 'si', xinzheng: 'yu',
+  luoyi: 'si', linzi: 'yan', qufu: 'si', jiang: 'ma', handan: 'tie',
+  yong: 'ma', ying: 'qi', shangqiu: 'ge', chaoge: 'si', xinzheng: 'tie',
   ji: 'ge', gusu: 'si', kuaiji: 'tie', wanqiu: 'ge', shangcai: 'su', tao: 'su',
   ju: 'yan', zhu: 'su', fei: 'si', diqiu: 'ge', quwo: 'tie', pingyang: 'ma',
-  shen: 'tie', xi: 'qi', sui: 'yu', qi2: 'qi', pengcheng: 'su', zhoulai: 'ge',
+  shen: 'tie', xi: 'qi', sui: 'ma', qi2: 'qi', pengcheng: 'su', zhoulai: 'ge',
   zhuji: 'si', xu: 'ge', linyi: 'ma',
 };
 

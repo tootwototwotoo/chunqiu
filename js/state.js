@@ -1,8 +1,8 @@
 // 游戏状态：创建、存档、常用读写
 import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
-import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
+import { CITIES, CITY_MAP, STATES } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
-import { GOODS, demandOf, LOCAL_SPECIALTY, JADE } from './data/goods.js';
+import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
 import { TREASURES, TREASURE_IDS } from './data/treasures.js';
 import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
@@ -288,20 +288,36 @@ function renameLegacyIds(st) {
     inv.xijiao = (inv.xijiao ?? 0) + inv.xi;
     delete inv.xi;
   }
+  if (inv && typeof inv === 'object' && inv.zhu != null) {
+    inv.mingzhu = (inv.mingzhu ?? 0) + inv.zhu;
+    delete inv.zhu;
+  }
   const t = st.world?.treasures;
   if (t && typeof t === 'object' && t.xi) {
     t.xijiao ||= t.xi;
     delete t.xi;
+  }
+  if (t && typeof t === 'object' && t.zhu) {
+    t.mingzhu ||= t.zhu;
+    delete t.zhu;
   }
   const col = st.world?.treasuresCollected;
   if (col && typeof col === 'object' && col.xi) {
     col.xijiao = true;
     delete col.xi;
   }
+  if (col && typeof col === 'object' && col.zhu) {
+    col.mingzhu = true;
+    delete col.zhu;
+  }
   const off = st.flags?.offeredTreasures;
   if (off && typeof off === 'object' && off.xi) {
     off.xijiao = (off.xijiao ?? 0) + off.xi;
     delete off.xi;
+  }
+  if (off && typeof off === 'object' && off.zhu) {
+    off.mingzhu = (off.mingzhu ?? 0) + off.zhu;
+    delete off.zhu;
   }
 }
 

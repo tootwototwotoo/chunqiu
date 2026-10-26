@@ -1,11 +1,11 @@
 // 第 1 轮必修项的回归测试：商人仕途闸门、服务器健壮性、随机事件冷却、差事过期、修习可复现
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { canTakeOffice, canSeekOffice, seekOffice, OFFICE_FAME, OFFICE_QUEST_COUNT } from '../js/systems/progression.js';
 import { startAudience } from '../js/systems/audience.js';
-import { refreshBoard, acceptQuest, expireQuests, completeQuest } from '../js/systems/quests.js';
+import { refreshBoard, acceptQuest, expireQuests } from '../js/systems/quests.js';
 import { advanceDays } from '../js/systems/calendar.js';
 import { rollRandomEvent } from '../js/systems/events.js';
-import { RANDOM_EVENTS } from '../js/data/events.js';
+
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -67,7 +67,6 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   const first = rollRandomEvent(st);
   ok(!!first, '可触发随机事件');
   const id = first.ev.id;
-  const firedDay = st.flags.recentRandom[id];
 
   // 第 20 日：同事件不应重现
   st.time = { year: -722, month: 1, day: 21 };
@@ -180,7 +179,7 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(!r2.ok, '首日赠礼后当日不能再赠', r2.msg);
 
   // 国君缺失的国家有合成国君，不再让卿相/名士代答
-  const { audienceRuler, audienceHeart } = await import('../js/systems/audience.js');
+  const { audienceRuler } = await import('../js/systems/audience.js');
   const st2 = newGame({ name: '朝', profession: 'youxia', era: 'huan', seed: 1 });
   const { NPC_MAP } = await import('../js/data/npcs.js');
   for (const s of ['zhou', 'qin', 'lu', 'zheng', 'wu', 'yue', 'ju', 'zhu', 'sui', 'xu']) {

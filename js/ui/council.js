@@ -1,7 +1,7 @@
 // 朝议：当前议题三选一，决定国策
 import { POLICIES, canAdvise, pickIssue, adviseOutcome, currentPolicy, policySummary, keepPolicy, HEART_POLICY } from '../systems/policy.js';
 import { audienceHeart, audienceRuler } from '../systems/audience.js';
-import { addMerit } from '../state.js';
+
 import { biasName } from '../systems/debate.js';
 import { onClick } from './common.js';
 import { esc } from '../util.js';
@@ -41,7 +41,7 @@ export function councilModal(app, st, stateId, opts = {}) {
       </div>
       ${cur ? `<div class="btn-row" style="margin:6px 0"><button class="btn sm" data-keep>维持「${cur.policy.name}」，不加功勋亦不扣</button></div>` : ''}
       <div class="footnote">合心性：${POLICIES[HEART_POLICY[heart]].name}。判定受智略、政略、权谋、国势影响。</div>
-      <div class="footnote">现行：${sum.cur ? `${sum.cur.policy.name}（余 ${sum.cur.left} 日）` : '无'}　${sum.text}</div>`);
+      <div class="footnote">现行：${sum.cur ? `${sum.cur.policy.name}（余 ${sum.cur.left} 日）` : '无'} ${sum.text}</div>`);
     bind();
   };
 
@@ -66,7 +66,7 @@ export function councilModal(app, st, stateId, opts = {}) {
       h.setBody(`
         <div class="mg-result" style="color:${res.grade === 'fail' ? '#9c2b26' : '#4d6f56'};font-size:20px">${GRADE_TEXT[res.grade]}</div>
         <p style="line-height:1.9">${esc(res.option.reply)}</p>
-        <div class="footnote">判定 ${Math.round(res.roll)}　国策「${res.policy.name}」${res.days ? `生效 ${res.days} 日` : '未获采纳'}　功勋 ${res.merit ? `+${res.merit}` : '无'}</div>
+        <div class="footnote">判定 ${Math.round(res.roll)} 国策「${res.policy.name}」${res.days ? `生效 ${res.days} 日` : '未获采纳'} 功勋 ${res.merit ? `+${res.merit}` : '无'}</div>
         <div class="footnote">${esc(res.policy.effect)}</div>`);
       h.setFoot([{ label: '退下', cls: 'btn primary', onClick: () => {
         h.close();

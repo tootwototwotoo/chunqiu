@@ -8,8 +8,8 @@ export const TREASURES = {
     restock: 30, step: 1.15,
     text: '温润无瑕，诸侯聘问必以为礼。',
   },
-  zhu: {
-    id: 'zhu', name: '明珠', unit: '颗', base: 900,
+  mingzhu: {
+    id: 'mingzhu', name: '明珠', unit: '颗', base: 900,
     cities: ['gusu', 'kuaiji', 'linzi', 'ying'],
     restock: 40, step: 1.16,
     text: '南海所出，夜置暗室而光生。',

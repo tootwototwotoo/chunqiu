@@ -1,6 +1,6 @@
 // 旅行：最短路、行程、途中遭遇
 import { CITY_MAP } from '../data/world.js';
-import { R, player, addStamina, addMoney, addLog, addHealth, city } from '../state.js';
+import { addStamina, addMoney, addLog } from '../state.js';
 import { advanceDays } from './calendar.js';
 import { shortestPath } from './pathfind.js';
 import { checkArrivalQuests } from './quests.js';

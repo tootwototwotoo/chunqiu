@@ -1,10 +1,9 @@
 // 国策：议题、三档结果、持续与到期、改策倒扣、效果接入
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import {
-  POLICIES, ISSUES, pickIssue, canAdvise, adviseOutcome, currentPolicy,
-  policyMods, tickPolicy, POLICY_DAYS, HEART_POLICY, keepPolicy,
+  POLICIES, ISSUES, canAdvise, adviseOutcome, currentPolicy, policyMods, tickPolicy, keepPolicy
 } from '../js/systems/policy.js';
-import { priceAt, levyOf } from '../js/systems/trade.js';
+import { levyOf } from '../js/systems/trade.js';
 import { CITY_MAP } from '../js/data/world.js';
 import { joinCampaign } from '../js/systems/progression.js';
 import { advanceDays } from '../js/systems/calendar.js';
@@ -50,7 +49,7 @@ function force(grade) {
   // 改策倒扣，且大于大用收益
   const before = st.player.merit;
   const issue2 = ISSUES.find(i => i.id === 'treasury_low');
-  const r2 = adviseOutcome(st, issue2, 0, 'li');
+  adviseOutcome(st, issue2, 0, 'li');
   ok(st.player.merit < before, '改策倒扣功勋', `${before} → ${st.player.merit}`);
   ok(before - st.player.merit > 8, '改策净扣大于大用收益', String(before - st.player.merit));
 }
@@ -66,7 +65,6 @@ function force(grade) {
 // 效果接入
 {
   const { st } = force('great'); // 重农
-  const p0 = priceAt(st, player(st).cityId, 'su');
   st.world.policy = { id: 'farm', untilDay: 99999, grade: 'great', startedDay: 0 };
   const mod = policyMods(st);
   ok(mod.grainPrice < 0 && mod.famineHalve, '重农降低粮价并减半饥荒');

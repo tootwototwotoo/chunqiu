@@ -1,6 +1,6 @@
 // 证据获取：查访 / 打听 / 购买
 import { newGame, addEvidence, hasEvidence, player } from '../js/state.js';
-import { DEBATES, BOOKSHOPS, EVIDENCE_BY_ID } from '../js/data/debates/index.js';
+import { DEBATES, BOOKSHOPS } from '../js/data/debates/index.js';
 import { NPC_MAP } from '../js/data/npcs.js';
 import {
   investigateHere, investigate, investigateCooldown,

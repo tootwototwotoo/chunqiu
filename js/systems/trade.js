@@ -1,9 +1,9 @@
 // 买卖与行情
-import { GOODS, isTreasure, PLAIN_GOODS } from '../data/goods.js';
+import { GOODS, isTreasure } from '../data/goods.js';
 import { TREASURES, TREASURE_IDS, treasuresInCity } from '../data/treasures.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
-import { player, addMoney, addGoods, goodsCount, caravanFree, addLog, R, basePriceOf } from '../state.js';
-import { ri, clamp } from '../util.js';
+import { player, addMoney, addGoods, caravanFree, addLog, basePriceOf } from '../state.js';
+import { clamp } from '../util.js';
 import { currentPolicy } from './policy.js';
 
 export function priceAt(st, cityId, goodId) {

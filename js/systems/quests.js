@@ -1,13 +1,14 @@
 // 差事：官府委托、行商契约、游说使命、讲学之请
 import { CITY_MAP, CITIES, STATES, cityState } from '../data/world.js';
 import { GOODS, PLAIN_GOODS } from '../data/goods.js';
-import { NPC_MAP } from '../data/npcs.js';
-import { R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel,
-  npcsHere, rel } from '../state.js';
+
+import {
+  R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel, npcsHere
+} from '../state.js';
 import { absDay } from './calendar.js';
 import { shortestPath } from './pathfind.js';
 import { priceAt } from './trade.js';
-import { ri, clamp } from '../util.js';
+import { clamp } from '../util.js';
 
 let seq = 0;
 const nid = () => `q${Date.now().toString(36)}${(seq++).toString(36)}`;
@@ -28,10 +29,6 @@ function giverOf(st, city) {
   return { npcId: null, name: names[owner] ?? '乡邑长者', title: STATES[owner].name + '国' };
 }
 
-function randomOtherCity(st, from) {
-  const pool = CITIES.filter(c => c.id !== from);
-  return R.pick(st, pool);
-}
 
 // 以真实道路里程为准：从出发城到目标的单程日数
 function routeFrom(st, fromCity, targetCity) {

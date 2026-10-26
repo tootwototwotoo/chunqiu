@@ -1,15 +1,15 @@
 // 无头冒烟测试：不依赖 DOM，验证核心系统可运行
-import { newGame, player, addSkillExp, skillLevel, R } from '../js/state.js';
-import { advanceDays, restAtInn } from '../js/systems/calendar.js';
+import { newGame, player, addSkillExp, skillLevel } from '../js/state.js';
+import { advanceDays } from '../js/systems/calendar.js';
 import { travelPlan, travelTo } from '../js/systems/travel.js';
-import { refreshBoard, acceptQuest, checkArrivalQuests, expireQuests, resolveCheck } from '../js/systems/quests.js';
+import { refreshBoard, acceptQuest, checkArrivalQuests } from '../js/systems/quests.js';
 import { buy, sell } from '../js/systems/trade.js';
 import { startDuel, duelAct, settleDuel, makeWanderer, makeBanditChief } from '../js/systems/combat.js';
 import { startDebate, debateChoose, settleDebate } from '../js/systems/debate.js';
 import { seekOffice, joinCampaign, checkPromotion, computeEnding } from '../js/systems/progression.js';
 import { canAdvise, pickIssue, adviseOutcome } from '../js/systems/policy.js';
-import { talk, giveGift, learnFrom, giftCandidates } from '../js/systems/relations.js';
-import { collectTimeline } from '../js/systems/events.js';
+import { talk, learnFrom, giftCandidates } from '../js/systems/relations.js';
+
 import { CITIES, CITY_MAP } from '../js/data/world.js';
 import { GOODS } from '../js/data/goods.js';
 import { NPCS } from '../js/data/npcs.js';
@@ -46,7 +46,7 @@ for (const prof of ['youxia', 'shangren', 'shuike', 'xuezhe']) {
 
   // 修习
   for (const k of Object.keys(player(st).skills)) {
-    const r = addSkillExp(st, k, 60);
+    addSkillExp(st, k, 60);
     ok(player(st).skills[k] >= 0, '技能增长');
   }
   ok(skillLevel(st, 'jianshu') >= 1, '剑术应升级');
@@ -54,7 +54,6 @@ for (const prof of ['youxia', 'shangren', 'shuike', 'xuezhe']) {
   // 交易
   if (prof === 'shangren') {
     for (const g of Object.keys(GOODS)) {
-      const before = player(st).money;
       const b = buy(st, g, 2);
       if (b.ok) {
         const s = sell(st, g, 2);
@@ -107,7 +106,7 @@ for (const prof of ['youxia', 'shangren', 'shuike', 'xuezhe']) {
       adviseOutcome(st, issue, 0, 'li');
     }
     joinCampaign(st);
-    const promo = checkPromotion(st);
+    checkPromotion(st);
   }
 
   // 长时段模拟：40 年

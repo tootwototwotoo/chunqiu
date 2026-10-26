@@ -20,7 +20,7 @@ export const NPCS = [
     desc: '郑国辩士，年老而不得用，然一言之辩可退千军。' },
 
   { id: 'xian_gao', name: '弦高', title: '郑之商人', state: 'zheng', city: 'xinzheng', birth: -680, death: -590, role: 'merchant',
-    stats: { wu: 30, zhi: 70, zheng: 60, mei: 74 }, skills: { shanggu: 8, suanshu: 6, biancai: 4 }, bias: 'li', pref: 'zhu', teach: ['shanggu', 'suanshu'],
+    stats: { wu: 30, zhi: 70, zheng: 60, mei: 74 }, skills: { shanggu: 8, suanshu: 6, biancai: 4 }, bias: 'li', pref: 'mingzhu', teach: ['shanggu', 'suanshu'],
     quote: '商人不唯利是图，亦有利国之时。',
     desc: '郑国行商，曾以牛十二犒秦师，伪称郑君之命，全郑于危难。' },
 
@@ -120,7 +120,7 @@ export const NPCS = [
     desc: '陈国之君，国小势微，周旋于晋楚之间。' },
 
   { id: 'cai_ai', name: '蔡哀公', title: '蔡侯', state: 'cai', city: 'shangcai', birth: -730, death: -675, role: 'ruler',
-    stats: { wu: 42, zhi: 46, zheng: 50, mei: 54 }, skills: { jianshu: 2 }, bias: 'ming', pref: 'zhu', teach: ['jianshu'],
+    stats: { wu: 42, zhi: 46, zheng: 50, mei: 54 }, skills: { jianshu: 2 }, bias: 'ming', pref: 'mingzhu', teach: ['jianshu'],
     quote: '蔡人亦自有志。',
     desc: '蔡国之君，地薄兵弱，为楚所窥。' },
 
@@ -185,7 +185,7 @@ export const NPCS = [
     desc: '越国之主，败于夫椒而不屈，忍辱负重，终以三千越甲吞吴。' },
 
   { id: 'fan_li', name: '范蠡', title: '越之上将军', state: 'yue', city: 'kuaiji', birth: -536, death: -448, role: 'merchant',
-    stats: { wu: 56, zhi: 94, zheng: 88, mei: 84 }, skills: { shanggu: 10, quanmou: 8, biancai: 7, suanshu: 8 }, bias: 'li', pref: 'zhu', teach: ['shanggu', 'suanshu', 'quanmou'],
+    stats: { wu: 56, zhi: 94, zheng: 88, mei: 84 }, skills: { shanggu: 10, quanmou: 8, biancai: 7, suanshu: 8 }, bias: 'li', pref: 'mingzhu', teach: ['shanggu', 'suanshu', 'quanmou'],
     quote: '飞鸟尽，良弓藏；狡兔死，走狗烹。',
     desc: '越国谋臣，佐勾践灭吴，功成身退，浮海至陶，三致千金，号陶朱公。' },
 

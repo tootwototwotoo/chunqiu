@@ -1,4 +1,4 @@
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { advanceDays } from '../js/systems/calendar.js';
 import { TIMELINE } from '../js/data/events.js';
 import { prepareEvent, resolveChoice, choiceAvailable, finishEvent } from '../js/systems/events.js';

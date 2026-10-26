@@ -2,19 +2,18 @@
 import { NPC_MAP } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { canTakeOffice } from '../systems/progression.js';
-import { player, rel, npcsHere, addRel, addFame, addMoney, addMerit, skillLevel } from '../state.js';
-import { talk, giveGift, learnFrom, teachInfo, giftCandidates, affName, affTier, npcDuelInfo, npcDebateInfo } from '../systems/relations.js';
+import { player, rel, addRel, addFame, addMerit } from '../state.js';
+import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo } from '../systems/relations.js';
 import { biasName, BIAS_TIP } from '../systems/debate.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
 import { skillName, onClick, avatar, relTierName } from './common.js';
-import { esc } from '../util.js';
+
 import { npcEvidence, askNpc } from '../systems/evidence.js';
 import { advanceDays } from '../systems/calendar.js';
 
 export function openNpc(app, st, npcId) {
   const def = NPC_MAP[npcId];
-  const r = rel(st, npcId);
   const atHome = st.npc[npcId]?.city === st.player.cityId;
 
   const handle = app.modal({

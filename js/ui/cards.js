@@ -3,13 +3,13 @@ import { NPCS, NPC_MAP, npcAlive } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, rel } from '../state.js';
 import { onClick, stateColor, relTierName, statLine } from './common.js';
-import { openNpc } from './npc.js';
-import { esc, diffTier } from '../util.js';
+
+
+import { biasName, BIAS_TIP } from '../systems/debate.js';
 
 export function mount(root, st, app) {
   const p = player(st);
   const owned = NPCS.filter(n => p.cards.includes(n.id));
-  const missing = NPCS.filter(n => !p.cards.includes(n.id));
   root.innerHTML = `
   <div class="panel">
     <h2>名鉴 <span class="sub">已录 ${owned.length} / ${NPCS.length} 人</span></h2>

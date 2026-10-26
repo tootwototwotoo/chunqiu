@@ -1,8 +1,8 @@
 // 仕途、晋升、结局
-import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, PEERAGES, peerageName } from '../data/defs.js';
+import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, peerageName } from '../data/defs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
-import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R, rel } from '../state.js';
-import { ri, clamp, diffTier, absDay } from '../util.js';
+import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R } from '../state.js';
+import { clamp, absDay } from '../util.js';
 import { currentPolicy } from './policy.js';
 import { treasureHonor, collectedTreasureKinds, offeredAllKinds } from './treasures.js';
 
@@ -141,7 +141,6 @@ export function joinCampaign(st) {
     addLog(st, `从军伐${STATES[foeState].name}，有功。`, 'gain');
     return { ok: true, msg: `你随军伐${STATES[foeState].name}，斩获颇多，功勋+${merit}，得赏${30 + merit}金。`, win: true };
   }
-  const names = { jianshu: '剑术', bingfa: '兵法', sheshu: '射术' };
   addLog(st, `从军不利，身被数创。`, 'war');
   return { ok: true, msg: '战阵失利，你负伤而还，功勋未增。', win: false };
 }

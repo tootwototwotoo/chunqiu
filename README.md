@@ -69,6 +69,19 @@ npm run build        # 输出 chunqiu.html
   按主题（粮草/水利/军务/刑律等）跨场景使用，人物界面单列「证据」栏。
 - **学者**：设坛讲学收弟子、著书立说成一家、与名士论辩。
 
+### 工程化
+
+```bash
+npm run lint    # ESLint 静态检查
+npm test        # 全部测试（含数据一致性回归）
+npm run check   # lint + test
+npm run race    # 爵位竞速平衡模拟
+```
+
+`test/consistency.mjs` 做跨文件语义校验，专门拦 lint 抓不到的错误：
+职业 id 是否来自数据定义、货物/珍宝/特产/偏好是否互相对得上、
+城池与道路是否连通、论辩证据是否落在有书肆的城、界面动作 id 是否真实存在等。
+
 ### 代码加固
 
 `test/hardening.mjs` 覆盖审核发现的问题，防回归：

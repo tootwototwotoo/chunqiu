@@ -1,8 +1,8 @@
 // 赠礼数值、冷却、封顶、举荐；玉的稀缺与涨价
-import { newGame, addEvidence } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { NPC_MAP } from '../js/data/npcs.js';
 import { JADE } from '../js/data/goods.js';
-import { giftValue, giveGift, giftCandidates, giftBlockReason } from '../js/systems/relations.js';
+import { giftValue, giveGift, giftBlockReason } from '../js/systems/relations.js';
 import { jadeStatus, buyJade } from '../js/systems/trade.js';
 import { advanceDays } from '../js/systems/calendar.js';
 

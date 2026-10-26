@@ -308,11 +308,10 @@ function renderMath(ctx) {
 
 function renderMatch(ctx) {
   const { g } = ctx;
-  const matchedIdx = new Set(g.matched);
   const matchedLeft = new Set(g.matched.map(i => g.pairs[i].l));
   const matchedRight = new Set(g.matched.map(i => g.pairs[i].r));
   return `
-    <div class="mg-hint">典籍与作者配对　·　误 ${g.wrong} 次</div>
+    <div class="mg-hint">典籍与作者配对 · 误 ${g.wrong} 次</div>
     <div class="match-grid">
       <div>
         ${g.leftOrder.map((l, i) => `<button class="match-btn ${matchedLeft.has(l) ? 'done' : ''} ${ctx.selectedLeft === i ? 'sel' : ''}"

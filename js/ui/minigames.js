@@ -1,5 +1,5 @@
 // 小游戏：决斗
-import { MOVES, startDuel, duelAct, settleDuel, makeWanderer } from '../systems/combat.js';
+import { MOVES, startDuel, duelAct, settleDuel } from '../systems/combat.js';
 import { onClick } from './common.js';
 import { esc } from '../util.js';
 
@@ -32,7 +32,7 @@ export function duelModal(app, st, enemy, opts = {}) {
   }
 
   function finish(handle) {
-    const res = settleDuel(st, d, enemy.id ?? null, opts.settleOpts ?? {});
+    settleDuel(st, d, enemy.id ?? null, opts.settleOpts ?? {});
     handle.setBody(renderDuelBody(st, d) + `
       <div class="mg-result" style="margin-top:10px;color:${d.won ? '#4d6f56' : '#9c2b26'}">
         ${d.won ? '胜' : '负'}
@@ -53,7 +53,6 @@ const disableSpecial = (v) => v ? 'disabled' : '';
 
 function renderDuelBody(st, d) {
   const p = d.p, e = d.e;
-  const moveHints = { zhan: '克突', tu: '克崩', beng: '克斩', guard: '回气', special: '耗气4' };
   const disabledSpecial = p.qi < MOVES.special.qi;
   return `
     <div class="combat-hp">

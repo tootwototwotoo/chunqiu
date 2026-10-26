@@ -1,5 +1,5 @@
 // 差事限期必须覆盖真实路程
-import { newGame, player } from '../js/state.js';
+import { newGame } from '../js/state.js';
 import { refreshBoard, acceptQuest } from '../js/systems/quests.js';
 import { CITIES } from '../js/data/world.js';
 import { shortestPath } from '../js/systems/pathfind.js';

@@ -1,13 +1,13 @@
 // 献宝：把珍宝献给国君换功勋与名声；玄璧可助册命；集齐六种得称号
 import { TREASURES, TREASURE_IDS } from '../data/treasures.js';
-import { player, addMerit, addFame, addLog, addGoods, goodsCount } from '../state.js';
+import { player, addMerit, addFame, addLog, addGoods } from '../state.js';
 import { STATES } from '../data/world.js';
-import { clamp } from '../util.js';
+
 
 // 献宝收益：珍稀程度越高，功勋与名声越厚
 export const OFFER_GAIN = {
   yu: { merit: 10, fame: 4 },
-  zhu: { merit: 16, fame: 6 },
+  mingzhu: { merit: 16, fame: 6 },
   shan: { merit: 24, fame: 8 },
   xijiao: { merit: 32, fame: 10 },
   xiang: { merit: 42, fame: 13 },

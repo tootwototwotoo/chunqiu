@@ -1,12 +1,12 @@
 // 六种珍宝：价格阶梯、稀缺、涨价、献宝、玄璧助封、集齐称号
 import { newGame, player, addGoods } from '../js/state.js';
-import { TREASURES, TREASURE_IDS, treasuresInCity } from '../js/data/treasures.js';
+import { TREASURES, TREASURE_IDS } from '../js/data/treasures.js';
 import { treasureStatus, treasureList, buyTreasure, treasuresOwnedKinds } from '../js/systems/trade.js';
 import { offerTreasure, offerableTreasures, treasureHonor, offeredAllKinds, biPetitionBonus } from '../js/systems/treasures.js';
-import { acceptTrial, finishTrial, petitionChance, canPetition } from '../js/systems/peerage.js';
+import { acceptTrial, petitionChance } from '../js/systems/peerage.js';
 import { advanceDays } from '../js/systems/calendar.js';
 import { computeEnding } from '../js/systems/progression.js';
-import { evaluateGame } from '../js/systems/trialGames.js';
+
 
 let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
@@ -87,7 +87,7 @@ for (let i = 1; i < TREASURE_IDS.length; i++) {
   const st = newGame({ name: '藏', profession: 'shangren', seed: 10 });
   ok(treasureHonor(st) === null, '初始无珍宝称号');
   addGoods(st, 'yu', 1);
-  addGoods(st, 'zhu', 1);
+  addGoods(st, 'mingzhu', 1);
   ok(treasureHonor(st)?.name === '小有珍玩', '两宝得「小有珍玩」');
   addGoods(st, 'shan', 1); addGoods(st, 'xijiao', 1);
   ok(treasureHonor(st)?.name === '多宝之家', '四宝得「多宝之家」');
