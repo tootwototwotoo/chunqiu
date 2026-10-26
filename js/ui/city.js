@@ -22,8 +22,9 @@ import {
   shopAt, shopIncomeOf, totalShopIncome, totalWages,
   canOpenShop, openShop, canUpgradeShop, upgradeShop, upgradeCostOf,
   canHire, hireClerk, canGive, giveAway, rankProgress, canBuyOffice, buyOffice,
+  canGetPermit, getPermit, hasPermit, permitFeeAt, shopCostAt, shopIncomeBaseAt,
 } from '../systems/merchant.js';
-import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS } from '../data/merchant.js';
+import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, PERMIT, PERMIT_ROLE_NAMES } from '../data/merchant.js';
 import { merchantRank as merchantRankName, normShops } from '../systems/merchant.js';
 
 import { offerModal } from './offer.js';
@@ -272,13 +273,29 @@ function buildActions(st, app, c, owner) {
     }
     {
       const has = shopAt(st, c.id);
+      const shopable = canOpenShop(st, c.id);
       add({
-        id: 'shop', name: has ? '商号' : '开设商号', cost: has ? '' : '800金',
+        id: 'shop', name: has ? '商号' : '开设商号', cost: has ? '' : `${shopCostAt(c.id)}金`,
         desc: has
           ? `${SHOP_LEVELS[has.level].name}（月入 ${shopIncomeOf(has)} 金，伙计 ${has.hired}/${SHOP_LEVELS[has.level].hiredMax}）`
-          : (c.tags.includes('market') ? '设肆于此，每月有进项。' : '此处非市邑，不可设肆。'),
-        disabled: has ? false : !canOpenShop(st, c.id).ok,
+          : (c.tags.includes('market')
+            ? (shopable.needPermit ? '须先领得本地市籍。' : `设肆于此，每月进项约 ${shopIncomeBaseAt(c.id, 1)} 金。`)
+            : '此处非市邑，不可设肆。'),
+        disabled: has ? false : !shopable.ok,
         run: () => (has ? openShopPanel(app, st, c.id) : runOpenShop(app, st, c.id)),
+      });
+    }
+    if (c.tags.includes('market') && !hasPermit(st, c.id)) {
+      const pc = canGetPermit(st, c.id);
+      add({
+        id: 'permit', name: '请领市籍', cost: `${PERMIT.days}日 · ${permitFeeAt(st, c.id)}金起`,
+        desc: pc.ok
+          ? (pc.mode === 'affinity'
+            ? `向${pc.candidates[0].def.name}求许可，纳市租${pc.fee}金。`
+            : `凭名望说动有司，纳贽礼与市租共${pc.fee}金，成败难料。`)
+          : pc.msg,
+        disabled: !pc.ok,
+        run: () => permitModal(app, st, c.id),
       });
     }
     add({
@@ -791,6 +808,48 @@ function buyOfficeModal(app, st, stateId) {
         if (!r.ok) { app.toast(r.msg, 'war'); return; }
         app.log(r.msg, 'big');
         app.after({ notes: [r.msg] });
+      } },
+    ],
+  });
+  return h;
+}
+
+function permitModal(app, st, cityId) {
+  const city = CITY_MAP[cityId];
+  const chk = canGetPermit(st, cityId);
+  if (!chk.ok) {
+    app.modal({ title: '请领市籍', narrow: true, body: `<p>${chk.msg}</p>`, foot: [{ label: '知道了', close: true }] });
+    return;
+  }
+  const npc = chk.candidates[0];
+  const affLine = chk.mode === 'affinity'
+    ? `${npc.def.name}（${PERMIT_ROLE_NAMES[npc.role]}，交情 ${npc.aff}）愿为你通融。`
+    : `${npc.def.name}（${PERMIT_ROLE_NAMES[npc.role]}）与你素无深交，只能凭名望说动。`;
+  const h = app.modal({
+    title: '请领市籍',
+    sub: `${city.name} · 市有市籍，非有司许可不得列肆`,
+    body: `<p style="line-height:1.9">${esc(affLine)}</p>
+      <div class="kv">
+        <dt>市租</dt><dd>${chk.fee} 金</dd>
+        <dt>耗时</dt><dd>${PERMIT.days} 日</dd>
+        ${chk.mode === 'trial' ? `<dt>方式</dt><dd>凭名望说动（含贽礼 ${PERMIT.trialFee} 金，未必准）</dd>` : '<dt>方式</dt><dd>以交情通融</dd>'}
+      </div>
+      <div class="footnote">得籍后可于本城设肆。市租入官，亦记入你的散财。</div>`,
+    foot: [
+      { label: '作罢', close: true },
+      { label: `纳金请籍（${chk.fee}）`, cls: 'btn primary', onClick: (hh) => {
+        const r = getPermit(st, cityId);
+        hh.close();
+        if (!r.ok) {
+          app.toast(r.msg, 'war');
+          app.log(r.msg, 'war');
+          const adv = advanceDays(st, PERMIT.days);
+          app.after({ notes: [r.msg, ...adv.notes], events: adv.events, died: adv.died });
+          return;
+        }
+        app.log(r.msg, 'big');
+        const adv = advanceDays(st, PERMIT.days);
+        app.after({ notes: [r.msg, ...adv.notes], events: adv.events, died: adv.died });
       } },
     ],
   });

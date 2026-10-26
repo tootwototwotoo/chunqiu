@@ -41,3 +41,31 @@ export const BUY_OFFICE = {
   rankGranted: 3, // 上士
   shopPassive: 0.3,
 };
+
+// ---------------- 开号许可（市籍） ----------------
+// 春秋「工商食官」，市有市籍，非有司许可不得列肆。
+// 许可须向城中之人求取：有交情才肯通融，且仍需纳「市租」。
+
+// 可授予许可的人物角色（按优先次序）
+export const PERMIT_ROLES = ['ruler', 'minister', 'scholar'];
+export const PERMIT_ROLE_NAMES = { ruler: '国君', minister: '卿相', scholar: '士人' };
+
+// 许可条件
+export const PERMIT = {
+  minAff: 32,          // 交情门槛（「颇有往来」）
+  feeRate: 0.25,       // 市租 = 开号成本 × 此比例
+  days: 3,             // 求许可耗时
+  minRank: 1,          // 须为行商
+  minFame: 10,         // 名声门槛
+  trialFame: 35,       // 达不到交情时，可凭名声再试一次
+  trialFee: 300,       // 再试需另纳贽礼
+  officialRate: 2,     // 城中无可托之人时，赴市亭立籍的费率倍数
+};
+
+// 城池经营系数：大城投入大、回报高
+export function cityScale(city) {
+  const pop = city?.pop ?? 40;
+  return clampNum(pop / 40, 0.4, 2);
+}
+
+function clampNum(v, a, b) { return Math.max(a, Math.min(b, v)); }

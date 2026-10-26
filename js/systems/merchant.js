@@ -1,9 +1,10 @@
 // 商人系统：阶次判定、商号、伙计、散财、转职
 import {
   MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, BUY_OFFICE, TOP_RANK,
+  PERMIT, PERMIT_ROLES, PERMIT_ROLE_NAMES, cityScale,
 } from '../data/merchant.js';
 import { STATES, CITY_MAP } from '../data/world.js';
-import { player, addLog, addMoney, addFame } from '../state.js';
+import { player, addLog, addMoney, addFame, rel, npcsHere, R } from '../state.js';
 import { clamp } from '../util.js';
 
 const isMerchant = (st) => player(st).profession === 'shangren';
@@ -46,8 +47,10 @@ export function shopCount(st) {
 }
 
 export function shopIncomeOf(shop) {
-  const def = SHOP_LEVELS[shop.level] ?? SHOP_LEVELS[1];
-  return def.income + shop.hired * HIRE.income + (shop.bonus ?? 0);
+  const scale = shop?.scale ?? 1;
+  const base = shopIncomeBaseAt(shop.city, shop.level);
+  const hiredPer = Math.round(HIRE.income * scale);
+  return base + shop.hired * hiredPer + (shop.bonus ?? 0);
 }
 
 export function totalShopIncome(st) {
@@ -58,11 +61,137 @@ export function totalWages(st) {
   return normShops(st).reduce((a, s) => a + s.hired * HIRE.wage, 0);
 }
 
+// 某城开号成本与月入：按人口浮动
+export function shopCostAt(cityId, level = 1) {
+  const city = CITY_MAP[cityId];
+  const base = SHOP_LEVELS[level]?.cost ?? SHOP_LEVELS[1].cost;
+  return Math.max(200, Math.round(base * cityScale(city)));
+}
+
+export function shopIncomeBaseAt(cityId, level = 1) {
+  const city = CITY_MAP[cityId];
+  const base = SHOP_LEVELS[level]?.income ?? SHOP_LEVELS[1].income;
+  return Math.max(30, Math.round(base * cityScale(city)));
+}
+
+// 某城的市租（许可费）
+export function permitFeeAt(st, cityId) {
+  return Math.round(shopCostAt(cityId, 1) * PERMIT.feeRate);
+}
+
+// 当前城可授予市籍的人物：按角色优先，交情高者在前
+export function permitCandidates(st) {
+  const here = npcsHere(st);
+  return here
+    .filter(n => PERMIT_ROLES.includes(n.def.role))
+    .map(n => {
+      const r = rel(st, n.id);
+      const rank = PERMIT_ROLES.indexOf(n.def.role);
+      return { id: n.id, def: n.def, aff: r.aff, role: n.def.role, order: rank };
+    })
+    .sort((a, b) => a.order - b.order || b.aff - a.aff);
+}
+
+// 是否已获本地许可
+export function hasPermit(st, cityId) {
+  const p = player(st);
+  return Array.isArray(p.permits) && p.permits.some(x => x.city === cityId);
+}
+
+export function permitOf(st, cityId) {
+  return (player(st).permits ?? []).find(x => x.city === cityId) ?? null;
+}
+
+// 取得许可的条件检查
+export function canGetPermit(st, cityId = player(st).cityId) {
+  const p = player(st);
+  if (!isMerchant(st)) return { ok: false, msg: '唯商贾须领市籍。' };
+  if (!CITY_MAP[cityId]?.tags.includes('market')) return { ok: false, msg: '此处非市邑，无籍可领。' };
+  if (hasPermit(st, cityId)) return { ok: false, msg: '本城已有你的市籍。' };
+  const rank = rankIndexOf(st);
+  if (rank < PERMIT.minRank) return { ok: false, msg: `须至${MERCHANT_RANKS[PERMIT.minRank].name}方可请领市籍。` };
+  if (p.fame < PERMIT.minFame) return { ok: false, msg: `名声不足（${p.fame}/${PERMIT.minFame}）。` };
+
+  const cands = permitCandidates(st);
+  if (!cands.length) {
+    // 城中无可托之人：可径赴市亭告官立籍，费用更高
+    const officialFee = Math.round(permitFeeAt(st, cityId) * PERMIT.officialRate);
+    if (p.money < officialFee) return { ok: false, msg: `本城无有司可托，须赴市亭立籍，纳${officialFee}金。` };
+    return { ok: true, mode: 'official', candidates: [], fee: officialFee, cityId };
+  }
+
+  const friendly = cands.filter(c => c.aff >= PERMIT.minAff);
+  const fee = permitFeeAt(st, cityId);
+  if (p.money < fee) return { ok: false, msg: `市租需${fee}金。` };
+
+  if (friendly.length) {
+    return { ok: true, mode: 'affinity', candidates: friendly, fee, cityId };
+  }
+  // 无交情时：可凭名声再试，另纳贽礼
+  if (p.fame >= PERMIT.trialFame && p.money >= fee + PERMIT.trialFee) {
+    return { ok: true, mode: 'trial', candidates: cands, fee: fee + PERMIT.trialFee, cityId };
+  }
+  const best = cands[0];
+  return {
+    ok: false,
+    msg: `须与城中${PERMIT_ROLE_NAMES[best.role]}有交情（${PERMIT.minAff} 以上）方可通融；`
+      + `或名声达${PERMIT.trialFame}并另纳贽礼${PERMIT.trialFee}金，凭名望说动有司。`,
+    candidates: cands,
+  };
+}
+
+// 请领市籍：交情路线必定成功；名望路线需要判定
+export function getPermit(st, cityId = player(st).cityId) {
+  const chk = canGetPermit(st, cityId);
+  if (!chk.ok) return chk;
+  const p = player(st);
+  const npc = chk.candidates[0] ?? null;
+  addMoney(st, -chk.fee, true);
+
+  let granted = true;
+  if (chk.mode === 'trial') {
+    const roll = p.fame * 0.35 + p.stats.mei * 0.25 + p.stats.zheng * 0.2 + R.int(st, 0, 25);
+    granted = roll >= 45;
+  }
+
+  if (!granted) {
+    addLog(st, `求市籍于${npc.def.name}，未蒙允许。`, 'war');
+    return {
+      ok: false, spent: chk.fee, mode: chk.mode,
+      msg: `${npc.def.name}沉吟良久：「名录有限，君且待来日。」贽礼已纳，未得许可。`,
+    };
+  }
+
+  p.permits = Array.isArray(p.permits) ? p.permits : [];
+  p.permits.push({ city: cityId, by: npc?.id ?? null, day: absDayNow(st), fee: chk.fee });
+  p.givenAway = (p.givenAway ?? 0) + chk.fee; // 市租亦入官，计入散财
+  addFame(st, 2);
+  if (npc) {
+    addLog(st, `得${npc.def.name}许可，入${CITY_MAP[cityId].name}市籍。`, 'big');
+    return {
+      ok: true, by: npc.def.name, fee: chk.fee, mode: chk.mode, cityId,
+      msg: `${npc.def.name}取其牒，书君名于市籍：「可于此处列肆矣。」纳市租${chk.fee}金。`,
+    };
+  }
+  addLog(st, `赴${CITY_MAP[cityId].name}市亭告官立籍。`, 'big');
+  return {
+    ok: true, by: null, fee: chk.fee, mode: 'official', cityId,
+    msg: `本城无有司可托，径赴市亭纳${chk.fee}金，书名著籍。`,
+  };
+}
+
+function absDayNow(st) {
+  // 与 util.absDay 一致，避免再引入一次 import
+  const t = st.time;
+  return (t.year + 722) * 360 + (t.month - 1) * 30 + (t.day - 1);
+}
+
 export function canOpenShop(st, cityId) {
   if (!isMerchant(st)) return { ok: false, msg: '唯商贾可设肆。' };
   if (!CITY_MAP[cityId]?.tags.includes('market')) return { ok: false, msg: '此处非市邑，不可设肆。' };
   if (shopAt(st, cityId)) return { ok: false, msg: '本城已有你的商号。' };
-  const cost = SHOP_LEVELS[1].cost;
+  if (!hasPermit(st, cityId)) return { ok: false, msg: '尚未领得本地市籍。', needPermit: true };
+  const cost = shopCostAt(cityId, 1);
   if (player(st).money < cost) return { ok: false, msg: `设肆需金${cost}。` };
   return { ok: true, cost };
 }
@@ -74,12 +203,16 @@ export function openShop(st, cityId) {
   normShops(st).push({ city: cityId, level: 1, hired: 0, bonus: 0 });
   addFame(st, 3);
   addLog(st, `于${CITY_MAP[cityId].name}开设商号（小肆）。`, 'big');
-  return { ok: true, city: cityId, level: 1, msg: `于${CITY_MAP[cityId].name}开设小肆，每月进项${SHOP_LEVELS[1].income}金。` };
+  return {
+    ok: true, city: cityId, level: 1, cost: chk.cost,
+    msg: `于${CITY_MAP[cityId].name}开设小肆，每月进项${shopIncomeBaseAt(cityId, 1)}金。`,
+  };
 }
 
 export function upgradeCostOf(shop) {
   const next = SHOP_LEVELS[shop.level + 1];
-  return next ? next.cost - (SHOP_LEVELS[shop.level]?.cost ?? 0) : null;
+  if (!next) return null;
+  return shopCostAt(shop.city, next.level) - shopCostAt(shop.city, shop.level);
 }
 
 export function canUpgradeShop(st, cityId) {
@@ -99,7 +232,7 @@ export function upgradeShop(st, cityId) {
   chk.shop.level += 1;
   addFame(st, 3);
   addLog(st, `${CITY_MAP[cityId].name}商号升为${chk.next.name}。`, 'big');
-  return { ok: true, level: chk.shop.level, msg: `${CITY_MAP[cityId].name}商号升为${chk.next.name}，每月进项${chk.next.income}金。` };
+  return { ok: true, level: chk.shop.level, msg: `${CITY_MAP[cityId].name}商号升为${chk.next.name}，每月进项${shopIncomeOf(chk.shop)}金。` };
 }
 
 // ---------- 伙计 ----------

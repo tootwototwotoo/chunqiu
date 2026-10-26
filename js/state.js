@@ -59,7 +59,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       cards: [], relations: {},
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
-      givenAway: 0, peakMoney: prof.start.money, pacts: [], passiveIncome: 0,
+      givenAway: 0, peakMoney: prof.start.money, pacts: [], passiveIncome: 0, permits: [],
       disciples: 0, works: [], doctrine: null,
       alliances: 0, missions: 0,
       inventory: {},
@@ -393,9 +393,18 @@ export function migrateState(st) {
   p.peakMoney = Number.isFinite(p.peakMoney) ? Math.max(0, p.peakMoney) : p.money;
   p.pacts = Array.isArray(p.pacts) ? p.pacts.filter(x => object(x) && own(STATES, x.state)) : [];
   p.passiveIncome = Number.isFinite(p.passiveIncome) ? Math.max(0, p.passiveIncome) : 0;
+  p.permits = Array.isArray(p.permits)
+    ? p.permits.filter(x => object(x) && own(CITY_MAP, x.city))
+    : [];
   p.shops = p.shops.map(shop => (typeof shop === 'string'
     ? { city: shop, level: 1, hired: 0, bonus: 0 }
     : { city: shop.city, level: Math.max(1, Math.min(3, Math.round(shop.level ?? 1))), hired: Math.max(0, Math.round(shop.hired ?? 0)), bonus: Math.max(0, Math.round(shop.bonus ?? 0)) }));
+  // 已有商号者视为已得该城市籍（旧存档兼容）
+  for (const shop of p.shops) {
+    if (!p.permits.some(x => x.city === shop.city)) {
+      p.permits.push({ city: shop.city, by: null, day: 0, fee: 0 });
+    }
+  }
   for (const w of p.works) ensure(object(w) && typeof w.title === 'string' && Number.isInteger(w.year));
   for (const r of Object.values(p.relations)) {
     ensure(object(r)); fill(r, { aff: 0, met: false, gifts: 0 });

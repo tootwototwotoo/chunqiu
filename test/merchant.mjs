@@ -8,6 +8,7 @@ import {
   canOpenShop, openShop, canUpgradeShop, upgradeShop, upgradeCostOf,
   canHire, hireClerk, canGive, giveAway, merchantRank,
   rankIndexOf, canBuyOffice, buyOffice, trackPeakMoney,
+  canGetPermit, getPermit, hasPermit, permitFeeAt, permitCandidates, shopCostAt, shopIncomeBaseAt,
 } from '../js/systems/merchant.js';
 import { advanceDays } from '../js/systems/calendar.js';
 import { computeEnding, scoreOf } from '../js/systems/progression.js';
@@ -15,6 +16,14 @@ import { migrateState } from '../js/state.js';
 
 let fails = 0;
 const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' — ' + x : ''}`); if (!c) fails++; };
+
+// 测试便利：直接把某城市籍写入状态（等价于已领得许可）
+const grantPermit = (st, cityId) => {
+  st.player.permits = Array.isArray(st.player.permits) ? st.player.permits : [];
+  if (!st.player.permits.some(x => x.city === cityId)) {
+    st.player.permits.push({ city: cityId, by: 'test', day: 0, fee: 0 });
+  }
+};
 
 // ---------------- 阶次体系 ----------------
 ok(MERCHANT_RANKS.length === 6, '六阶', MERCHANT_RANKS.map(r => r.name).join(','));
@@ -34,12 +43,14 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   st.player.money = 3500;
   ok(merchantRank(st).name === '行商', '无商号不升坐贾', merchantRank(st).name);
   st.player.money = 5000;
+  grantPermit(st, st.player.cityId);
   openShop(st, st.player.cityId);
   ok(merchantRank(st).name === '坐贾', '有商号且金足升坐贾');
 
   // 巨商：需 3 座（设肆要花钱，故先给足）
   st.player.money = 9000;
   ok(merchantRank(st).name === '坐贾', '1 座商号不升巨商', merchantRank(st).name);
+  grantPermit(st, 'linzi'); grantPermit(st, 'luoyi');
   openShop(st, 'linzi'); openShop(st, 'luoyi');
   ok(shopCount(st) === 3, '共 3 座商号', String(shopCount(st)));
   st.player.money = 9000; // 设肆耗金，补回门槛之上
@@ -71,22 +82,26 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
 
   st.player.money = 100;
   ok(!canOpenShop(st, 'linzi').ok, '金不足不可设肆');
-  st.player.money = 1000;
+  st.player.money = 3000;
+  ok(!canOpenShop(st, 'linzi').ok, '无市籍不可设肆', canOpenShop(st, 'linzi').msg);
+  grantPermit(st, 'linzi');
   const r = openShop(st, 'linzi');
   ok(r.ok, '可开设小肆', r.msg);
-  ok(shopIncomeOf(shopAt(st, 'linzi')) === 120, '小肆月入 120');
-  ok(player(st).money === 200, '扣除 800 金', String(player(st).money));
+  ok(shopIncomeOf(shopAt(st, 'linzi')) === shopIncomeBaseAt('linzi', 1), '小肆月入按城浮动');
+  ok(player(st).money === 3000 - shopCostAt('linzi', 1), '扣除按城浮动的设肆费',
+    `${player(st).money} = 3000 - ${shopCostAt('linzi', 1)}`);
   ok(!canOpenShop(st, 'linzi').ok, '同城不可重复设肆');
 
   // 升级
-  ok(upgradeCostOf(shopAt(st, 'linzi')) === 1200, '升大铺补差价 1200', String(upgradeCostOf(shopAt(st, 'linzi'))));
-  st.player.money = 1200;
+  const upCost = upgradeCostOf(shopAt(st, 'linzi'));
+  ok(upCost === shopCostAt('linzi', 2) - shopCostAt('linzi', 1), '升级差价按城浮动', String(upCost));
+  st.player.money = upCost;
   ok(canUpgradeShop(st, 'linzi').ok, '可升大铺');
   upgradeShop(st, 'linzi');
-  ok(shopAt(st, 'linzi').level === 2 && shopIncomeOf(shopAt(st, 'linzi')) === 320, '大铺月入 320');
-  st.player.money = 3000;
+  ok(shopAt(st, 'linzi').level === 2 && shopIncomeOf(shopAt(st, 'linzi')) === shopIncomeBaseAt('linzi', 2), '大铺月入按城浮动');
+  st.player.money = shopCostAt('linzi', 3);
   upgradeShop(st, 'linzi');
-  ok(shopAt(st, 'linzi').level === 3 && shopIncomeOf(shopAt(st, 'linzi')) === 800, '总号月入 800');
+  ok(shopAt(st, 'linzi').level === 3 && shopIncomeOf(shopAt(st, 'linzi')) === shopIncomeBaseAt('linzi', 3), '总号月入按城浮动');
   ok(!canUpgradeShop(st, 'linzi').ok, '总号不可再升');
 }
 
@@ -95,18 +110,19 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   const st = newGame({ name: '商', profession: 'shangren', seed: 3 });
   st.player.cityId = 'linzi';
   st.player.money = 10000;
+  st.player.permits = [{ city: 'linzi', by: 'test', day: 0, fee: 0 }];
   openShop(st, 'linzi');
   const shop = shopAt(st, 'linzi');
   ok(canHire(st, 'linzi').ok, '小肆可雇伙计');
   hireClerk(st, 'linzi');
   ok(shop.hired === 1, '雇得 1 名');
-  ok(shopIncomeOf(shop) === 120 + HIRE.income, '伙计加月入', String(shopIncomeOf(shop)));
+  ok(shopIncomeOf(shop) > shopIncomeBaseAt('linzi', 1), '伙计加月入', String(shopIncomeOf(shop)));
   ok(totalWages(st) === HIRE.wage, '伙计月支', String(totalWages(st)));
   ok(!canHire(st, 'linzi').ok, '小肆只能雇 1 名', canHire(st, 'linzi').msg);
 
-  // 升大铺后可再雇
-  st.player.money = 2000;
-  upgradeShop(st, 'linzi');
+  // 升大铺后可再雇（升级差价按城浮动）
+  st.player.money = upgradeCostOf(shopAt(st, 'linzi'));
+  ok(upgradeShop(st, 'linzi').ok, '升为大批（为雇工测试）');
   st.player.money = 10000;
   ok(canHire(st, 'linzi').ok, '大铺可再雇');
   hireClerk(st, 'linzi');
@@ -119,6 +135,7 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   const st = newGame({ name: '商', profession: 'shangren', seed: 4 });
   st.player.cityId = 'linzi';
   st.player.money = 10000;
+  st.player.permits = [{ city: 'linzi', by: 'test', day: 0, fee: 0 }];
   openShop(st, 'linzi');
   hireClerk(st, 'linzi');
   const before = player(st).money;
@@ -147,6 +164,7 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
 
   // 修路需要本地商号
   ok(!canGive(st, 'road', 'linzi').ok, '无商号不可修路');
+  st.player.permits = [{ city: 'linzi', by: 'test', day: 0, fee: 0 }];
   openShop(st, 'linzi');
   const shop = shopAt(st, 'linzi');
   const inc0 = shopIncomeOf(shop);
@@ -166,6 +184,7 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   st.player.fame = 70;
   // 先到巨商
   st.player.money = 25000;
+  st.player.permits = ['linzi', 'luoyi', 'tao'].map(c => ({ city: c, by: 'test', day: 0, fee: 0 }));
   openShop(st, 'linzi'); openShop(st, 'luoyi'); openShop(st, 'tao');
   ok(merchantRank(st).name === '巨商', '先至巨商', merchantRank(st).name);
 
@@ -238,6 +257,132 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   ok(m.player.shops[0].city === 'linzi' && m.player.shops[0].level === 1, '迁移出城市与等级', JSON.stringify(m.player.shops[0]));
   ok(m.player.givenAway === 0 && Array.isArray(m.player.pacts), '新字段补齐');
   ok(m.player.shops.every(s => s.hired >= 0 && s.bonus >= 0), '伙计与加成字段完整');
+}
+
+
+// ---------------- 市籍许可 ----------------
+{
+
+  const { PERMIT, PERMIT_ROLES } = await import('../js/data/merchant.js');
+
+  const st = newGame({ name: '商', profession: 'shangren', seed: 20 });
+  st.player.cityId = 'linzi';
+  st.player.money = 20000;
+  st.player.fame = 5;
+
+  // 阶次不足
+  ok(!canGetPermit(st, 'linzi').ok, '贩夫不可请领市籍', canGetPermit(st, 'linzi').msg);
+
+  st.player.money = 1300; // 行商门槛 1200
+  ok(merchantRank(st).name === '行商', '先至行商');
+  ok(!canGetPermit(st, 'linzi').ok, '名声不足不可请领', canGetPermit(st, 'linzi').msg);
+
+  st.player.fame = 20;
+  // 城中可选人物
+  const cands = permitCandidates(st);
+  ok(cands.length > 0, '城中有可授籍之人', cands.map(c => c.def.name).join(','));
+  ok(cands.every(c => PERMIT_ROLES.includes(c.role)), '候选人均为可授籍角色');
+  ok(cands[0].order <= (cands[cands.length - 1]?.order ?? 0), '候选人按角色优先排序');
+
+  // 交情不足且名声未达「凭名望」档
+  st.player.money = 20000;
+  const low = canGetPermit(st, 'linzi');
+  ok(!low.ok, '无交情且名声不足则不可请领', low.msg);
+  ok(/交情/.test(low.msg) && /名望|名声/.test(low.msg), '提示同时给出两条路径');
+
+  // 交情路线
+  const { rel } = await import('../js/state.js');
+  rel(st, cands[0].id).aff = PERMIT.minAff;
+  const byAff = canGetPermit(st, 'linzi');
+  ok(byAff.ok && byAff.mode === 'affinity', '交情达标可请领', byAff.mode);
+  ok(byAff.fee === permitFeeAt(st, 'linzi'), '市租按城浮动', String(byAff.fee));
+
+  const money0 = player(st).money;
+  const r = getPermit(st, 'linzi');
+  ok(r.ok, '交情路线必定得籍', r.msg);
+  ok(player(st).money === money0 - byAff.fee, '扣除市租');
+  ok(hasPermit(st, 'linzi'), '已获市籍');
+  ok(player(st).givenAway >= byAff.fee, '市租计入散财', String(player(st).givenAway));
+  ok(!canGetPermit(st, 'linzi').ok, '同城不可重复请领');
+  ok(canOpenShop(st, 'linzi').ok, '得籍后可设肆');
+
+  // 名望路线（无交情，名声够）
+  const st2 = newGame({ name: '商', profession: 'shangren', seed: 21 });
+  st2.player.cityId = 'linzi';
+  st2.player.money = 20000;
+  st2.player.fame = PERMIT.trialFame;
+  const t2 = canGetPermit(st2, 'linzi');
+  ok(t2.ok && t2.mode === 'trial', '名声够可走名望路线', t2.mode);
+  ok(t2.fee === permitFeeAt(st2, 'linzi') + PERMIT.trialFee, '名望路线含贽礼', String(t2.fee));
+
+  // 名望路线可能失败：统计若干次
+  let anyFail = false;
+  for (let i = 0; i < 40 && !anyFail; i++) {
+    const s3 = newGame({ name: '商', profession: 'shangren', seed: 100 + i });
+    s3.player.cityId = 'linzi';
+    s3.player.money = 20000;
+    s3.player.fame = PERMIT.trialFame;
+    const rr = getPermit(s3, 'linzi');
+    if (!rr.ok) anyFail = true;
+  }
+  ok(anyFail, '名望路线存在失败可能');
+
+
+  // 无人可授籍的城：可赴市亭告官立籍（费用更高）
+  {
+    const s5 = newGame({ name: '商', profession: 'shangren', seed: 23, era: 'early' });
+    s5.player.cityId = 'tao';
+    s5.player.money = 20000;
+    s5.player.fame = 30;
+    ok(permitCandidates(s5).length === 0, '陶城无有司可托');
+    const chk5 = canGetPermit(s5, 'tao');
+    ok(chk5.ok && chk5.mode === 'official', '可赴市亭告官立籍', chk5.mode);
+    ok(chk5.fee > permitFeeAt(s5, 'tao'), '告官立籍费用更高', `${chk5.fee} > ${permitFeeAt(s5, 'tao')}`);
+    const r5 = getPermit(s5, 'tao');
+    ok(r5.ok && r5.by === null, '告官立籍成功且无举荐人');
+    ok(hasPermit(s5, 'tao'), '已获陶城市籍');
+  }
+
+  // 主要城邑的可得籍覆盖率：有司可托者靠交情，无可托者靠告官兜底
+  {
+    const { CITIES } = await import('../js/data/world.js');
+    const { PERMIT: P } = await import('../js/data/merchant.js');
+    const s6 = newGame({ name: '商', profession: 'shangren', seed: 24 });
+    let byOfficial = 0, byTrial = 0;
+    const unreachable = [];
+    for (const c of CITIES) {
+      s6.player.cityId = c.id;
+      s6.player.money = 20000;
+      s6.player.fame = P.trialFame; // 名望线之上
+      const chk = canGetPermit(s6, c.id);
+      if (!chk.ok) { unreachable.push(c.id); continue; }
+      if (chk.mode === 'official') byOfficial++;
+      if (chk.mode === 'trial') byTrial++;
+    }
+    ok(unreachable.length === 0, '31 城皆可得市籍', unreachable.join(','));
+    ok(byOfficial > 0, '存在只能告官立籍的城', String(byOfficial));
+    ok(byTrial > 0, '存在需凭名望的城', String(byTrial));
+  }
+
+  // 已有商号的旧存档自动视为有籍
+  const st4 = newGame({ name: '商', profession: 'shangren', seed: 22 });
+  migrateState(st4);
+  st4.player.shops = ['linzi'];
+  st4.player.permits = [];
+  const m4 = migrateState(st4);
+  ok(hasPermit(m4, 'linzi'), '已有商号的旧档自动补市籍');
+}
+
+// ---------------- 城池差异 ----------------
+{
+  const big = shopCostAt('linzi', 1);
+  const small = shopCostAt('handan', 1);
+  ok(big > small, '大城设肆更贵', `临淄${big} > 邯郸${small}`);
+  ok(shopIncomeBaseAt('linzi', 1) > shopIncomeBaseAt('handan', 1), '大城月入更高');
+  // 回本月数相近（数值平衡的关键）
+  const bigMonths = big / shopIncomeBaseAt('linzi', 1);
+  const smallMonths = small / shopIncomeBaseAt('handan', 1);
+  ok(Math.abs(bigMonths - smallMonths) < 1, '大小城回本周期接近', `${bigMonths.toFixed(1)} vs ${smallMonths.toFixed(1)}`);
 }
 
 // ---------------- 商人仍不可入仕途 ----------------
