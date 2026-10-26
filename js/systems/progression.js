@@ -35,8 +35,22 @@ const OFFICE_DC = 55;
 export const OFFICE_FAME = 20;
 export const OFFICE_QUEST_COUNT = 3;
 
+// 仕途唯一闸门：商人无仕途，其余三途方可入仕。
+// UI（朝堂谒见 / NPC 举荐）与系统（seekOffice / 廷对）都必须先过这一关。
+export const CAREER_PROFESSIONS = ['youxia', 'shuike', 'xuezhe'];
+
+export function canTakeOffice(st) {
+  const p = player(st);
+  if (!CAREER_PROFESSIONS.includes(p.profession)) {
+    return { ok: false, msg: '商贾不入仕途，唯以货殖立身。' };
+  }
+  return { ok: true };
+}
+
 export function canSeekOffice(st) {
   const p = player(st);
+  const gate = canTakeOffice(st);
+  if (!gate.ok) return gate;
   if (p.fame < OFFICE_FAME) return { ok: false, msg: `名声不足（${p.fame}/${OFFICE_FAME}）。` };
   const done = st.quests?.done?.filter(q => q.status === 'done').length ?? 0;
   if (done < OFFICE_QUEST_COUNT) return { ok: false, msg: `差事未足（${done}/${OFFICE_QUEST_COUNT}）。` };
@@ -60,6 +74,8 @@ export function markOfficeAttempt(st) {
 
 export function seekOffice(st, stateId) {
   const p = player(st);
+  const gate = canTakeOffice(st);
+  if (!gate.ok) return gate;
   if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
   if (p.fame < OFFICE_FAME) return { ok: false, msg: `名声未著（${p.fame}/${OFFICE_FAME}），国君不见。` };
   const doneCount = st.quests?.done?.filter(q => q.status === 'done').length ?? 0;

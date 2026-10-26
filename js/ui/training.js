@@ -36,15 +36,16 @@ export function trainingModal(app, st, skillKey, opts = {}) {
   return h;
 }
 
-function newZone(g) {
+function newZone(g, st) {
   const pw = [10, 8, 6][Math.min(2, g.round - 1)] ?? 6;
-  return { center: 30 + Math.random() * 40, width: pw };
+  // 用存档内种子，保证同一存档回放一致
+  return { center: 30 + R.next(st) * 40, width: pw };
 }
 
 function setup(ctx) {
   const { g, st } = ctx;
   if (g.kind === 'timing') {
-    g.zone = newZone(g);
+    g.zone = newZone(g, st);
     ctx.pos = 0; ctx.last = performance.now();
     ctx.keyHandler = (e) => { if (e.code === 'Space') { e.preventDefault(); stopTiming(ctx); } };
     document.addEventListener('keydown', ctx.keyHandler);
@@ -152,7 +153,7 @@ function stopTiming(ctx) {
   const quality = d <= g.zone.width / 2 ? 'perfect' : d <= g.zone.width ? 'good' : 'miss';
   recordHit(st, g, quality);
   if (g.done) { finishTraining(ctx); return; }
-  g.zone = newZone(g);
+  g.zone = newZone(g, st);
   draw(ctx);
 }
 

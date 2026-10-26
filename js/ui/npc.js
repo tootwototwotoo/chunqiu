@@ -1,6 +1,7 @@
 // 人物交互弹窗
 import { NPC_MAP } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
+import { canTakeOffice } from '../systems/progression.js';
 import { player, rel, npcsHere, addRel, addFame, addMoney, addMerit, skillLevel } from '../state.js';
 import { talk, giveGift, learnFrom, teachInfo, giftCandidates, affName, affTier, npcDuelInfo, npcDebateInfo } from '../systems/relations.js';
 import { biasName, BIAS_TIP } from '../systems/debate.js';
@@ -52,7 +53,7 @@ export function openNpc(app, st, npcId) {
         <button class="btn" data-act="duel" ${atHome ? '' : 'disabled'}>切磋</button>
         <button class="btn" data-act="debate" ${atHome ? '' : 'disabled'}>论辩</button>
         ${evs.length ? `<button class="btn" data-act="ask" ${atHome && rr.aff > 20 ? '' : 'disabled'}>打听消息</button>` : ''}
-        ${rr.aff >= 75 && player(st).fame >= 20 ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
+        ${rr.aff >= 75 && player(st).fame >= 20 && canTakeOffice(st).ok ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
       </div>
       ${!atHome ? '<div class="footnote">此人不在你所在之城，须先行前往。</div>' : ''}
     `);
@@ -159,6 +160,7 @@ export function openNpc(app, st, npcId) {
 
     onClick(h.bodyEl, '[data-act="recommend"]', () => {
       const rr = rel(st, npcId);
+      if (!canTakeOffice(st).ok) { render(`<div class="footnote">${canTakeOffice(st).msg}</div>`); return; }
       if (rr.aff < 75 || player(st).fame < 20) { render('<div class="footnote">交情或名声不足，对方不肯举荐。</div>'); return; }
       const p = player(st);
       if (p.stateId === def.state) {

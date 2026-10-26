@@ -291,7 +291,8 @@ export function expireQuests(st) {
   const now = absDay(st.time);
   const failed = [];
   st.quests.active = st.quests.active.filter(q => {
-    if (q.mode === 'travel' && q.exp != null && now > q.exp) {
+    // 所有设了限期的差事都会过期，不只是出行类
+    if (q.exp != null && now > q.exp) {
       q.status = 'failed'; failed.push(q);
       st.quests.done.unshift(q);
       addFame(st, -2, true);

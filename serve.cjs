@@ -20,10 +20,18 @@ const types = {
 };
 
 function handler(req, res) {
-  let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  // 畸形百分号转义会让 decodeURIComponent 抛错，未捕获会拖垮整个进程
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('400 bad request');
+  }
   if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
-  const file = path.join(root, path.normalize(urlPath).replace(/^(\.\.[/\\])+/, ''));
-  if (!file.startsWith(root)) {
+  // 前缀判断必须带路径分隔符，否则 chunqiu 与 chunqiu_evil 这类兄弟目录会被放行
+  const file = path.resolve(root, '.' + path.posix.normalize('/' + urlPath));
+  if (file !== root && !file.startsWith(root + path.sep)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end('403 forbidden');
   }

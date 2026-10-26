@@ -7,7 +7,7 @@ import { player, npcsHere, rel, addMoney, addFame, addMerit, addStamina, addHeal
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { canSeekOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
+import { canSeekOffice, canTakeOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
 import { npcDuelInfo, npcDebateInfo, affName } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
@@ -376,7 +376,7 @@ function buildActions(st, app, c, owner) {
   }
 
   // 任何人都可向在场的国君求仕
-  if (!['merchant'].includes(p.profession) && c.tags.includes('court') && p.stateId !== owner && !acts.some(a => a.id === 'office')) {
+  if (canTakeOffice(st).ok && c.tags.includes('court') && p.stateId !== owner && !acts.some(a => a.id === 'office')) {
     add({
       id: 'office', name: '谒见国君', cost: '半日',
       desc: (() => {
@@ -514,6 +514,11 @@ function openTrain(app, st, c) {
 }
 
 function openOfficeAudience(app, st, owner) {
+  const gate = canTakeOffice(st);
+  if (!gate.ok) {
+    app.modal({ title: '求仕', narrow: true, body: `<p>${gate.msg}</p>`, foot: [{ label: '知道了', close: true }] });
+    return;
+  }
   audienceModal(app, st, owner, {
     sub: `求仕于${stateName(owner)}`,
     onEnd: ({ success }) => {

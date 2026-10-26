@@ -2,6 +2,7 @@
 import { AUDIENCE_QUESTIONS, AUDIENCE_FOLLOW_UPS } from '../data/audience.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { CITY_MAP } from '../data/world.js';
+import { canTakeOffice } from './progression.js';
 import { player, skillLevel, R } from '../state.js';
 import { shuffle, clamp } from '../util.js';
 
@@ -35,6 +36,8 @@ export function audienceHeart(st, stateId) {
 
 export function startAudience(st, stateId) {
   const p = player(st);
+  const gate = canTakeOffice(st);
+  if (!gate.ok) return { ok: false, msg: gate.msg };
   const ruler = audienceRuler(st, stateId);
   const heart = ruler?.bias ?? STATE_HEART[stateId] ?? 'li';
   const pool = shuffle(st, AUDIENCE_QUESTIONS);

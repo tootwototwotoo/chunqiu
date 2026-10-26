@@ -6,6 +6,7 @@ import { CITIES, CITY_MAP, STATES } from '../data/world.js';
 import { player, addMoney, addFame, addMerit, addStat, addSkillExp, addRel, addStamina,
   addHealth, meetNpc, addLog, skillLevel, R, addGoods } from '../state.js';
 import { ri, clamp, weightedPick, yearLabel, monthLabel } from '../util.js';
+import { absDay } from './calendar.js';
 
 function currentWhere(st) {
   return { state: st.world.owner[st.player.cityId], city: st.player.cityId };
@@ -120,7 +121,7 @@ export function collectTimeline(st) {
 }
 
 export function rollRandomEvent(st) {
-  const day = st.time.year * 360 + st.time.month;
+  const day = absDay(st.time);
   const recent = st.flags.recentRandom ?? {};
   const pool = RANDOM_EVENTS.filter(ev => {
     if (st.events.pending?.some(p => p.kind === 'random' && p.id === ev.id)) return false;
