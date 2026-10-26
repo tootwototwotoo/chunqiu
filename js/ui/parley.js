@@ -19,7 +19,8 @@ export function parleyTopicModal(app, st, stateId, opts = {}) {
     foot: [{ label: '作罢', close: true }],
   });
   onClick(h.bodyEl, '[data-topic]', (el) => {
-    h.close();
+    // app.modal() 打开新弹窗时会自行关闭旧窗（closeModal(false)，不触发 render），
+    // 这里绝不能再调 h.close()，否则会把刚建好的新弹窗清空。
     openParley(app, st, stateId, el.dataset.topic, opts);
   });
   return h;
@@ -27,7 +28,8 @@ export function parleyTopicModal(app, st, stateId, opts = {}) {
 
 export function openParley(app, st, stateId, topic, opts = {}) {
   const pl = startParley(st, stateId, topic);
-  if (!pl.ok) {
+  // 失败时返回 { ok:false, msg }；成功时返回对局对象（无 ok 字段）
+  if (pl.ok === false) {
     app.modal({ title: '分庭抗礼', narrow: true, body: `<p>${pl.msg}</p>`, foot: [{ label: '知道了', close: true }] });
     return null;
   }

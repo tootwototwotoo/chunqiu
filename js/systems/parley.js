@@ -48,6 +48,7 @@ export function startParley(st, stateId, topic = 'price') {
     45, 65,
   );
   return {
+    ok: true,
     stateId, topic, heard,
     heart: st.world.owner ? 'li' : 'li',
     questions: picked, round: 1, maxRounds: 3,
