@@ -2,7 +2,7 @@
 import { DEBATES, DEBATE_BY_ID, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
 import { CITY_MAP } from '../data/world.js';
 import { player, addFame, addRel, addMoney, addMerit, addLog, hasEvidence, R } from '../state.js';
-import { clamp } from '../util.js';
+import { clamp, absDay } from '../util.js';
 
 const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
 export const biasName = (b) => BIAS_NAME[b] ?? '难测';
@@ -23,7 +23,6 @@ const DEFAULT_EFFECTS = {
   fail: { fame: -2, rel: -3 },
 };
 
-const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
 export function pickDebateScenario(st, { category = null, heart = null, exclude = null } = {}) {
   let pool = DEBATES.filter(d => (!category || d.category === category) && (!heart || d.heart === heart));
@@ -130,7 +129,7 @@ export function settleDebate(st, d, npcId, opts = {}) {
 
 function createFollowupQuest(st, d) {
   const f = d.scenario.followup;
-  const now = dayOf(st.time);
+  const now = absDay(st.time);
   const days = f.days ?? 15;
   const q = {
     id: `df_${d.scenario.id}_${now}_${R.int(st, 100, 999)}`,

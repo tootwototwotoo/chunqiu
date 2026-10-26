@@ -1,6 +1,7 @@
 // 朝议与国策：议题生成、三选一、国策生效与到期
 import { R, addLog, addMerit, addFame } from '../state.js';
 import { CITY_MAP } from '../data/world.js';
+import { absDay } from '../util.js';
 
 export const POLICY_DAYS = 90;
 export const ADVISE_COOLDOWN = 10;
@@ -101,7 +102,7 @@ export const ISSUES = [
 export function currentPolicy(st) {
   const p = st.world.policy;
   if (!p || !p.id) return null;
-  const left = p.untilDay - dayOf(st.time);
+  const left = p.untilDay - absDay(st.time);
   if (left <= 0) return null;
   return { ...p, policy: POLICIES[p.id], left };
 }
@@ -141,7 +142,7 @@ export function canAdvise(st) {
   if (!city || !city.tags.includes('court')) return { ok: false, msg: '献策须入本国朝堂。' };
   if (st.world.owner[p.cityId] !== p.stateId) return { ok: false, msg: '此处非本国朝堂，献策须归国入朝。' };
   const last = st.flags.lastAdvise ?? -999;
-  const wait = ADVISE_COOLDOWN - (dayOf(st.time) - last);
+  const wait = ADVISE_COOLDOWN - (absDay(st.time) - last);
   if (wait > 0) return { ok: false, msg: `朝议方毕，${wait} 日后可再陈。` };
   return { ok: true };
 }
@@ -150,8 +151,8 @@ export function canAdvise(st) {
 export function keepPolicy(st) {
   const cur = currentPolicy(st);
   if (!cur) return { ok: false, msg: '本无国策，无所可维持。' };
-  st.flags.lastAdvise = dayOf(st.time);
-  st.world.policy = { ...st.world.policy, untilDay: Math.max(cur.untilDay, dayOf(st.time) + 30) };
+  st.flags.lastAdvise = absDay(st.time);
+  st.world.policy = { ...st.world.policy, untilDay: Math.max(cur.untilDay, absDay(st.time) + 30) };
   addLog(st, `朝议无所改易，「${POLICIES[cur.id].name}」之策仍行。`);
   return { ok: true, kept: true, policy: POLICIES[cur.id], left: currentPolicy(st).left };
 }
@@ -187,12 +188,12 @@ export function adviseOutcome(st, issue, optionIndex, heart) {
       // 续行：在现有期限上顺延，不覆盖进度
       st.world.policy = {
         id: opt.policy,
-        untilDay: Math.max(cur.untilDay, dayOf(st.time) + days),
+        untilDay: Math.max(cur.untilDay, absDay(st.time) + days),
         grade, startedDay: cur.startedDay,
       };
       addLog(st, `续行「${POLICIES[opt.policy].name}」，期限顺延。`, 'gain');
     } else {
-      st.world.policy = { id: opt.policy, untilDay: dayOf(st.time) + days, grade, startedDay: dayOf(st.time) };
+      st.world.policy = { id: opt.policy, untilDay: absDay(st.time) + days, grade, startedDay: absDay(st.time) };
     }
   }
   return { grade, roll, merit: net, penalty, days, continued: !!same, option: opt, policy: POLICIES[opt.policy] };
@@ -224,9 +225,8 @@ export function tickPolicy(st, out) {
   }
   if (cur.id === 'people') { addFame(st, 1, true); out.notes.push('安民之策见效，名声 +1。'); }
   if (cur.id === 'school') { addMeritDelta(st, 2); out.notes.push('兴学之策见效，功勋 +2。'); }
-  if (cur.untilDay - dayOf(st.time) === 0) out.notes.push(`国策「${cur.policy.name}」到期。`);
+  if (cur.untilDay - absDay(st.time) === 0) out.notes.push(`国策「${cur.policy.name}」到期。`);
 }
 
-function dayOf(t) { return (t.year + 722) * 360 + (t.month - 1) * 30 + t.day; }
 
 const addMeritDelta = (st, v) => addMerit(st, v, true);

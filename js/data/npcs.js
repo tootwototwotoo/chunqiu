@@ -195,7 +195,7 @@ export const NPCS = [
     desc: '越国大夫，与范蠡共佐勾践，灭吴之后不能去，终赐剑而死。' },
 
   { id: 'ji_liang', name: '季梁', title: '随之贤大夫', state: 'sui', city: 'sui', birth: -720, death: -660, role: 'minister',
-    stats: { wu: 38, zhi: 88, zheng: 84, mei: 72 }, skills: { xuewen: 7, quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'xi', teach: ['quanmou', 'xuewen'],
+    stats: { wu: 38, zhi: 88, zheng: 84, mei: 72 }, skills: { xuewen: 7, quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'xijiao', teach: ['quanmou', 'xuewen'],
     quote: '夫民，神之主也。是以圣王先成民而后致力于神。',
     desc: '随国贤臣，谏随侯修政亲邻，以民为本，汉东赖之。' },
 

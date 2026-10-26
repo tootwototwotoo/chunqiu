@@ -32,20 +32,3 @@ export function travelTo(st, toCityId) {
   return { ok: true, days: plan.days, cost: plan.cost, notes: res.notes, events: res.events, promotions: res.promotions, quests: arr, died: res.died };
 }
 
-export function encounterOnRoad(st) {
-  // 途中偶遇，返回轻量事件
-  const roll = R.next(st);
-  if (roll < 0.16) {
-    const kind = R.pick(st, ['rumor', 'refugee', 'merchant', 'soldier', 'hermit']);
-    const texts = {
-      rumor: `路遇行脚商人，说起${R.pick(st, Object.values(CITY_MAP)).name}的行情有变。`,
-      refugee: '道旁有流民携幼而行，你分了半囊干粮。',
-      merchant: '一支商队与你同行一程，车辙深深。',
-      soldier: '一队戍卒擦肩而过，甲叶上还带着霜。',
-      hermit: '山道旁有老者对弈，见你经过，点了点头。',
-    };
-    if (kind === 'refugee') { addMoney(st, -10); addStamina(st, 4); }
-    return { text: texts[kind] };
-  }
-  return null;
-}

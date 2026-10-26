@@ -149,5 +149,93 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(JSON.stringify(va) === JSON.stringify(vb), '同种子随机序列一致');
 }
 
-console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n第 1 轮必修项通过 ✓');
+
+// ---------------- 第 2 轮：一致性与体验 ----------------
+{
+  console.log('\n--- 第 2 轮 ---');
+  const { absDay: absDayU, START_YEAR } = await import('../js/util.js');
+  const cal = await import('../js/systems/calendar.js');
+  ok(absDayU({ year: START_YEAR, month: 1, day: 1 }) === 0, 'util.absDay 首日为 0');
+  ok(cal.absDay === absDayU, 'calendar 复用同一 absDay');
+
+  // 全部系统不再各写 dayOf
+  for (const f of ['debate', 'peerage', 'policy', 'progression', 'relations']) {
+    const src = fs.readFileSync(path.join(process.cwd(), `js/systems/${f}.js`), 'utf8');
+    ok(!src.includes('dayOf'), `${f}.js 不再自带 dayOf`);
+  }
+
+  // 首日的冷却不能被真假值判断吞掉
+  const st = newGame({ name: '冷', profession: 'youxia', seed: 3 });
+  st.player.fame = 100; st.player.merit = 120; st.player.cityId = 'linzi';
+  for (let i = 0; i < 3; i++) st.quests.done.push({ id: `z${i}`, status: 'done', reward: {} });
+  const { seekOffice, officeCooldownLeft } = await import('../js/systems/progression.js');
+  seekOffice(st, 'qi');
+  ok(officeCooldownLeft(st) === 10, '首日出仕后冷却为 10 日', String(officeCooldownLeft(st)));
+
+  const { giveGift } = await import('../js/systems/relations.js');
+  const g = newGame({ name: '礼', profession: 'shangren', seed: 4 });
+  g.player.inventory.yu = 5;
+  giveGift(g, 'guan_zhong', 'yu');
+  const r2 = giveGift(g, 'guan_zhong', 'yu');
+  ok(!r2.ok, '首日赠礼后当日不能再赠', r2.msg);
+
+  // 国君缺失的国家有合成国君，不再让卿相/名士代答
+  const { audienceRuler, audienceHeart } = await import('../js/systems/audience.js');
+  const st2 = newGame({ name: '朝', profession: 'youxia', era: 'huan', seed: 1 });
+  const { NPC_MAP } = await import('../js/data/npcs.js');
+  for (const s of ['zhou', 'qin', 'lu', 'zheng', 'wu', 'yue', 'ju', 'zhu', 'sui', 'xu']) {
+    const r = audienceRuler(st2, s);
+    const isRealRuler = r && NPC_MAP[r.id]?.role === 'ruler';
+    ok(!!r && (isRealRuler || r.synthetic), `${s} 有可用国君或合成国君`);
+    ok(!!r?.bias, `${s} 国君有心性`, r?.bias);
+  }
+
+  // 舆图选中可重置
+  const mapMod = await import('../js/ui/map.js');
+  ok(typeof mapMod.resetSelection === 'function', '舆图提供 resetSelection');
+  const appSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/app.js'), 'utf8');
+  ok((appSrc.match(/resetSelection\(\)/g) ?? []).length >= 2, '开局与回标题都重置选中城');
+
+  // 珍宝查询无副作用
+  const { treasureStatus } = await import('../js/systems/trade.js');
+  const st3 = newGame({ name: '宝', profession: 'shangren', seed: 6 });
+  st3.player.cityId = 'luoyi';
+  st3.world.treasures.bi.cities.luoyi.nextDay = 5;
+  const before = JSON.stringify(st3.world.treasures.bi);
+  treasureStatus(st3, 'bi', 'luoyi');
+  treasureStatus(st3, 'bi', 'luoyi');
+  ok(JSON.stringify(st3.world.treasures.bi) === before, 'treasureStatus 不改写存档');
+
+  // 珍宝改名 + 旧存档迁移
+  const { TREASURE_IDS, TREASURES } = await import('../js/data/treasures.js');
+  ok(TREASURE_IDS.includes('xijiao') && !TREASURE_IDS.includes('xi'), '犀角 id 为 xijiao');
+  ok(!('xi' in TREASURES), '旧 id xi 已移除');
+  const { migrateState } = await import('../js/state.js');
+  const legacy = newGame({ name: '旧', profession: 'shangren', seed: 7 });
+  delete legacy.world.treasures.xijiao;
+  legacy.world.treasures.xi = { price: 2200, sold: 1, cities: { ying: { nextDay: 5 } } };
+  legacy.player.inventory = { xi: 2 };
+  const mig = migrateState(legacy);
+  ok(mig.player.inventory.xijiao === 2 && mig.player.inventory.xi === undefined, '旧存档犀角库存迁移');
+  ok(mig.world.treasures.xijiao.price === 2200, '旧存档犀角价格保留', String(mig.world.treasures.xijiao.price));
+  ok(mig.world.treasures.xi === undefined, '旧键已删除');
+
+  // 死代码已清理
+  const util = fs.readFileSync(path.join(process.cwd(), 'js/util.js'), 'utf8');
+  ok(!/export function el\(/.test(util), 'util.el 已移除');
+  const stateSrc = fs.readFileSync(path.join(process.cwd(), 'js/state.js'), 'utf8');
+  ok(!/export function diploTier/.test(stateSrc), 'diploTier 已移除');
+  const travelSrc = fs.readFileSync(path.join(process.cwd(), 'js/systems/travel.js'), 'utf8');
+  ok(!/encounterOnRoad/.test(travelSrc), 'encounterOnRoad 已移除');
+  const npcSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/npc.js'), 'utf8');
+  ok(!/DEF_BIAS/.test(npcSrc), 'DEF_BIAS 已移除');
+  const combatSrc = fs.readFileSync(path.join(process.cwd(), 'js/systems/combat.js'), 'utf8');
+  ok(/WANDERER_NAMES/.test(combatSrc), '决斗名号复用 npcs.js 共享名单');
+
+  // 文案一致
+  const charSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/character.js'), 'utf8');
+  ok(charSrc.includes('交情 75'), '举荐文案与实现一致');
+}
+
+console.log(fails ? ('\n失败 ' + fails + ' 项 ✗') : '\n加固与一致性测试全部通过 ✓');
 process.exit(fails ? 1 : 0);

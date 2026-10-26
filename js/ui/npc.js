@@ -16,7 +16,6 @@ export function openNpc(app, st, npcId) {
   const def = NPC_MAP[npcId];
   const r = rel(st, npcId);
   const atHome = st.npc[npcId]?.city === st.player.cityId;
-  const f = DEF_BIAS(rel(st, npcId).aff >= 32);
 
   const handle = app.modal({
     title: def.name,
@@ -187,4 +186,3 @@ export function openNpc(app, st, npcId) {
   return handle;
 }
 
-function DEF_BIAS() { return true; }

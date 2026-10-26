@@ -1,6 +1,7 @@
 // 个人决斗
 import { R, player, skillLevel, addRel, addFame, addMoney, addMerit, addHealth, addStamina, addLog } from '../state.js';
 import { ri, clamp } from '../util.js';
+import { WANDERER_NAMES } from '../data/npcs.js';
 
 export const MOVES = {
   zhan: { name: '斩', hint: '克突', beats: 'tu' },
@@ -140,10 +141,9 @@ export function settleDuel(st, d, npcId, opts = {}) {
 }
 
 export function makeWanderer(st, tier = 1) {
-  const names = ['无名剑客', '游士', '负剑之徒', '江湖客', '亡命之徒'];
   return {
     id: null,
-    name: R.pick(st, names),
+    name: R.pick(st, WANDERER_NAMES),
     wu: 40 + tier * 8 + R.int(st, 0, 10),
     skill: clamp(2 + tier, 1, 9),
   };

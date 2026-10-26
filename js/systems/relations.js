@@ -1,11 +1,11 @@
 // 交游：交谈、赠礼、师事、切磋
-import { NPC_MAP, ROLE_NAMES } from '../data/npcs.js';
+import { NPC_MAP } from '../data/npcs.js';
 import { GOODS } from '../data/goods.js';
 import { STATES } from '../data/world.js';
 import { SKILL_DEFS } from '../data/defs.js';
 import { player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addLog,
   addSkillExp, skillLevel, R, npcsHere } from '../state.js';
-import { ri, clamp, GIFT_TIER_NAMES } from '../util.js';
+import { ri, clamp, GIFT_TIER_NAMES, absDay } from '../util.js';
 import { biasName } from './debate.js';
 
 const GREET = {
@@ -25,7 +25,6 @@ export function affTier(aff) {
 }
 export const affName = (aff) => GIFT_TIER_NAMES[affTier(aff)];
 
-const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
 export function talk(st, npcId) {
   const def = NPC_MAP[npcId];
@@ -36,7 +35,7 @@ export function talk(st, npcId) {
   const line = R.pick(st, GREET[Math.min(3, t)]).replaceAll('{n}', def.name);
   // 十日之内反复攀谈，交情不再增长
   st.flags.lastTalk = st.flags.lastTalk ?? {};
-  const now = dayOf(st.time);
+  const now = absDay(st.time);
   if (st.flags.lastTalk[npcId] && now - st.flags.lastTalk[npcId] < 10) {
     return { def, r, aff: 0, line, extra: '（近日已叙，话说尽了。）', offer: null, repeated: true };
   }
@@ -87,9 +86,10 @@ export function giftBlockReason(st, npcId) {
   const r = rel(st, npcId);
   if (r.aff >= 75) return '情谊已深，非财货可增。';
   st.flags.lastGift ||= {};
-  const day = dayOf(st.time);
-  const last = st.flags.lastGift[npcId] ?? 0;
-  if (last && day - last < 10) return `近日已受君之礼，${10 - (day - last)} 日后再来罢。`;
+  const day = absDay(st.time);
+  const last = st.flags.lastGift[npcId];
+  // 首日的 absDay 为 0，不能用真假值判断是否赠过礼
+  if (last != null && day - last < 10) return `近日已受君之礼，${10 - (day - last)} 日后再来罢。`;
   return null;
 }
 
@@ -102,7 +102,7 @@ export function giveGift(st, npcId, goodId) {
   addGoods(st, goodId, -1);
   meetNpc(st, npcId);
   st.flags.lastGift ||= {};
-  st.flags.lastGift[npcId] = dayOf(st.time);
+  st.flags.lastGift[npcId] = absDay(st.time);
   const base = giftValue(def, goodId);
   const cap = giftValue(def, goodId) >= 20 ? 20 : 12;
   const rolled = Math.min(cap, Math.round(base * (0.8 + R.next(st) * 0.4)));

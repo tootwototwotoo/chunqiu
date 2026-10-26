@@ -69,6 +69,7 @@ class App {
     migrateState(st);
     sanitizeQuests(st);
     collectTimeline(st);
+    mapScreen.resetSelection(); // 换局后不沿用上一局的选中城
     this.closeModal(false);
     this.st = st;
     this.queue = pendingEvents(st);
@@ -83,6 +84,7 @@ class App {
 
   showTitle() {
     this.closeModal(false);
+    mapScreen.resetSelection();
     this.queue = [];
     this.screen = 'title';
     document.body.classList.add('title-mode');

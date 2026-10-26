@@ -12,7 +12,7 @@ export const GOODS = {
   yu:      { name: '美玉', unit: '双', base: 500, bulk: 1, treasure: true },
   zhu:     { name: '明珠', unit: '颗', base: 900, bulk: 1, treasure: true },
   shan:    { name: '珊瑚树', unit: '株', base: 1400, bulk: 1, treasure: true },
-  xi:      { name: '犀角', unit: '支', base: 2000, bulk: 1, treasure: true },
+  xijiao:  { name: '犀角', unit: '支', base: 2000, bulk: 1, treasure: true },
   xiang:   { name: '象牙', unit: '对', base: 2700, bulk: 1, treasure: true },
   bi:      { name: '玄璧', unit: '件', base: 3600, bulk: 1, treasure: true },
 };

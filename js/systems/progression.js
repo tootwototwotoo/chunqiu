@@ -2,7 +2,7 @@
 import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, PEERAGES, peerageName } from '../data/defs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R, rel } from '../state.js';
-import { ri, clamp, diffTier } from '../util.js';
+import { ri, clamp, diffTier, absDay } from '../util.js';
 import { currentPolicy } from './policy.js';
 import { treasureHonor, collectedTreasureKinds, offeredAllKinds } from './treasures.js';
 
@@ -20,7 +20,6 @@ export function checkPromotion(st) {
   return null;
 }
 
-const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
 
 function rankForMerit(merit) {
@@ -64,12 +63,14 @@ export function officeChance(st) {
 }
 
 export function officeCooldownLeft(st) {
-  if (!st.flags.lastOffice) return 0;
-  return Math.max(0, 10 - (dayOf(st.time) - st.flags.lastOffice));
+  // 注意：纪元首日的 absDay 为 0，不能用真假值判断「是否出仕过」
+  const last = st.flags.lastOffice;
+  if (last == null) return 0;
+  return Math.max(0, 10 - (absDay(st.time) - last));
 }
 
 export function markOfficeAttempt(st) {
-  st.flags.lastOffice = dayOf(st.time);
+  st.flags.lastOffice = absDay(st.time);
 }
 
 export function seekOffice(st, stateId) {
@@ -80,8 +81,8 @@ export function seekOffice(st, stateId) {
   if (p.fame < OFFICE_FAME) return { ok: false, msg: `名声未著（${p.fame}/${OFFICE_FAME}），国君不见。` };
   const doneCount = st.quests?.done?.filter(q => q.status === 'done').length ?? 0;
   if (doneCount < OFFICE_QUEST_COUNT) return { ok: false, msg: `未见实绩（差事 ${doneCount}/${OFFICE_QUEST_COUNT}），国君不见。` };
-  const now = dayOf(st.time);
-  if (st.flags.lastOffice && now - st.flags.lastOffice < 10) return { ok: false, msg: '门吏挡驾：「君且待旬日再来。」' };
+  const now = absDay(st.time);
+  if (st.flags.lastOffice != null && now - st.flags.lastOffice < 10) return { ok: false, msg: '门吏挡驾：「君且待旬日再来。」' };
   st.flags.lastOffice = now;
   const roll = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2 + R.int(st, 0, 20);
   const chancePct = Math.round(officeChance(st) * 100);

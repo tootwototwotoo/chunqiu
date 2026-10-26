@@ -9,7 +9,7 @@ export const OFFER_GAIN = {
   yu: { merit: 10, fame: 4 },
   zhu: { merit: 16, fame: 6 },
   shan: { merit: 24, fame: 8 },
-  xi: { merit: 32, fame: 10 },
+  xijiao: { merit: 32, fame: 10 },
   xiang: { merit: 42, fame: 13 },
   bi: { merit: 56, fame: 18 },
 };

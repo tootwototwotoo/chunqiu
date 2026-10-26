@@ -1,6 +1,18 @@
 // 通用工具
 export const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
+// 时间基准：全项目唯一的「绝对日」定义。
+// 放在 util 里是因为 state 与 calendar 互相依赖，而 util 无依赖，各系统都能安全引用。
+export const START_YEAR = -722;
+export const DAYS_PER_MONTH = 30;
+export const MONTHS_PER_YEAR = 12;
+export const DAYS_PER_YEAR = DAYS_PER_MONTH * MONTHS_PER_YEAR;
+
+/** 绝对日：自纪元首年 1 月 1 日起算的天数，首日为 0 */
+export function absDay(t) {
+  return (t.year - START_YEAR) * DAYS_PER_YEAR + (t.month - 1) * DAYS_PER_MONTH + (t.day - 1);
+}
+
 // 线性同余随机，状态存在存档里，保证可复现
 export function rnd(s) {
   s.rng = (Math.imul(s.rng || 1, 1664525) + 1013904223) >>> 0;
@@ -29,11 +41,7 @@ export const monthLabel = (m) => ['正月','二月','三月','四月','五月','
 export const NUM_CN = ['零','一','二','三','四','五','六','七','八','九','十'];
 export const cnNum = (n) => (n <= 10 ? NUM_CN[n] : n < 20 ? '十' + NUM_CN[n - 10] : String(n));
 
-export function el(html) {
-  const t = document.createElement('template');
-  t.innerHTML = html.trim();
-  return t.content.firstElementChild;
-}
+
 export function $(sel) { return document.querySelector(sel); }
 
 export function bar(value, max, cls = '') {

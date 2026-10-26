@@ -4,11 +4,10 @@ import { TRIAL_RANKS, TRIAL_BY_ID, variantsOfRank } from '../data/trials.js';
 import { CITY_MAP } from '../data/world.js';
 import { player, addLog, addMoney, addFame, addGoods, R } from '../state.js';
 import { shortestPath } from './pathfind.js';
-import { clamp } from '../util.js';
+import { clamp, absDay } from '../util.js';
 import { evaluateGame } from './trialGames.js';
 import { biPetitionBonus } from './treasures.js';
 
-const dayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 const careerProf = (p) => ['youxia', 'shuike', 'xuezhe'].includes(p.profession);
 
 export function peerageNext(st) {
@@ -29,7 +28,7 @@ function pickVariant(st, rank, excludeId) {
 }
 
 function makeTrial(st, rank, variant, extra = {}) {
-  const now = dayOf(st.time);
+  const now = absDay(st.time);
   const meta = TRIAL_RANKS[rank];
   const target = variant.targetCity ?? 'luoyi';
   const route = target !== 'luoyi' ? (shortestPath('luoyi', target, st)?.days ?? 10) : 0;
@@ -54,7 +53,7 @@ export function canAcceptTrial(st) {
   if (p.fame < info.next.fame) return { ok: false, msg: `名声不足（${p.fame}/${info.next.fame}）。` };
   const tr = p.peerageTrial;
   if (tr) {
-    const now = dayOf(st.time);
+    const now = absDay(st.time);
     if (tr.status === 'active') return { ok: false, msg: '册命之试尚未完成。' };
     if (tr.status === 'done') return { ok: false, msg: '试炼已成，可请封于周。' };
     if (now < (tr.availableDay ?? 0)) return { ok: false, msg: `周室议而未决，${tr.availableDay - now} 日后可领新试。` };
@@ -84,7 +83,7 @@ export function canStartTrial(st) {
   if (!variant) return { ok: false, msg: '试炼数据缺失。' };
   const target = variant.targetCity ?? 'luoyi';
   if (p.cityId !== target) return { ok: false, msg: `须至${CITY_MAP[target].name}开始。`, target };
-  if (tr.exp != null && dayOf(st.time) > tr.exp) {
+  if (tr.exp != null && absDay(st.time) > tr.exp) {
     failTrial(st, '限期已过，试炼未成。');
     return { ok: false, msg: '限期已过，试炼失败。' };
   }
@@ -109,7 +108,7 @@ export function finishTrial(st, game) {
   p.peerageHistory.push({ year: st.time.year, rank: tr.rank, variant: tr.variantId, result: 'failed', performance: result.performance });
   addLog(st, `册命之试「${variant?.title ?? ''}」未成，周室另命新试。`, 'war');
   const nextVariant = pickVariant(st, tr.rank, tr.variantId);
-  p.peerageTrial = makeTrial(st, tr.rank, nextVariant, { status: 'pending', availableDay: dayOf(st.time) + 15 });
+  p.peerageTrial = makeTrial(st, tr.rank, nextVariant, { status: 'pending', availableDay: absDay(st.time) + 15 });
   return { ok: true, success: false, performance: result.performance, variant, nextVariant };
 }
 
@@ -119,7 +118,7 @@ export function failTrial(st, reason) {
   if (!tr || tr.status !== 'active') return null;
   addLog(st, `${reason}周室另命新试。`, 'war');
   const nextVariant = pickVariant(st, tr.rank, tr.variantId);
-  p.peerageTrial = makeTrial(st, tr.rank, nextVariant, { status: 'pending', availableDay: dayOf(st.time) + 15 });
+  p.peerageTrial = makeTrial(st, tr.rank, nextVariant, { status: 'pending', availableDay: absDay(st.time) + 15 });
   return nextVariant;
 }
 
@@ -127,7 +126,7 @@ export function checkTrialExpiry(st) {
   const p = player(st);
   const tr = p.peerageTrial;
   if (!tr || tr.status !== 'active' || tr.exp == null) return null;
-  if (dayOf(st.time) > tr.exp) return failTrial(st, '册命之试逾期未成，');
+  if (absDay(st.time) > tr.exp) return failTrial(st, '册命之试逾期未成，');
   return null;
 }
 
@@ -193,7 +192,7 @@ export function petition(st) {
   addFame(st, -2, true);
   p.peerageFails = (p.peerageFails ?? 0) + 1;
   const nextVariant = pickVariant(st, info.idx, variant?.id);
-  p.peerageTrial = makeTrial(st, info.idx, nextVariant, { status: 'pending', availableDay: dayOf(st.time) + 30 });
+  p.peerageTrial = makeTrial(st, info.idx, nextVariant, { status: 'pending', availableDay: absDay(st.time) + 30 });
   p.peerageHistory.push({ year: st.time.year, rank: info.idx, variant: variant?.id, result: 'denied', performance: chk.chance });
   addLog(st, `请封${info.next.name}爵未准，周室命另试其事。`, 'war');
   return {
@@ -208,7 +207,7 @@ export function peerageSummary(st) {
   const info = peerageNext(st);
   const tr = p.peerageTrial;
   const variant = trialVariant(tr);
-  const now = dayOf(st.time);
+  const now = absDay(st.time);
   const cd = tr && tr.status === 'pending' ? Math.max(0, (tr.availableDay ?? 0) - now) : 0;
   return {
     current: p.peerage ? PEERAGES[p.peerage.rank] : null,

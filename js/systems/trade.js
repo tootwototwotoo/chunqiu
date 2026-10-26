@@ -1,5 +1,5 @@
 // 买卖与行情
-import { GOODS, JADE, isTreasure, PLAIN_GOODS } from '../data/goods.js';
+import { GOODS, isTreasure, PLAIN_GOODS } from '../data/goods.js';
 import { TREASURES, TREASURE_IDS, treasuresInCity } from '../data/treasures.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
 import { player, addMoney, addGoods, goodsCount, caravanFree, addLog, R, basePriceOf } from '../state.js';
@@ -108,8 +108,8 @@ export function treasureStatus(st, gemId, cityId = player(st).cityId) {
   const c = w?.cities?.[cityId];
   if (!w || !c) return { available: false, reason: '此城暂无此珍宝', left: 0, price: w?.price ?? def.base, def };
   const now = dayNum(st.time);
-  if (c.nextDay && c.nextDay <= now) c.nextDay = 0;
-  const left = c.nextDay ? Math.max(0, c.nextDay - now) : 0;
+  // 只读：不在此处改写 nextDay，判断是否到货即可
+  const left = c.nextDay && c.nextDay > now ? c.nextDay - now : 0;
   return { available: !left, left, price: w.price, def };
 }
 
@@ -127,6 +127,7 @@ export function buyTreasure(st, gemId, cityId = player(st).cityId) {
   addMoney(st, -status.price, true);
   addGoods(st, gemId, 1);
   const w = st.world.treasures[gemId];
+  w.cities[cityId].nextDay = 0; // 到货即清倒计时，由写入路径负责
   w.sold = (w.sold ?? 0) + 1;
   w.price = Math.round(w.price * def.step);
   w.cities[cityId].nextDay = dayNum(st.time) + def.restock;

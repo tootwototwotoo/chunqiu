@@ -3,7 +3,7 @@ import { CITY_MAP, CITIES, STATES, cityState } from '../data/world.js';
 import { GOODS, PLAIN_GOODS } from '../data/goods.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel,
-  npcsHere, rel, R as Rand } from '../state.js';
+  npcsHere, rel } from '../state.js';
 import { absDay } from './calendar.js';
 import { shortestPath } from './pathfind.js';
 import { priceAt } from './trade.js';

@@ -22,12 +22,31 @@ const FOLLOW_BY_QUESTION = {
   oath: 'fu_oath', flood: 'fu_river', talent: 'fu_talent', diplomacy: 'fu_meeting',
 };
 
+// 缺国君的国家的名号（周室及若干小国在世人物里没有 role: 'ruler'）
+const RULER_TITLE = {
+  zhou: '周天子', qi: '齐侯', jin: '晋侯', qin: '秦伯', chu: '楚王', lu: '鲁侯',
+  song: '宋公', wei: '卫侯', zheng: '郑伯', yan: '燕侯', wu: '吴王', yue: '越王',
+  chen: '陈侯', cai: '蔡侯', cao: '曹伯', ju: '莒子', zhu: '邾子', sui: '随侯', xu: '许男',
+};
+
 export function audienceRuler(st, stateId) {
   const owner = (cityId) => st.world.owner[cityId] ?? CITY_MAP[cityId]?.state;
   const here = Object.values(st.npc).filter(x => x.alive && x.city && owner(x.city) === stateId);
-  // 优先真正的国君；其次才找该国其他在世人物
+  // 优先真正的国君
   const ruler = here.find(x => NPC_MAP[x.id]?.role === 'ruler');
-  return NPC_MAP[ruler?.id ?? here[0]?.id] ?? null;
+  if (ruler) return NPC_MAP[ruler.id];
+  // 该国没有可用的国君条目时，不可让卿相或名士冒充国君：
+  // 心性会因此判错，玩家也见不到「国君」。改用一个合成国君对象。
+  if (!here.some(x => NPC_MAP[x.id]?.role === 'ruler')) {
+    return {
+      id: null,
+      name: RULER_TITLE[stateId] ?? '国君',
+      title: '国君',
+      bias: STATE_HEART[stateId] ?? 'li',
+      synthetic: true,
+    };
+  }
+  return NPC_MAP[here[0].id] ?? null;
 }
 
 export function audienceHeart(st, stateId) {

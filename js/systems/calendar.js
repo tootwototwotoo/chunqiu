@@ -12,11 +12,9 @@ import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
 import { yearLabel, monthLabel, clamp, ri } from '../util.js';
 
-export const DAYS_PER_MONTH = 30;
-export const MONTHS_PER_YEAR = 12;
-export const DAYS_PER_YEAR = DAYS_PER_MONTH * MONTHS_PER_YEAR;
-
-export function absDay(t) { return (t.year - START_YEAR) * DAYS_PER_YEAR + (t.month - 1) * DAYS_PER_MONTH + (t.day - 1); }
+// 时间基准统一由 util 提供，避免与各系统各写一份而差 1 日
+import { DAYS_PER_MONTH, MONTHS_PER_YEAR, DAYS_PER_YEAR, absDay } from '../util.js';
+export { DAYS_PER_MONTH, MONTHS_PER_YEAR, DAYS_PER_YEAR, absDay };
 export function dateLabel(t) { return `${yearLabel(t.year)} ${monthLabel(t.month)}`; }
 export function seasonOf(t) { return ['春', '夏', '秋', '冬'][Math.floor((t.month - 1) / 3)]; }
 export function dayInYear(t) { return (t.month - 1) * DAYS_PER_MONTH + t.day; }
@@ -56,7 +54,7 @@ function stepDay(st, out, opts) {
     addHealth(st, -1);
     if (st.player.ageDays % 30 === 0) out.notes.push('你体力透支，身体日渐虚弱。');
   }
-  // 衰老
+  // 衰老：六十岁起每季判定一次，年岁越高风险越大
   if (age(st) >= 60 && st.player.ageDays % 90 === 0) {
     const risk = (age(st) - 58) / 900;
     if (R.chance(st, risk)) {

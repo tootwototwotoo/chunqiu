@@ -1,5 +1,5 @@
 // 游戏状态：创建、存档、常用读写
-import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, DIPLO_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
+import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
 import { CITIES, CITY_MAP, STATES, ROADS } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY, JADE } from './data/goods.js';
@@ -11,7 +11,8 @@ export const SAVE_KEY = 'chunqiu_lieguozhi_save_v1';
 export const AUTO_SAVE_KEY = 'chunqiu_lieguozhi_auto';
 export const AUTO_KEY = AUTO_SAVE_KEY;
 export const AUTO_SAVE_ERROR = '自动存档失败：浏览器存储不可用或空间不足，请在存档页导出备份。';
-export const START_YEAR = -722;
+import { START_YEAR } from './util.js';
+export { START_YEAR };
 const own = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
 function makeTreasureWorld() {
@@ -243,12 +244,6 @@ export function merchantTier(st) {
   for (const x of MERCHANT_TIERS) if (st.player.money >= x.need) t = x;
   return t;
 }
-export function diploTier(st) {
-  let t = DIPLO_TIERS[0];
-  for (const x of DIPLO_TIERS) if (st.player.missions >= x.need) t = x;
-  return t;
-}
-
 // ---------- 价格初始化 ----------
 export function initPrices(st) {
   for (const c of CITIES) st.world.prices[c.id] = priceSet(st, c.id);
@@ -286,6 +281,30 @@ export function saveGame(st, key = SAVE_KEY) {
     return true;
   } catch { return false; }
 }
+// 旧版标识符改名（必须在 fill 之前调用，否则默认值会先占住新键）
+function renameLegacyIds(st) {
+  const inv = st.player?.inventory;
+  if (inv && typeof inv === 'object' && inv.xi != null) {
+    inv.xijiao = (inv.xijiao ?? 0) + inv.xi;
+    delete inv.xi;
+  }
+  const t = st.world?.treasures;
+  if (t && typeof t === 'object' && t.xi) {
+    t.xijiao ||= t.xi;
+    delete t.xi;
+  }
+  const col = st.world?.treasuresCollected;
+  if (col && typeof col === 'object' && col.xi) {
+    col.xijiao = true;
+    delete col.xi;
+  }
+  const off = st.flags?.offeredTreasures;
+  if (off && typeof off === 'object' && off.xi) {
+    off.xijiao = (off.xijiao ?? 0) + off.xi;
+    delete off.xi;
+  }
+}
+
 export function migrateState(st) {
   const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
   const ensure = (condition) => { if (!condition) throw new Error('存档格式无效'); };
@@ -315,6 +334,8 @@ export function migrateState(st) {
   defaults.world.owner = {}; defaults.world.prices = {}; defaults.world.power = {};
   defaults.npc = {};
   defaults.events.fired = TIMELINE.filter(ev => ev.year < t.year || (ev.year === t.year && ev.month < t.month)).map(ev => ev.id);
+  // 旧的字段改名必须在 fill 之前做，否则默认值会先把新键填上，改名逻辑随之失效
+  renameLegacyIds(st);
   fill(st, defaults);
   const numericMap = (map, ids, min = -Infinity, max = Infinity) => {
     ensure(object(map));
@@ -436,6 +457,14 @@ export function migrateState(st) {
     }
   }
   delete st.world.jade;
+  if (st.world.treasuresCollected?.xi) {
+    st.world.treasuresCollected.xijiao = true;
+    delete st.world.treasuresCollected.xi;
+  }
+  if (st.flags.offeredTreasures?.xi) {
+    st.flags.offeredTreasures.xijiao = (st.flags.offeredTreasures.xijiao ?? 0) + st.flags.offeredTreasures.xi;
+    delete st.flags.offeredTreasures.xi;
+  }
   st.world.treasuresCollected ||= {};
   return st;
 }

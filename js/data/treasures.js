@@ -20,8 +20,8 @@ export const TREASURES = {
     restock: 50, step: 1.17,
     text: '赤如丹砂，植于庭中，一望而知富。',
   },
-  xi: {
-    id: 'xi', name: '犀角', unit: '支', base: 2000,
+  xijiao: {
+    id: 'xijiao', name: '犀角', unit: '支', base: 2000,
     cities: ['ying', 'kuaiji', 'sui'],
     restock: 60, step: 1.18,
     text: '南中巨兽之角，药石所贵，可辟瘴疠。',

@@ -89,7 +89,7 @@ for (let i = 1; i < TREASURE_IDS.length; i++) {
   addGoods(st, 'yu', 1);
   addGoods(st, 'zhu', 1);
   ok(treasureHonor(st)?.name === '小有珍玩', '两宝得「小有珍玩」');
-  addGoods(st, 'shan', 1); addGoods(st, 'xi', 1);
+  addGoods(st, 'shan', 1); addGoods(st, 'xijiao', 1);
   ok(treasureHonor(st)?.name === '多宝之家', '四宝得「多宝之家」');
   for (const id of TREASURE_IDS) addGoods(st, id, 1);
   ok(treasureHonor(st)?.name === '富可敌国', '六宝得「富可敌国」');
