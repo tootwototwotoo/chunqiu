@@ -1,7 +1,7 @@
 // 人物交互弹窗
 import { NPC_MAP } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
-import { canTakeOffice } from '../systems/progression.js';
+import { canTakeOffice, grantOffice } from '../systems/progression.js';
 import { player, rel, addRel, addFame, addMerit } from '../state.js';
 import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo } from '../systems/relations.js';
 import { biasName, BIAS_TIP } from '../systems/debate.js';
@@ -170,12 +170,10 @@ export function openNpc(app, st, npcId) {
         addFame(st, 2);
         render(`<div class="footnote">${def.name}道：「君已仕于${STATES[p.stateId].name}，何来他求？」</div>`);
       } else {
-        p.stateId = def.state;
-        p.rank = 1;
-        p.merit = Math.max(p.merit, 10);
-        addFame(st, 4);
-        app.log(`得${def.name}举荐，仕于${STATES[def.state].name}。`, 'big');
-        render(`<div class="footnote">${def.name}修书一封，你持书入朝，拜为${STATES[def.state].name}国士。</div>`);
+        const granted = grantOffice(st, def.state, { recommended: true, fame: 4 });
+        if (!granted.ok) { render(`<div class="footnote">${granted.msg}</div>`); return; }
+        app.log(`得${def.name}举荐，仕于${granted.stateName}。`, 'big');
+        render(`<div class="footnote">${def.name}修书一封，你持书入朝，拜为${granted.stateName}国${granted.rankName}。</div>`);
       }
       app.refreshHud();
     });

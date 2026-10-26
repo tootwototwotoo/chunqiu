@@ -56,6 +56,34 @@ export function canSeekOffice(st) {
   return { ok: true };
 }
 
+// 出仕成功后统一授官：廷对、举荐、seekOffice 三处入口共用这一份数值口径，
+// 避免各处各写一遍 rank 判定与功勋保底而互相漂移。
+export function grantOffice(st, stateId, opts = {}) {
+  const p = player(st);
+  const gate = canTakeOffice(st);
+  if (!gate.ok) return { ok: false, msg: gate.msg };
+  if (!STATES[stateId]) return { ok: false, msg: '并无此国。' };
+  if (p.stateId === stateId) return { ok: false, msg: `君已仕于${STATES[stateId].name}。` };
+
+  const prevState = p.stateId;
+  p.stateId = stateId;
+  if (prevState && prevState !== stateId) {
+    // 改仕他国：旧功减半，须从士重新做起
+    p.merit = Math.round(p.merit * 0.5);
+    p.rank = 1;
+  } else if (opts.recommended) {
+    // 举荐：不论功勋一概从士起，但不动既有的布衣功勋
+    p.rank = 1;
+    p.merit = Math.max(p.merit, 10);
+  } else {
+    // 廷对：按功勋授予初阶，最高上士
+    p.rank = Math.max(1, Math.min(3, rankForMerit(p.merit)));
+    p.merit = Math.max(p.merit, 10);
+  }
+  addFame(st, opts.fame ?? 3);
+  return { ok: true, stateId, rank: p.rank, rankName: RANKS[p.rank].name, stateName: STATES[stateId].name };
+}
+
 export function officeChance(st) {
   const p = player(st);
   const score = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2;
@@ -86,20 +114,10 @@ export function seekOffice(st, stateId) {
   st.flags.lastOffice = now;
   const roll = 10 + p.stats.zheng * 0.55 + p.stats.mei * 0.4 + p.fame * 0.55 + skillLevel(st, 'biancai') * 2.2 + R.int(st, 0, 20);
   const chancePct = Math.round(officeChance(st) * 100);
-  const prevState = p.stateId;
   if (roll >= OFFICE_DC) {
-    p.stateId = stateId;
-    if (prevState && prevState !== stateId) {
-      // 改仕他国：旧功减半，须从士重新做起
-      p.merit = Math.round(p.merit * 0.5);
-      p.rank = 1;
-    } else {
-      // 初次出仕：布衣时积累的功勋不抹去，按功勋授予初爵（最高上士）
-      p.rank = Math.max(1, Math.min(3, rankForMerit(p.merit)));
-      if (p.merit < 10) p.merit = 10;
-    }
+    const granted = grantOffice(st, stateId);
+    if (!granted.ok) return granted;
     addLog(st, `谒见${STATES[stateId].name}君，拜为${RANKS[p.rank].name}。`, 'big');
-    addFame(st, 3);
     const ruler = npcRulerOf(st, stateId);
     if (ruler) addRel(st, ruler, 8);
     return { ok: true, msg: `国君与语，大悦，拜你为${STATES[stateId].name}国${RANKS[p.rank].name}。`, state: stateId, rank: p.rank };

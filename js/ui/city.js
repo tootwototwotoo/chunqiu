@@ -8,7 +8,7 @@ import {
 import { restAtInn, advanceDays } from '../systems/calendar.js';
 import { priceAt } from '../systems/trade.js';
 import { makeWanderer } from '../systems/combat.js';
-import { canSeekOffice, canTakeOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
+import { canSeekOffice, canTakeOffice, grantOffice, markOfficeAttempt, joinCampaign, officeCooldownLeft } from '../systems/progression.js';
 import { npcDebateInfo } from '../systems/relations.js';
 import { biasName } from '../systems/debate.js';
 import { investigateHere, investigate, investigateCooldown } from '../systems/evidence.js';
@@ -528,13 +528,13 @@ function openOfficeAudience(app, st, owner) {
         app.after({ notes: ['廷对失旨，国君未见用。'] });
         return;
       }
-      st.player.stateId = owner;
-      st.player.rank = st.player.merit >= 150 ? 3 : st.player.merit >= 80 ? 2 : 1;
-      st.player.merit = Math.max(st.player.merit, 10);
-      const rankName = ['士', '中士', '上士'][Math.min(2, st.player.rank - 1)];
-      addLog(st, `廷对称旨，拜为${stateName(owner)}国${rankName}。`, 'big');
-      addFame(st, 3);
-      app.after({ notes: [`廷对称旨，拜为${stateName(owner)}国${rankName}。`] });
+      const granted = grantOffice(st, owner);
+      if (!granted.ok) {
+        app.after({ notes: [granted.msg] });
+        return;
+      }
+      addLog(st, `廷对称旨，拜为${granted.stateName}国${granted.rankName}。`, 'big');
+      app.after({ notes: [`廷对称旨，拜为${granted.stateName}国${granted.rankName}。`] });
     },
   });
 }

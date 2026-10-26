@@ -269,12 +269,24 @@ function store() {
     return localStorage;
   } catch { return null; }
 }
+// 只读出保存时间，不做整体迁移：saveGame 每次都要用它，不该为拿一个数字
+// 把两份存档完整解析并跑一遍 migrateState。
+function savedAtOf(ls, key) {
+  try {
+    const raw = ls.getItem(key);
+    if (!raw) return 0;
+    const v = JSON.parse(raw)?.savedAt;
+    return Number.isSafeInteger(v) && v > 0 ? v : 0;
+  } catch { return 0; }
+}
+
 export function saveGame(st, key = SAVE_KEY) {
   try {
     const ls = store();
     if (!ls) throw new Error('localStorage unavailable');
     // 保证同一毫秒内连续保存也有确定顺序，且重开更早年代不会误选旧档。
-    const savedAt = Math.max(Date.now(), ...[SAVE_KEY, AUTO_SAVE_KEY].map(k => (loadGame(k)?.savedAt ?? 0) + 1));
+    const latest = Math.max(savedAtOf(ls, SAVE_KEY), savedAtOf(ls, AUTO_SAVE_KEY));
+    const savedAt = Math.max(Date.now(), st.savedAt ?? 0, latest + 1);
     if (!Number.isSafeInteger(savedAt)) throw new Error('保存时间超出范围');
     ls.setItem(key, JSON.stringify({ ...st, savedAt }));
     st.savedAt = savedAt;

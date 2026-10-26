@@ -77,6 +77,7 @@ class App {
     this.endingShown = false;
     this.screen = 'city';
     this.render();
+    this.scheduleAutosave();
     setTimeout(() => {
       if (this.st === st && this.screen !== 'title' && this.screen !== 'ending' && !this.modalHandle) this.nextEvent();
     }, 0);
@@ -138,7 +139,6 @@ class App {
     document.querySelectorAll('#hud-nav button').forEach(b => {
       b.classList.toggle('active', b.dataset.screen === this.screen);
     });
-    this.scheduleAutosave();
   }
 
   renderLog() {
@@ -261,6 +261,7 @@ class App {
       }
     }
     this.refreshHud();
+    this.scheduleAutosave(); // 行动结算后写盘；纯导航与开弹窗不再触发
     if (res.died || (!this.st.player.alive && !this.endingShown)) {
       setTimeout(() => this.showEnding(), 400);
       return;

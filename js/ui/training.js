@@ -27,6 +27,8 @@ export function trainingModal(app, st, skillKey, opts = {}) {
     wide: ['match', 'formation'].includes(g.kind),
     closable: false,
     body: '',
+    // 兜底：弹窗被顶替或强制关闭时也要停掉 RAF 与键盘监听
+    onClose: () => { if (!ctx.finished) cleanup(ctx); },
   });
   ctx.h = h;
   ctx.finish = () => finishTraining(ctx);

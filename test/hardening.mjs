@@ -236,5 +236,96 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(charSrc.includes('交情 75'), '举荐文案与实现一致');
 }
 
+// ---------------- 第 4 轮：保存性能、存档时机、出仕入口收口、监听器清理 ----------------
+{
+  console.log('\n--- 第 4 轮 ---');
+
+  // 1) saveGame 不再为取 savedAt 完整解析两份存档
+  const stateSrc = fs.readFileSync(path.join(process.cwd(), 'js/state.js'), 'utf8');
+  ok(/function savedAtOf\(/.test(stateSrc), 'saveGame 用轻量 savedAtOf 读时间');
+  const saveFn = stateSrc.slice(stateSrc.indexOf('export function saveGame'), stateSrc.indexOf('export function saveGame') + 700);
+  ok(!/loadGame\(/.test(saveFn), 'saveGame 内部不再调用 loadGame');
+
+  // 保存时间仍需严格递增，且 200 次保存足够快
+  const mem = new Map();
+  globalThis.localStorage = {
+    getItem: k => (mem.has(k) ? mem.get(k) : null),
+    setItem: (k, v) => mem.set(k, String(v)),
+    removeItem: k => mem.delete(k),
+    clear: () => mem.clear(),
+    key: i => [...mem.keys()][i] ?? null,
+    get length() { return mem.size; },
+  };
+  const { saveGame, saveAuto, loadAuto, newGame: ng } = await import('../js/state.js');
+  const perf = ng({ name: '速', profession: 'youxia', seed: 1 });
+  saveGame(perf);
+  const at1 = perf.savedAt;
+  saveAuto(perf);
+  const at2 = perf.savedAt;
+  ok(at2 > at1, '连续保存 savedAt 严格递增', `${at1} → ${at2}`);
+  const t0 = process.hrtime.bigint();
+  for (let i = 0; i < 100; i++) saveAuto(perf);
+  const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  ok(ms < 500, '100 次自动存档在 500ms 内', `${ms.toFixed(0)}ms`);
+  ok(!!loadAuto(), '自动存档仍可读回');
+  delete globalThis.localStorage;
+
+  // 2) 自动存档只在行动结算时触发，不再由 HUD 刷新触发
+  const appSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/app.js'), 'utf8');
+  const hudFn = appSrc.slice(appSrc.indexOf('  refreshHud() {'), appSrc.indexOf('  renderLog() {'));
+  ok(!/scheduleAutosave/.test(hudFn), 'refreshHud 不再触发自动存档');
+  const afterFn = appSrc.slice(appSrc.indexOf('  after(res, opts = {}) {'), appSrc.indexOf('  nextEvent() {'));
+  ok(/scheduleAutosave/.test(afterFn), '行动结算 after() 会触发自动存档');
+
+  // 3) 出仕入口收口：只允许 grantOffice 写 stateId
+  const { grantOffice, seekOffice, OFFICE_FAME, OFFICE_QUEST_COUNT } = await import('../js/systems/progression.js');
+  ok(typeof grantOffice === 'function', '存在统一授官函数 grantOffice');
+
+  const uiFiles = fs.readdirSync(path.join(process.cwd(), 'js/ui')).filter(f => f.endsWith('.js'));
+  const rawWrites = [];
+  for (const f of uiFiles) {
+    const src = fs.readFileSync(path.join(process.cwd(), 'js/ui', f), 'utf8');
+    if (/\.stateId\s*=[^=]/.test(src)) rawWrites.push(f);
+  }
+  ok(rawWrites.length === 0, 'UI 层不再直接写 stateId', rawWrites.join(','));
+
+  const setup = (merit) => {
+    const st = ng({ name: 'x', profession: 'youxia', seed: 3 });
+    st.player.fame = OFFICE_FAME + 50; st.player.merit = merit; st.player.cityId = 'linzi';
+    for (let i = 0; i < OFFICE_QUEST_COUNT + 1; i++) st.quests.done.push({ id: `q${i}`, status: 'done', reward: {} });
+    return st;
+  };
+  for (const [merit, expect] of [[50, '士'], [100, '中士'], [200, '上士']]) {
+    const st = setup(merit);
+    const r = grantOffice(st, 'qi');
+    ok(r.rankName === expect, `廷对按功勋授 ${expect}`, r.rankName);
+  }
+  {
+    const st = setup(500);
+    const r = grantOffice(st, 'qi', { recommended: true });
+    ok(r.rankName === '士', '举荐一律从士起', r.rankName);
+    ok(st.player.merit === 500, '举荐不清空既有功勋');
+  }
+  {
+    const st = setup(400);
+    grantOffice(st, 'qi');
+    st.player.merit = 400;
+    const r = grantOffice(st, 'jin');
+    ok(r.rankName === '士' && st.player.merit === 200, '改仕他国功勋减半且归士', String(st.player.merit));
+  }
+  {
+    // grantOffice 与 seekOffice 阶次口径一致
+    const a = setup(200); grantOffice(a, 'qi');
+    const b = setup(200);
+    for (let i = 0; i < 10 && !b.player.stateId; i++) { delete b.flags.lastOffice; seekOffice(b, 'qi'); }
+    ok(a.player.rank === b.player.rank, '廷对与 seekOffice 授予阶次一致', `${a.player.rank}/${b.player.rank}`);
+  }
+
+  // 4) 修习弹窗关闭时清理 RAF 与键盘监听
+  const trainSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/training.js'), 'utf8');
+  ok(/onClose:\s*\(\)\s*=>/.test(trainSrc), '修习弹窗注册了 onClose 兜底清理');
+  ok(/cleanup\(ctx\)/.test(trainSrc.slice(trainSrc.indexOf('onClose'), trainSrc.indexOf('onClose') + 200)), 'onClose 调用 cleanup');
+}
+
 console.log(fails ? ('\n失败 ' + fails + ' 项 ✗') : '\n加固与一致性测试全部通过 ✓');
 process.exit(fails ? 1 : 0);
