@@ -1,10 +1,12 @@
 // 仕途、晋升、结局
-import { RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, peerageName } from '../data/defs.js';
+import { RANKS, SCHOLAR_TIERS, peerageName } from '../data/defs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R } from '../state.js';
 import { clamp, absDay } from '../util.js';
 import { currentPolicy } from './policy.js';
 import { treasureHonor, collectedTreasureKinds, offeredAllKinds } from './treasures.js';
+import { normShops, pactList, rankIndexOf } from './merchant.js';
+import { MERCHANT_RANKS } from '../data/merchant.js';
 
 export function checkPromotion(st) {
   const p = player(st);
@@ -167,11 +169,16 @@ export function scoreOf(st) {
   const p = player(st);
   const skills = Object.values(p.skills).reduce((a, b) => a + b, 0);
   const honor = treasureHonor(st);
+  // 商人无军功，另按「散财 / 商盟 / 商号等级 / 阶次」计分
+  const shopScore = normShops(st).reduce((a, s) => a + s.level * 12 + s.hired * 4, 0);
+  const merchantBonus = p.profession === 'shangren'
+    ? (p.givenAway ?? 0) * 2 + pactList(st).length * 60 + rankIndexOf(st) * 40
+    : 0;
   return Math.round(
     p.fame * 3 + p.merit * 0.6 + skills * 6 + p.money / 60 +
-    p.disciples * 4 + p.missions * 6 + p.alliances * 10 + p.shops.length * 8 +
+    p.disciples * 4 + p.missions * 6 + p.alliances * 10 + shopScore +
     (p.rank * 12) + (p.peerage ? (p.peerage.rank + 1) * 80 : 0) +
-    (honor ? honor.bonus : 0)
+    (honor ? honor.bonus : 0) + merchantBonus
   );
 }
 
@@ -188,10 +195,30 @@ export function computeEnding(st) {
     else { rank = '无名剑客'; comment = '剑在匣中，名在风里。'; }
     epilogue = `你一生交手${s.duels}次，胜${s.duelWins}次。`;
   } else if (p.profession === 'shangren') {
-    const tier = MERCHANT_TIERS.filter(t => p.money >= t.need).pop();
+    const idx = rankIndexOf(st);
+    const tier = MERCHANT_RANKS[idx];
     rank = tier.name;
-    comment = p.money >= 16000 ? '三致千金，名显天下，世称陶朱。' : p.money >= 3500 ? '坐列贩卖，家累千金。' : '贩贱卖贵，聊以自足。';
-    epilogue = `你行商${s.trades}次，累计获利颇丰。`;
+    const given = p.givenAway ?? 0;
+    const shops = normShops(st).length;
+    const pacts = pactList(st).length;
+    if (idx >= 5) {
+      comment = given >= 20000
+        ? '三致千金而三散之，天下不称其富，而称其德。'
+        : '三致千金，三散其财，世称陶朱公。';
+    } else if (idx === 4) {
+      comment = `与${pacts}国盟誓，商贾之身而与诸侯分庭抗礼。`;
+    } else if (idx === 3) {
+      comment = `车马连骑，货通列国，坐拥${shops}处商号。`;
+    } else if (idx === 2) {
+      comment = '设肆于市，坐而待价，家道渐丰。';
+    } else if (idx === 1) {
+      comment = '行旅四方，逐贱趋贵，聊以自给。';
+    } else {
+      comment = '负贩于市，朝聚暮散。';
+    }
+    epilogue = given > 0
+      ? `你行商${s.trades}次，散财${given}金。`
+      : `你行商${s.trades}次，家累${p.money}金。`;
   } else if (p.profession === 'shuike') {
     if (p.missions >= 14) { rank = '天下辩士'; comment = '一怒而诸侯惧，安居而天下熄。'; }
     else if (p.missions >= 9) { rank = '国士'; comment = '片言解纷，诸侯宾之。'; }

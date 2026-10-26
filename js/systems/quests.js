@@ -71,14 +71,17 @@ const TEMPLATES = {
     const plan = travelDeadline(st, city, target);
     const goodId = R.pick(st, PLAIN_GOODS);
     const qty = 3 + R.int(st, 0, 4);
-    const p = priceAt(st, target.id, goodId);
+    // 预算制：官府按目标城价给足采购款，玩家自己找货源，买得越便宜赚得越多
+    const marketPrice = priceAt(st, target.id, goodId);
+    const budget = Math.round(marketPrice * qty * 1.1); // 一成采办之费
     const g = giverOf(st, city);
     return {
       kind: 'supply', mode: 'travel', title: `运${GOODS[goodId].name} ${qty}${GOODS[goodId].unit}至${target.name}`,
-      desc: `${target.name}缺${GOODS[goodId].name}，若有商人能运${qty}${GOODS[goodId].unit}至彼处，官府加倍偿付。须自备货物，路程约${plan.route}日。`,
+      desc: `${target.name}缺${GOODS[goodId].name}${qty}${GOODS[goodId].unit}。官府给采办金${budget}，自寻货源，余者归己。路程约${plan.route}日。`,
       giverName: g.name, npcId: g.npcId, originCity: city.id, targetCity: target.id,
       goodId, qty, routeDays: plan.route, days: plan.days + 3, exp: absDay(st.time) + plan.days + 3,
-      reward: { money: Math.round(p * qty * 1.45) + plan.route * 2, fame: 3, merit: 6, rel: g.npcId ? 5 : 0 },
+      supplyBudget: budget,
+      reward: { money: budget + 30 + plan.route * 2, fame: 3, merit: 6, rel: g.npcId ? 5 : 0 },
       difficulty: 1,
     };
   },

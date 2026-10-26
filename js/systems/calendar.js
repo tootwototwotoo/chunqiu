@@ -11,6 +11,7 @@ import { expireQuests } from './quests.js';
 import { checkPromotion } from './progression.js';
 import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
+import { totalShopIncome, totalWages, trackPeakMoney } from './merchant.js';
 import { yearLabel, monthLabel, clamp } from '../util.js';
 
 // 时间基准统一由 util 提供，避免与各系统各写一份而差 1 日
@@ -144,13 +145,19 @@ function monthIncome(st, out) {
     }
   }
   if (p.profession === 'shangren') {
-    const shopIncome = p.shops.length * 55 + p.hired * 8;
+    const shopIncome = totalShopIncome(st);
     if (shopIncome > 0) {
       addMoney(st, shopIncome, true);
       out.notes.push(`商号进项 ${shopIncome} 金。`);
     }
-    const upkeep = p.hired * 6;
-    if (upkeep > 0) { addMoney(st, -upkeep, true); out.notes.push(`伙计工食 ${upkeep} 金。`); }
+    const wages = totalWages(st);
+    if (wages > 0) { addMoney(st, -wages, true); out.notes.push(`伙计工食 ${wages} 金。`); }
+    trackPeakMoney(st);
+  }
+  // 献金求仕后的旧商号转为养廉，仍收部分进项
+  if (p.passiveIncome > 0 && p.profession !== 'shangren') {
+    addMoney(st, p.passiveIncome, true);
+    out.notes.push(`旧商号养廉 ${p.passiveIncome} 金。`);
   }
   if (p.profession === 'xuezhe' && p.disciples > 0) {
     const income = Math.round(p.disciples * 1.5);

@@ -1,9 +1,10 @@
 // 游戏状态：创建、存档、常用读写
-import { PROFESSIONS, RANKS, MERCHANT_TIERS, SCHOLAR_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
+import { PROFESSIONS, RANKS, SCHOLAR_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
 import { CITIES, CITY_MAP, STATES } from './data/world.js';
 import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
 import { TREASURES, TREASURE_IDS } from './data/treasures.js';
+import { merchantRank } from './systems/merchant.js';
 import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
@@ -47,7 +48,8 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       stateId: null,
       money: prof.start.money,
       fame: prof.start.fame,
-      stamina: 100, staminaMax: 100,
+      stamina: profession === 'shangren' ? 120 : 100,
+      staminaMax: profession === 'shangren' ? 120 : 100,
       health: 100,
       ageDays: 0, startAge: 18,
       stats: { ...prof.start.stats },
@@ -57,6 +59,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       cards: [], relations: {},
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
+      givenAway: 0, peakMoney: prof.start.money, pacts: [], passiveIncome: 0,
       disciples: 0, works: [], doctrine: null,
       alliances: 0, missions: 0,
       inventory: {},
@@ -120,9 +123,7 @@ export function careerTitle(st) {
     return p.stateId ? `${STATES[p.stateId].name}之${rankName(st)}` : '布衣';
   }
   if (p.profession === 'shangren') {
-    let t = MERCHANT_TIERS[0];
-    for (const x of MERCHANT_TIERS) if (p.money >= x.need) t = x;
-    return t.name;
+    return merchantRank(st).name;
   }
   if (p.profession === 'xuezhe') {
     let t = SCHOLAR_TIERS[0];
@@ -240,9 +241,8 @@ export function caravanFree(st) {
   return Math.max(0, st.player.caravan - goodsCount(st));
 }
 export function merchantTier(st) {
-  let t = MERCHANT_TIERS[0];
-  for (const x of MERCHANT_TIERS) if (st.player.money >= x.need) t = x;
-  return t;
+  // 商人阶次受金钱、商号数、商盟数与累计散财共同决定，详见 systems/merchant.js
+  return merchantRank(st);
 }
 // ---------- 价格初始化 ----------
 export function initPrices(st) {
@@ -379,12 +379,23 @@ export function migrateState(st) {
   numericMap(p.skillExp, defaults.player.skillExp, 0);
   numericMap(p.stats, defaults.player.stats, 1, 100);
   numericMap(p.inventory, GOODS, 0);
-  for (const key of ['cards', 'shops', 'visitedCities']) {
-    const ids = key === 'cards' ? NPC_MAP : CITY_MAP;
-    ensure(p[key].every(id => typeof id === 'string' && own(ids, id)));
+  ensure(Array.isArray(p.cards) && p.cards.every(id => typeof id === 'string' && own(NPC_MAP, id)));
+  ensure(Array.isArray(p.visitedCities) && p.visitedCities.every(id => typeof id === 'string' && own(CITY_MAP, id)));
+  // 商号：旧存档为城市 id 数组，新结构为对象数组
+  ensure(Array.isArray(p.shops));
+  for (const shop of p.shops) {
+    if (typeof shop === 'string') { ensure(own(CITY_MAP, shop)); continue; }
+    ensure(object(shop) && typeof shop.city === 'string' && own(CITY_MAP, shop.city));
   }
   // 旧档无法重建全部足迹，至少保留故乡与目前所在城市。
   p.visitedCities = [...new Set([...p.visitedCities, p.homeCity, p.cityId])];
+  p.givenAway = Number.isFinite(p.givenAway) ? Math.max(0, p.givenAway) : 0;
+  p.peakMoney = Number.isFinite(p.peakMoney) ? Math.max(0, p.peakMoney) : p.money;
+  p.pacts = Array.isArray(p.pacts) ? p.pacts.filter(x => object(x) && own(STATES, x.state)) : [];
+  p.passiveIncome = Number.isFinite(p.passiveIncome) ? Math.max(0, p.passiveIncome) : 0;
+  p.shops = p.shops.map(shop => (typeof shop === 'string'
+    ? { city: shop, level: 1, hired: 0, bonus: 0 }
+    : { city: shop.city, level: Math.max(1, Math.min(3, Math.round(shop.level ?? 1))), hired: Math.max(0, Math.round(shop.hired ?? 0)), bonus: Math.max(0, Math.round(shop.bonus ?? 0)) }));
   for (const w of p.works) ensure(object(w) && typeof w.title === 'string' && Number.isInteger(w.year));
   for (const r of Object.values(p.relations)) {
     ensure(object(r)); fill(r, { aff: 0, met: false, gifts: 0 });

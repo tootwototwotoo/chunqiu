@@ -18,6 +18,14 @@ import { openTrialGame } from './trials.js';
 import { audienceModal } from './audience.js';
 import { councilModal } from './council.js';
 import { offerableTreasures } from '../systems/treasures.js';
+import {
+  shopAt, shopIncomeOf, totalShopIncome, totalWages,
+  canOpenShop, openShop, canUpgradeShop, upgradeShop, upgradeCostOf,
+  canHire, hireClerk, canGive, giveAway, rankProgress, canBuyOffice, buyOffice,
+} from '../systems/merchant.js';
+import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS } from '../data/merchant.js';
+import { merchantRank as merchantRankName, normShops } from '../systems/merchant.js';
+
 import { offerModal } from './offer.js';
 import { currentPolicy, policySummary } from '../systems/policy.js';
 import { duelModal } from './minigames.js';
@@ -250,17 +258,29 @@ function buildActions(st, app, c, owner) {
       },
     });
     add({
-      id: 'shop', name: '开设商号', cost: '800金',
-      desc: p.shops.includes(c.id) ? '本城已有你的商号。' : '设肆于此，每月有进项。',
-      disabled: p.money < 800 || p.shops.includes(c.id) || !c.tags.includes('market'),
-      run: () => {
-        addMoney(st, -800);
-        p.shops.push(c.id);
-        addFame(st, 3);
-        app.log(`于${c.name}开设商号。`, 'big');
-        app.after({});
-      },
+      id: 'give', name: '散财', cost: '1000金起',
+      desc: `赈济、助军、修路。已散 ${p.givenAway ?? 0} 金。`,
+      disabled: p.money < 1000,
+      run: () => giveawayModal(app, st, c.id),
     });
+    if (canBuyOffice(st, owner).ok) {
+      add({
+        id: 'buyoffice', name: '献金求仕', cost: '20000金',
+        desc: `献金于${stateName(owner)}，弃商为士，授上士。`,
+        run: () => buyOfficeModal(app, st, owner),
+      });
+    }
+    {
+      const has = shopAt(st, c.id);
+      add({
+        id: 'shop', name: has ? '商号' : '开设商号', cost: has ? '' : '800金',
+        desc: has
+          ? `${SHOP_LEVELS[has.level].name}（月入 ${shopIncomeOf(has)} 金，伙计 ${has.hired}/${SHOP_LEVELS[has.level].hiredMax}）`
+          : (c.tags.includes('market') ? '设肆于此，每月有进项。' : '此处非市邑，不可设肆。'),
+        disabled: has ? false : !canOpenShop(st, c.id).ok,
+        run: () => (has ? openShopPanel(app, st, c.id) : runOpenShop(app, st, c.id)),
+      });
+    }
     add({
       id: 'rumor', name: '打探行情', cost: '10金 · 半日',
       desc: '遣人四出探价，知何处可获厚利。',
@@ -628,14 +648,18 @@ function writeBook(app, st) {
 function profPanelHtml(st) {
   const p = player(st);
   if (p.profession === 'shangren') {
-    const income = p.shops.length * 55 + p.hired * 8;
+    const shops = normShops(st);
+    const prog = rankProgress(st);
     return `<div class="panel">
       <div class="section-title">商号</div>
       <div class="kv">
+        <dt>阶次</dt><dd>${merchantRankName(st)}</dd>
         <dt>商队容量</dt><dd>${p.caravan}</dd>
-        <dt>商号</dt><dd>${p.shops.length ? p.shops.map(id => CITY_MAP[id].name).join('、') : '无'}</dd>
-        <dt>月入</dt><dd>${income} 金</dd>
+        <dt>商号</dt><dd>${shops.length ? shops.map(x => `${CITY_MAP[x.city].name}(${SHOP_LEVELS[x.level].name})`).join('、') : '无'}</dd>
+        <dt>月入</dt><dd>${totalShopIncome(st)} 金（伙计工食 ${totalWages(st)}）</dd>
+        <dt>散财</dt><dd>${p.givenAway ?? 0} 金</dd>
       </div>
+      ${prog ? `<div class="footnote">距「${prog.next.name}」：${prog.text}</div>` : '<div class="footnote">已至陶朱公，三致千金而三散之。</div>'}
       <div class="footnote">开号于通都大邑，每月坐收其利；走货于贱贵之间，可获倍蓰之息。</div>
     </div>`;
   }
@@ -662,4 +686,113 @@ function profPanelHtml(st) {
     <div class="footnote">${p.stateId ? '献策、从军、巡守皆可积累功勋，功勋既厚，自得擢升。' : '先谋出仕，方可一展抱负。'}</div>
     ${p.stateId ? `<div class="divider"></div><div class="section-title">国策</div><div class="kv"><dt>现行</dt><dd>${(() => { const s2 = policySummary(st); return s2.cur ? `${s2.cur.policy.name}（余 ${s2.cur.left} 日）` : '无'; })()}</dd><dt>成效</dt><dd>${policySummary(st).text}</dd></div>` : ''}
   </div>`;
+}
+
+// ---------------- 商人：商号 / 伙计 / 散财 / 求仕 ----------------
+function runOpenShop(app, st, cityId) {
+  const r = openShop(st, cityId);
+  if (!r.ok) { app.toast(r.msg, 'war'); return; }
+  app.toast(r.msg, 'gain');
+  app.log(r.msg, 'big');
+  app.after({});
+}
+
+function openShopPanel(app, st, cityId) {
+  const city = CITY_MAP[cityId];
+  const h = app.modal({
+    title: `${city.name}商号`,
+    sub: '设肆、雇工、升号',
+    body: '',
+    foot: [{ label: '离开', close: true }],
+  });
+  const render = (extra = '') => {
+    const shop = shopAt(st, cityId);
+    const p = player(st);
+    const def = SHOP_LEVELS[shop.level];
+    const up = canUpgradeShop(st, cityId);
+    const hire = canHire(st, cityId);
+    const nextDef = SHOP_LEVELS[shop.level + 1];
+    h.setBody(`
+      <div class="kv">
+        <dt>等级</dt><dd>${def.name}</dd>
+        <dt>月入</dt><dd>${shopIncomeOf(shop)} 金</dd>
+        <dt>伙计</dt><dd>${shop.hired}/${def.hiredMax}</dd>
+        <dt>金</dt><dd>${p.money}</dd>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        ${shop.level < SHOP_MAX_LEVEL
+          ? `<button class="btn sm primary" data-upgrade ${up.ok ? '' : 'disabled'}>升为${nextDef.name}（${up.cost ?? upgradeCostOf(shop)}金）</button>`
+          : '<span class="footnote">已是总号</span>'}
+        <button class="btn sm" data-hire ${hire.ok ? '' : 'disabled'}>雇伙计（${HIRE.cost}金 · 月入+${HIRE.income} 月支${HIRE.wage}）</button>
+      </div>
+      ${!up.ok && shop.level < SHOP_MAX_LEVEL ? `<div class="footnote">${up.msg}</div>` : ''}
+      ${!hire.ok ? `<div class="footnote">${hire.msg}</div>` : ''}
+      ${extra ? `<div class="footnote" style="color:#4d6f56;font-size:13px">${esc(extra)}</div>` : ''}`);
+    onClick(h.bodyEl, '[data-upgrade]', () => {
+      const r = upgradeShop(st, cityId);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.log(r.msg, 'big'); app.refreshHud(); render(r.msg);
+    });
+    onClick(h.bodyEl, '[data-hire]', () => {
+      const r = hireClerk(st, cityId);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.log(r.msg); app.refreshHud(); render(r.msg);
+    });
+  };
+  render();
+  return h;
+}
+
+export function giveawayModal(app, st, cityId = player(st).cityId) {
+  const h = app.modal({
+    title: '散财',
+    sub: '三致千金，三散其财',
+    body: '',
+    foot: [{ label: '离开', close: true }],
+  });
+  const render = (extra = '') => {
+    const p = player(st);
+    h.setBody(`
+      <div class="footnote">散出去的财记为「散财」，只增不减。达陶朱公须累计散财 ${MERCHANT_RANKS[5].given} 金。</div>
+      <div class="kv"><dt>已散财</dt><dd>${p.givenAway ?? 0} 金</dd><dt>金</dt><dd>${p.money}</dd></div>
+      <div class="btn-row" style="margin-top:10px;flex-wrap:wrap">
+        ${Object.values(GIVEAWAYS).map(g => {
+          const chk = canGive(st, g.id, cityId);
+          return `<button class="btn sm" data-give="${g.id}" ${chk.ok ? '' : 'disabled'}>${g.name}（${g.cost}金）</button>`;
+        }).join('')}
+      </div>
+      <div class="footnote">赈济：名声与国势 助军：国势与盟国名声 修路：本城商号月入</div>
+      ${extra ? `<div class="footnote" style="color:#4d6f56;font-size:13px">${esc(extra)}</div>` : ''}`);
+    onClick(h.bodyEl, '[data-give]', (el) => {
+      const r = giveAway(st, el.dataset.give, cityId);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.log(r.msg, 'big'); app.refreshHud(); app.render(); render(r.msg);
+      h.close();
+      app.after({ notes: [r.msg] });
+    });
+  };
+  render();
+  return h;
+}
+
+function buyOfficeModal(app, st, stateId) {
+  const chk = canBuyOffice(st, stateId);
+  if (!chk.ok) { app.toast(chk.msg, 'war'); return; }
+  const h = app.modal({
+    title: '献金求仕',
+    sub: `${stateName(stateId)} · 以商贾之身易士人之籍`,
+    body: `<p style="line-height:1.9">献金二十千于${stateName(stateId)}，国君纳之，授上士。自此弃商为士，可累积功勋、受册命、议国策。</p>
+      <div class="footnote">旧日商号转为「养廉」，每月仍收三成进项。</div>`,
+    foot: [
+      { label: '再想想', close: true },
+      { label: '献金', cls: 'btn primary', onClick: (hh) => {
+        const r = buyOffice(st, stateId, 'shuike');
+        hh.close();
+        if (!r.ok) { app.toast(r.msg, 'war'); return; }
+        app.log(r.msg, 'big');
+        app.after({ notes: [r.msg] });
+      } },
+    ],
+  });
+  return h;
 }
