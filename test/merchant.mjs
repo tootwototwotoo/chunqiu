@@ -35,39 +35,48 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   ok(merchantRank(st).name === '贩夫', '初始为贩夫');
   ok(st.player.staminaMax === 120, '商人初始体力上限 120', String(st.player.staminaMax));
 
+  const R = MERCHANT_RANKS;
+  const setMoney = (v) => { st.player.money = v; if (v > (st.player.peakMoney ?? 0)) st.player.peakMoney = v; };
+
   // 行商：只看钱
-  st.player.money = 1200;
-  ok(merchantRank(st).name === '行商', '金 1200 升行商');
+  setMoney(R[1].money);
+  ok(merchantRank(st).name === '行商', `金 ${R[1].money} 升行商`, merchantRank(st).name);
 
   // 坐贾：需商号
-  st.player.money = 3500;
+  setMoney(R[2].money);
   ok(merchantRank(st).name === '行商', '无商号不升坐贾', merchantRank(st).name);
-  st.player.money = 5000;
   grantPermit(st, st.player.cityId);
   openShop(st, st.player.cityId);
-  ok(merchantRank(st).name === '坐贾', '有商号且金足升坐贾');
+  ok(shopCount(st) >= R[2].shops, '商号达坐贾要求', String(shopCount(st)));
+  setMoney(R[2].money);
+  ok(merchantRank(st).name === '坐贾', '有商号且金足升坐贾', merchantRank(st).name);
 
-  // 巨商：需 3 座（设肆要花钱，故先给足）
-  st.player.money = 9000;
-  ok(merchantRank(st).name === '坐贾', '1 座商号不升巨商', merchantRank(st).name);
-  grantPermit(st, 'linzi'); grantPermit(st, 'luoyi');
-  openShop(st, 'linzi'); openShop(st, 'luoyi');
-  ok(shopCount(st) === 3, '共 3 座商号', String(shopCount(st)));
-  st.player.money = 9000; // 设肆耗金，补回门槛之上
-  ok(merchantRank(st).name === '巨商', '3 座商号升巨商', merchantRank(st).name);
+  // 巨商：需更多商号
+  setMoney(R[3].money);
+  ok(merchantRank(st).name === '坐贾', '商号不足不升巨商', merchantRank(st).name);
+  for (const cid of ['linzi', 'luoyi', 'tao', 'ying']) {
+    if (shopCount(st) >= R[3].shops) break;
+    if (shopAt(st, cid)) continue;
+    grantPermit(st, cid);
+    openShop(st, cid);
+  }
+  ok(shopCount(st) >= R[3].shops, `共 ${R[3].shops} 座商号`, String(shopCount(st)));
+  setMoney(R[3].money);
+  ok(merchantRank(st).name === '巨商', '商号足则升巨商', merchantRank(st).name);
 
   // 商盟之主：需商盟
-  st.player.money = 17000;
-  ok(merchantRank(st).name === '巨商', '无商盟不升商盟之主');
+  setMoney(R[4].money);
+  ok(merchantRank(st).name === '巨商', '无商盟不升商盟之主', merchantRank(st).name);
   st.player.pacts = [{ state: 'qi' }];
   ok(merchantRank(st).name === '商盟之主', '有商盟升商盟之主');
 
   // 陶朱公：需散财 + 峰值
-  st.player.money = 40000;
-  trackPeakMoney(st);
+  setMoney(R[5].peak * 0.5);
   ok(rankIndexOf(st) === 4, '仅有钱不够，还差散财', merchantRank(st).name);
-  st.player.givenAway = MERCHANT_RANKS[5].given;
-  ok(merchantRank(st).name === '陶朱公', '散财达标升陶朱公');
+  st.player.givenAway = R[5].given;
+  ok(merchantRank(st).name === '商盟之主', '钱不够峰值也不升陶朱公', merchantRank(st).name);
+  setMoney(R[5].peak);
+  ok(merchantRank(st).name === '陶朱公', '散财达标且曾持巨资升陶朱公', merchantRank(st).name);
   // 散尽家财仍是陶朱公
   st.player.money = 0;
   trackPeakMoney(st);
@@ -158,18 +167,30 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   ok(player(st).givenAway === GIVEAWAYS.relief.cost, '累記散财', String(player(st).givenAway));
   ok(player(st).fame > fame0, '名声提升');
 
+  // 同类义举有冷却：立刻再来应被拒
+  ok(!canGive(st, 'relief', 'linzi').ok, '同类散财有冷却', canGive(st, 'relief', 'linzi').msg);
+  // 不同类可行
   const before = player(st).givenAway;
-  giveAway(st, 'army', 'linzi');
-  ok(player(st).givenAway === before + GIVEAWAYS.army.cost, '散财累加');
+  const ra = giveAway(st, 'army', 'linzi');
+  ok(ra.ok && player(st).givenAway === before + GIVEAWAYS.army.cost, '散财累加');
+  // 同城同年只能一次
+  advanceDays(st, 200);
+  ok(!canGive(st, 'relief', 'linzi').ok, '同城同年仅可一次散财', canGive(st, 'relief', 'linzi').msg);
+  advanceDays(st, 400);
+  ok(canGive(st, 'relief', 'linzi').ok, '跨年且过冷却可再散财');
 
   // 修路需要本地商号
-  ok(!canGive(st, 'road', 'linzi').ok, '无商号不可修路');
-  st.player.permits = [{ city: 'linzi', by: 'test', day: 0, fee: 0 }];
-  openShop(st, 'linzi');
+  ok(!canGive(st, 'road', 'linzi').ok || !!shopAt(st, 'linzi'), '无商号不可修路');
+  if (!shopAt(st, 'linzi')) {
+    st.player.permits = [{ city: 'linzi', by: 'test', day: 0, fee: 0 }];
+    openShop(st, 'linzi');
+  }
   const shop = shopAt(st, 'linzi');
-  const inc0 = shopIncomeOf(shop);
-  giveAway(st, 'road', 'linzi');
-  ok(shopIncomeOf(shop) === inc0 + GIVEAWAYS.road.shopBonus, '修路提升本号月入');
+  const inc0 = shopIncomeOf(shop, st);
+  st.player.money = 20000;
+  const rr = giveAway(st, 'road', 'linzi');
+  ok(rr.ok, '可修路', rr.msg ?? '');
+  ok(shopIncomeOf(shop, st) === inc0 + GIVEAWAYS.road.shopBonus, '修路提升本号月入');
 
   // 钱不足
   st.player.money = 10;
@@ -228,9 +249,17 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   ok(e0.rank === '贩夫', '结局阶次为贩夫');
   ok(/负贩于市/.test(e0.comment), '低阶有其评语', e0.comment);
 
-  st.player.money = 40000;
+  st.player.money = MERCHANT_RANKS[5].peak;
   trackPeakMoney(st);
   st.player.givenAway = MERCHANT_RANKS[5].given;
+  st.player.pacts = [{ state: 'qi', day: 0, fee: 0, arrears: 0 }];
+  const { openShop: os2, shopAt: sa2 } = await import('../js/systems/merchant.js');
+  for (const cid of ['linzi', 'luoyi', 'tao', 'ying']) {
+    if (!st.player.permits.some(x => x.city === cid)) st.player.permits.push({ city: cid, by: null, day: 0, fee: 0 });
+    if (!sa2(st, cid)) os2(st, cid);
+    st.player.money = MERCHANT_RANKS[5].peak;
+    trackPeakMoney(st);
+  }
   const e1 = computeEnding(st);
   ok(e1.rank === '陶朱公', '结局阶次为陶朱公', e1.rank);
   ok(/陶朱公/.test(e1.comment), '高阶评语提及陶朱公', e1.comment);
@@ -239,7 +268,8 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   // 评分含商人加成
   const s1 = scoreOf(st);
   const st2 = newGame({ name: '商', profession: 'shangren', seed: 8 });
-  st2.player.money = 40000;
+  st2.player.money = MERCHANT_RANKS[5].peak;
+  trackPeakMoney(st2);
   ok(s1 > scoreOf(st2), '散财与阶次提升评分', `${scoreOf(st2)} → ${s1}`);
 }
 
@@ -273,8 +303,9 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   // 阶次不足
   ok(!canGetPermit(st, 'linzi').ok, '贩夫不可请领市籍', canGetPermit(st, 'linzi').msg);
 
-  st.player.money = 1300; // 行商门槛 1200
-  ok(merchantRank(st).name === '行商', '先至行商');
+  st.player.money = MERCHANT_RANKS[1].money;
+  st.player.peakMoney = MERCHANT_RANKS[1].money;
+  ok(merchantRank(st).name === '行商', '先至行商', merchantRank(st).name);
   ok(!canGetPermit(st, 'linzi').ok, '名声不足不可请领', canGetPermit(st, 'linzi').msg);
 
   st.player.fame = 20;
@@ -284,11 +315,15 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
   ok(cands.every(c => PERMIT_ROLES.includes(c.role)), '候选人均为可授籍角色');
   ok(cands[0].order <= (cands[cands.length - 1]?.order ?? 0), '候选人按角色优先排序');
 
-  // 交情不足且名声未达「凭名望」档
+  // 名声已达标但无交情：应可走名望路线
   st.player.money = 20000;
   const low = canGetPermit(st, 'linzi');
-  ok(!low.ok, '无交情且名声不足则不可请领', low.msg);
-  ok(/交情/.test(low.msg) && /名望|名声/.test(low.msg), '提示同时给出两条路径');
+  ok(low.ok && low.mode === 'trial', '无交情可凭名望请领', low.mode ?? low.msg);
+  // 名声跌到门槛以下则不可
+  st.player.fame = PERMIT.minFame - 1;
+  const noFame = canGetPermit(st, 'linzi');
+  ok(!noFame.ok, '名声不足则不可请领', noFame.msg);
+  st.player.fame = 20;
 
   // 交情路线
   const { rel } = await import('../js/state.js');

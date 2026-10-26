@@ -2,10 +2,27 @@
 import { GOODS, isTreasure } from '../data/goods.js';
 import { TREASURES, TREASURE_IDS, treasuresInCity } from '../data/treasures.js';
 import { CITIES, CITY_MAP } from '../data/world.js';
-import { player, addMoney, addGoods, caravanFree, addLog, basePriceOf } from '../state.js';
+import { player, addMoney, addGoods, addFame, caravanFree, addLog, basePriceOf } from '../state.js';
 import { clamp } from '../util.js';
 import { currentPolicy } from './policy.js';
 import { pactLevyBonus } from './pact.js';
+import { parleyLevyBonus } from './parley.js';
+
+// 商誉：经商者以成交累积名望，每满 2000 金成交得 1 点。
+// 商人起点名声为 0，若无此途，市籍的名声门槛会成为死锁。
+const REPUTE_PER = 2000;
+function accrueRepute(st, amount) {
+  if (!amount || amount <= 0) return;
+  if (player(st).profession !== 'shangren') return;
+  st.stats.tradeVolume = (st.stats.tradeVolume ?? 0) + amount;
+  const earned = Math.floor(st.stats.tradeVolume / REPUTE_PER);
+  const credit = st.flags.reputeCredit ?? 0;
+  if (earned > credit) {
+    const gain = earned - credit;
+    st.flags.reputeCredit = earned;
+    addFame(st, gain, true);
+  }
+}
 
 export function priceAt(st, cityId, goodId) {
   return st.world.prices[cityId]?.[goodId] ?? basePriceOf(st, cityId, goodId);
@@ -24,7 +41,8 @@ export function levyOf(st, cityId = player(st).cityId) {
   const base = player(st).profession === 'shangren' ? 0.9 : 0.82;
   const pol = currentPolicy(st)?.id === 'trade' ? 0.04 : 0;
   const pact = pactLevyBonus(st, cityId);
-  return clamp(base + sk * 0.012 + pol + pact, 0.8, 0.99);
+  const parley = parleyLevyBonus(st, cityId);
+  return clamp(base + sk * 0.012 + pol + pact + parley, 0.8, 0.99);
 }
 
 export function canBuy(st, goodId, qty) {
@@ -47,6 +65,7 @@ export function buy(st, goodId, qty) {
   // 买入抬价
   st.world.prices[cid][goodId] = Math.max(3, Math.round(price * (1 + 0.0025 * qty)));
   st.stats.trades++;
+  accrueRepute(st, Math.round(price * qty));
   addLog(st, `于${CITY_MAP[cid].name}买入${GOODS[goodId].name}${qty}${GOODS[goodId].unit}，付${Math.round(price * qty)}金。`);
   return { ok: true, cost: Math.round(price * qty), price };
 }
@@ -63,6 +82,7 @@ export function sell(st, goodId, qty) {
   addMoney(st, gain, true);
   st.world.prices[cid][goodId] = Math.max(3, Math.round(price * (1 - 0.002 * qty)));
   st.stats.trades++;
+  accrueRepute(st, gain);
   addLog(st, `于${CITY_MAP[cid].name}卖出${GOODS[goodId].name}${qty}${GOODS[goodId].unit}，得${gain}金。`, 'gain');
   return { ok: true, gain, price };
 }

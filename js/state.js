@@ -60,7 +60,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
       givenAway: 0, peakMoney: prof.start.money, pacts: [], passiveIncome: 0, permits: [],
-      vehicle: 'foot', hauls: [],
+      vehicle: 'foot', hauls: [], merchantLevyBonus: {},
       disciples: 0, works: [], doctrine: null,
       alliances: 0, missions: 0,
       inventory: {},
@@ -170,6 +170,8 @@ export function addLog(st, text, kind = '') {
 
 export function addMoney(st, v, silent = false) {
   st.player.money = Math.max(0, st.player.money + v);
+  // 商人阶次按历史峰值判定，须随时维护，不能只在月结更新
+  if (st.player.money > (st.player.peakMoney ?? 0)) st.player.peakMoney = st.player.money;
   if (v > 0 && !silent) addLog(st, `得金 ${v}。`, 'gain');
   if (v < 0 && !silent) addLog(st, `花费 ${-v} 金。`);
 }
@@ -398,6 +400,7 @@ export function migrateState(st) {
     ? p.permits.filter(x => object(x) && own(CITY_MAP, x.city))
     : [];
   p.vehicle = typeof p.vehicle === 'string' ? p.vehicle : 'foot';
+  p.merchantLevyBonus = object(p.merchantLevyBonus) ? p.merchantLevyBonus : {};
   p.hauls = Array.isArray(p.hauls)
     ? p.hauls.filter(h => object(h) && own(GOODS, h.goodId) && own(CITY_MAP, h.to) && Number.isFinite(h.qty) && h.qty > 0)
     : [];

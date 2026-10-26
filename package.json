@@ -11,7 +11,9 @@
     "race": "node test/peerage-race.mjs",
     "race:quick": "node test/peerage-race.mjs --quick",
     "lint": "eslint .",
-    "check": "npm run lint && npm test"
+    "check": "npm run lint && npm test",
+    "race:merchant": "node test/merchant-race.mjs",
+    "race:merchant:quick": "node test/merchant-race.mjs --quick"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

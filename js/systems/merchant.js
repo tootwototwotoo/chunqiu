@@ -1,12 +1,12 @@
 // 商人系统：阶次判定、商号、伙计、散财、转职
 import {
   MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, BUY_OFFICE, TOP_RANK,
-  PERMIT, PERMIT_ROLES, PERMIT_ROLE_NAMES, cityScale,
+  PERMIT, PERMIT_ROLES, PERMIT_ROLE_NAMES, cityScale, GIVEAWAY_LIMIT,
 } from '../data/merchant.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addMoney, addFame, rel, npcsHere, R } from '../state.js';
 import { pactShopMultiplier } from './pact.js';
-import { clamp } from '../util.js';
+import { clamp, absDay } from '../util.js';
 
 const isMerchant = (st) => player(st).profession === 'shangren';
 
@@ -153,8 +153,9 @@ export function getPermit(st, cityId = player(st).cityId) {
 
   let granted = true;
   if (chk.mode === 'trial') {
-    const roll = p.fame * 0.35 + p.stats.mei * 0.25 + p.stats.zheng * 0.2 + R.int(st, 0, 25);
-    granted = roll >= 45;
+    // 名声越高越易说动；名声 10 时约三成，60 时近乎必成
+    const roll = p.fame * 0.9 + p.stats.mei * 0.25 + p.stats.zheng * 0.2 + R.int(st, 0, 25);
+    granted = roll >= 34;
   }
 
   if (!granted) {
@@ -166,7 +167,7 @@ export function getPermit(st, cityId = player(st).cityId) {
   }
 
   p.permits = Array.isArray(p.permits) ? p.permits : [];
-  p.permits.push({ city: cityId, by: npc?.id ?? null, day: absDayNow(st), fee: chk.fee });
+  p.permits.push({ city: cityId, by: npc?.id ?? null, day: absDay(st.time), fee: chk.fee });
   p.givenAway = (p.givenAway ?? 0) + chk.fee; // 市租亦入官，计入散财
   addFame(st, 2);
   if (npc) {
@@ -181,12 +182,6 @@ export function getPermit(st, cityId = player(st).cityId) {
     ok: true, by: null, fee: chk.fee, mode: 'official', cityId,
     msg: `本城无有司可托，径赴市亭纳${chk.fee}金，书名著籍。`,
   };
-}
-
-function absDayNow(st) {
-  // 与 util.absDay 一致，避免再引入一次 import
-  const t = st.time;
-  return (t.year + 722) * 360 + (t.month - 1) * 30 + (t.day - 1);
 }
 
 export function canOpenShop(st, cityId) {
@@ -268,6 +263,17 @@ export function canGive(st, kind, cityId = player(st).cityId) {
   if (!def) return { ok: false, msg: '并无此举。' };
   if (player(st).money < def.cost) return { ok: false, msg: `此举需金${def.cost}。` };
   if (kind === 'road' && !shopAt(st, cityId)) return { ok: false, msg: '须先在本地设有商号。' };
+  const f = player(st).flags ?? {};
+  const now = absDay(st.time);
+  const last = f.lastGiveKind?.[kind];
+  if (last != null && now - last < GIVEAWAY_LIMIT.cooldownDays) {
+    return { ok: false, msg: `同类义举方毕，${GIVEAWAY_LIMIT.cooldownDays - (now - last)} 日后可行。` };
+  }
+  const key = `${cityId}:${st.time.year}`;
+  const used = f.giveCityYear?.[key] ?? 0;
+  if (used >= GIVEAWAY_LIMIT.perCityPerYear) {
+    return { ok: false, msg: `今年已在此处行过义举，来年再议。` };
+  }
   return { ok: true, def, cityId };
 }
 
@@ -279,6 +285,13 @@ export function giveAway(st, kind, cityId = player(st).cityId) {
   const stateId = st.world.owner[cityId];
   addMoney(st, -def.cost, true);
   p.givenAway = (p.givenAway ?? 0) + def.cost;
+  // 记录冷却与年度额度
+  p.flags = p.flags ?? {};
+  p.flags.lastGiveKind = p.flags.lastGiveKind ?? {};
+  p.flags.lastGiveKind[kind] = absDay(st.time);
+  p.flags.giveCityYear = p.flags.giveCityYear ?? {};
+  const yk = `${cityId}:${st.time.year}`;
+  p.flags.giveCityYear[yk] = (p.flags.giveCityYear[yk] ?? 0) + 1;
 
   const notes = [];
   if (def.fame) { addFame(st, def.fame, true); notes.push(`名声+${def.fame}`); }
@@ -311,6 +324,7 @@ export function rankIndexOf(st) {
   const shops = shopCount(st);
   const pacts = pactList(st).length;
   const given = p.givenAway ?? 0;
+  // 商誉一旦立起来就不会因一时周转而跌回去，故按历史峰值取
   const peak = Math.max(p.money, p.peakMoney ?? 0);
 
   let idx = 0;
@@ -320,7 +334,7 @@ export function rankIndexOf(st) {
       if (given >= (r.given ?? 0) && peak >= (r.peak ?? 0)) idx = r.idx;
       continue;
     }
-    if (p.money < r.money) continue;
+    if (peak < r.money) continue;
     if (r.shops && shops < r.shops) continue;
     if (r.pacts && pacts < r.pacts) continue;
     idx = r.idx;

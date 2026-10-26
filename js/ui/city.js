@@ -28,6 +28,9 @@ import {
 import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, PERMIT, PERMIT_ROLE_NAMES, VEHICLES, VEHICLE_IDS } from '../data/merchant.js';
 import { merchantRank as merchantRankName, normShops } from '../systems/merchant.js';
 import { canSignPact, signPact, hasPact, pactMonthlyEach, pactSummary } from '../systems/pact.js';
+import { canParley } from '../systems/parley.js';
+import { parleyTopicModal } from './parley.js';
+import { rankIndexOf as rankIndexOfSafe } from '../systems/merchant.js';
 import { vehicleOf, canBuyVehicle, buyVehicle, haulsOf, haulSummary, escortHaul } from '../systems/haul.js';
 
 import { offerModal } from './offer.js';
@@ -296,6 +299,17 @@ function buildActions(st, app, c, owner) {
         desc: haulsOf(st).map(h => `${h.goodId}`).length ? `共 ${haulsOf(st).length} 单在途。` : '',
         run: () => cargoModal(app, st),
       });
+    }
+    {
+      const par = canParley(st, owner);
+      if (par.ok || p.profession === 'shangren' && rankIndexOfSafe(st) >= 4) {
+        add({
+          id: 'parley', name: '分庭抗礼', cost: '半日',
+          desc: par.ok ? `以商贾之身见${stateName(owner)}君，议价、借粮或通商。` : par.msg,
+          disabled: !par.ok,
+          run: () => parleyTopicModal(app, st, owner),
+        });
+      }
     }
     add({
       id: 'give', name: '散财', cost: '1000金起',
