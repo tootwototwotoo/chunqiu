@@ -69,3 +69,64 @@ export function cityScale(city) {
 }
 
 function clampNum(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+// ---------------- 运输工具 ----------------
+// 载重决定一次能运多少；装运速度决定每日处理多少载重；
+// 体力系数乘在出行体力消耗上。水路工具只能在带 water 标记的城之间使用。
+export const VEHICLES = {
+  foot: {
+    id: 'foot', name: '徒步', capacity: 24, load: 0, stamina: 1,
+    price: 0, minRank: 0, water: false,
+    desc: '负贩而行，只堪随身携带。',
+  },
+  cart: {
+    id: 'cart', name: '独轮车', capacity: 60, load: 60, stamina: 1,
+    price: 400, minRank: 1, water: false,
+    desc: '一车可载六十，短途称便。',
+  },
+  oxcart: {
+    id: 'oxcart', name: '牛车', capacity: 150, load: 50, stamina: 1.15,
+    price: 1500, minRank: 2, water: false,
+    desc: '载重可观，唯牛行迟缓，且更耗人力。',
+  },
+  wain: {
+    id: 'wain', name: '马车', capacity: 320, load: 120, stamina: 0.95,
+    price: 4000, minRank: 3, water: false,
+    desc: '车马轻捷，载重与速度兼得。',
+  },
+  boat: {
+    id: 'boat', name: '舟船', capacity: 800, load: 200, stamina: 0.7,
+    price: 12000, minRank: 4, water: true,
+    desc: '循水而行，载重最巨；唯不通内陆。',
+  },
+};
+
+export const VEHICLE_IDS = Object.keys(VEHICLES);
+
+// 大宗交割的起售量：贩夫、行商即时交割，其余须成批
+export const BULK_TRADE = [
+  { rank: 0, minQty: 1, instant: true },
+  { rank: 1, minQty: 5, instant: true },
+  { rank: 2, minQty: 20, instant: false },
+  { rank: 3, minQty: 50, instant: false },
+  { rank: 4, minQty: 100, instant: false },
+  { rank: 5, minQty: 200, instant: false },
+];
+
+// 在途风险
+export const HAUL_RISK = { base: 0.05, perLongDay: 0.01, longDay: 10, lossRate: 0.3, escortCost: 200, escortHalve: 0.5 };
+
+// ---------------- 商盟（质誓） ----------------
+// 郑国质誓：「尔无我叛，我无强贾」——有契约地位，但须共担国运。
+export const PACT = {
+  grandMinRank: 3,        // 须巨商
+  minFame: 30,
+  baseFee: 3000,          // 质金基数，每多一盟翻倍：baseFee * 2^n
+  levyBonus: 0.06,        // 盟国牙钱加成
+  shopMultiplier: 1.5,    // 盟国商号月入倍率
+  powerPayRate: 2,        // 月缴 = 国势 × 此值
+  warLevy: 500,           // 该国战时一次性
+  arrearsLimit: 2,        // 欠缴月数上限，超过解盟
+  breakFame: 15,          // 主动解盟名声惩罚
+  ruinFame: 20,           // 国亡导致失效的名声惩罚
+};

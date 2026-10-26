@@ -4,6 +4,8 @@ import { addStamina, addMoney, addLog } from '../state.js';
 import { advanceDays } from './calendar.js';
 import { shortestPath } from './pathfind.js';
 import { checkArrivalQuests } from './quests.js';
+import { arriveHauls } from './haul.js';
+import { VEHICLES } from '../data/merchant.js';
 export { shortestPath } from './pathfind.js';
 
 export function travelPlan(st, toCityId) {
@@ -12,8 +14,16 @@ export function travelPlan(st, toCityId) {
   if (!sp) return null;
   const days = sp.days;
   const cost = Math.max(4, Math.round(days * 2.2));
-  const stamina = Math.round(days * 2.1);
+  // 有车马舟船者，体力消耗按工具系数折算
+  const factor = vehicleStaminaFactor(st);
+  const stamina = Math.round(days * 2.1 * factor);
   return { days, cost, stamina, path: sp.path };
+}
+
+function vehicleStaminaFactor(st) {
+  const id = st.player?.vehicle;
+  if (!id || id === 'foot') return 1;
+  return VEHICLES[id]?.stamina ?? 1;
 }
 
 export function travelTo(st, toCityId) {
@@ -28,7 +38,14 @@ export function travelTo(st, toCityId) {
   st.player.visitedCities = [...new Set([...(st.player.visitedCities ?? [st.player.homeCity]), toCityId])];
   st.stats.travelDays += plan.days;
   const arr = checkArrivalQuests(st, toCityId);
+  // 在途货单运抵卸货
+  const unload = arriveHauls(st, toCityId);
   addLog(st, `行${plan.days}日，抵${CITY_MAP[toCityId].name}。${plan.cost ? `路费${plan.cost}金。` : ''}`);
-  return { ok: true, days: plan.days, cost: plan.cost, notes: res.notes, events: res.events, promotions: res.promotions, quests: arr, died: res.died };
+  return {
+    ok: true, days: plan.days, cost: plan.cost,
+    notes: [...res.notes, ...(unload.notes ?? [])],
+    events: res.events, promotions: res.promotions, quests: arr, died: res.died,
+    unloaded: unload.arrived ?? 0,
+  };
 }
 

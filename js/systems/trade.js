@@ -5,6 +5,7 @@ import { CITIES, CITY_MAP } from '../data/world.js';
 import { player, addMoney, addGoods, caravanFree, addLog, basePriceOf } from '../state.js';
 import { clamp } from '../util.js';
 import { currentPolicy } from './policy.js';
+import { pactLevyBonus } from './pact.js';
 
 export function priceAt(st, cityId, goodId) {
   return st.world.prices[cityId]?.[goodId] ?? basePriceOf(st, cityId, goodId);
@@ -18,11 +19,12 @@ export function policyPriceMod(st, goodId) {
   return 1;
 }
 
-export function levyOf(st) {
+export function levyOf(st, cityId = player(st).cityId) {
   const sk = player(st).skills.shanggu ?? 0;
   const base = player(st).profession === 'shangren' ? 0.9 : 0.82;
   const pol = currentPolicy(st)?.id === 'trade' ? 0.04 : 0;
-  return clamp(base + sk * 0.012 + pol, 0.8, 0.99);
+  const pact = pactLevyBonus(st, cityId);
+  return clamp(base + sk * 0.012 + pol + pact, 0.8, 0.99);
 }
 
 export function canBuy(st, goodId, qty) {

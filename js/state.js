@@ -60,6 +60,7 @@ export function newGame({ name, gender = '男', profession = 'youxia', seed = Da
       caravan: profession === 'shangren' ? 24 : 8,
       shops: [], hired: 0,
       givenAway: 0, peakMoney: prof.start.money, pacts: [], passiveIncome: 0, permits: [],
+      vehicle: 'foot', hauls: [],
       disciples: 0, works: [], doctrine: null,
       alliances: 0, missions: 0,
       inventory: {},
@@ -395,6 +396,10 @@ export function migrateState(st) {
   p.passiveIncome = Number.isFinite(p.passiveIncome) ? Math.max(0, p.passiveIncome) : 0;
   p.permits = Array.isArray(p.permits)
     ? p.permits.filter(x => object(x) && own(CITY_MAP, x.city))
+    : [];
+  p.vehicle = typeof p.vehicle === 'string' ? p.vehicle : 'foot';
+  p.hauls = Array.isArray(p.hauls)
+    ? p.hauls.filter(h => object(h) && own(GOODS, h.goodId) && own(CITY_MAP, h.to) && Number.isFinite(h.qty) && h.qty > 0)
     : [];
   p.shops = p.shops.map(shop => (typeof shop === 'string'
     ? { city: shop, level: 1, hired: 0, bonus: 0 }

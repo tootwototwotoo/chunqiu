@@ -8,6 +8,7 @@ import { onClick } from './common.js';
 import { esc } from '../util.js';
 import { BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
 import { marketHere, buyEvidence } from '../systems/evidence.js';
+import { minTradeQty, isInstantTrade, startHaul, vehicleOf, vehicleCapacity } from '../systems/haul.js';
 
 export function marketModal(app, st) {
   let tab = 'buy';
@@ -25,6 +26,8 @@ export function marketModal(app, st) {
     const tabs = [['buy', '买入'], ['sell', '卖出'], ['info', '行情']];
     if (treasuresInCity(p.cityId).length) tabs.push(['gem', '珍宝']);
     if (BOOKSHOPS.includes(p.cityId)) tabs.push(['book', '书肆']);
+    const merchantBulk = p.profession === 'shangren' && !isInstantTrade(st);
+    if (merchantBulk) tabs.push(['cargo', '货运']);
     const rows = PLAIN_GOODS.map(g => {
       const good = GOODS[g];
       const price = priceAt(st, p.cityId, g);
@@ -45,12 +48,44 @@ export function marketModal(app, st) {
       </tr>`;
     }).join('');
 
+    const minQty = player(st).profession === 'shangren' ? minTradeQty(st) : 1;
+    const instant = player(st).profession === 'shangren' ? isInstantTrade(st) : true;
     let body = `
+      ${player(st).profession === 'shangren'
+        ? `<div class="footnote">${instant
+          ? `当前为即时交割，单笔最少 ${minQty}。`
+          : `大宗交易：单笔至少 ${minQty}，须装运后在途运抵——请用「货运」页办理。`}</div>`
+        : ''}
       <div class="btn-row" style="margin-bottom:10px">
         ${tabs.map(([k, n]) => `<button class="btn sm ${tab === k ? 'primary' : ''}" data-tab="${k}">${n}</button>`).join('')}
         <span style="margin-left:auto;font-size:12.5px;color:#6d6052">金 ${p.money} · 行囊 ${goodsCount(st)}/${p.caravan}（余 ${caravanFree(st)}）</span>
       </div>`;
-    if (tab === 'gem') {
+    if (tab === 'cargo') {
+      const v = vehicleOf(st);
+      const cap = vehicleCapacity(st);
+      const minQ = minTradeQty(st);
+      body += `<div class="footnote">现用${v.name}：载重 ${cap}，装运 ${v.load || '—'}/日。
+        大宗采买须先装运，再运抵目的城方可入库。单笔至少 ${minQ}。</div>
+        <table class="table"><thead><tr><th>货物</th><th class="num">单价</th><th class="num">上限</th><th style="text-align:right">办货</th></tr></thead><tbody>
+        ${PLAIN_GOODS.map(g => {
+          const unit = Math.round(priceAt(st, p.cityId, g) * 1);
+          const bulk1 = GOODS[g].bulk ?? 1;
+          const maxByCap = Math.floor(cap / bulk1);
+          const maxByMoney = Math.floor(p.money / Math.max(1, unit));
+          const maxQ = Math.min(maxByCap, maxByMoney);
+          return `<tr>
+            <td><b>${GOODS[g].name}</b> <small style="color:#6d6052">载${bulk1}</small></td>
+            <td class="num">${unit}</td>
+            <td class="num">${maxQ}</td>
+            <td style="text-align:right">
+              ${[minQ, minQ * 2].filter(q => q <= maxQ).map(q =>
+                `<button class="btn sm" data-haul="${g}" data-q="${q}" data-u="${unit}">办${q}</button>`).join('') || '<span class="footnote">量不足</span>'}
+            </td>
+          </tr>`;
+        }).join('')}
+        </tbody></table>
+        <div class="footnote">办货后须亲自运往目的地；路程愈远，遇劫风险愈高。</div>`;
+    } else if (tab === 'gem') {
       const list = treasureList(st, p.cityId);
       body += `<div class="footnote">珍宝一城仅藏一件，购后须待补货，且此后同类珍宝天下皆涨。六种珍宝俱为厚重之礼，亦可用于献宝。</div>`;
       body += list.map(g => {
@@ -102,6 +137,22 @@ export function marketModal(app, st) {
     h.setBody(body);
 
     onClick(h.bodyEl, '[data-tab]', (el) => { tab = el.dataset.tab; render(); });
+    onClick(h.bodyEl, '[data-haul]', (el) => {
+      const g = el.dataset.haul, q = Number(el.dataset.q), unit = Number(el.dataset.u);
+      // 目的地：该货价最高且水路可行的城
+      let best = null;
+      for (const c of Object.values(CITY_MAP)) {
+        if (c.id === p.cityId) continue;
+        const pr = priceAt(st, c.id, g);
+        if (!best || pr > best.pr) best = { c, pr };
+      }
+      if (!best) { app.toast('无处可运。', 'war'); return; }
+      const r = startHaul(st, g, q, best.c.id, unit);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.log(r.msg, 'gain');
+      app.refreshHud();
+      render(r.msg);
+    });
     onClick(h.bodyEl, '[data-buy-gem]', (el) => {
       const r = buyTreasure(st, el.dataset.buyGem, p.cityId);
       if (!r.ok) { app.toast(r.msg, 'war'); return; }

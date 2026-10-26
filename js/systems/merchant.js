@@ -5,6 +5,7 @@ import {
 } from '../data/merchant.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addMoney, addFame, rel, npcsHere, R } from '../state.js';
+import { pactShopMultiplier } from './pact.js';
 import { clamp } from '../util.js';
 
 const isMerchant = (st) => player(st).profession === 'shangren';
@@ -46,15 +47,17 @@ export function shopCount(st) {
   return normShops(st).length;
 }
 
-export function shopIncomeOf(shop) {
-  const scale = shop?.scale ?? 1;
+export function shopIncomeOf(shop, st = null) {
   const base = shopIncomeBaseAt(shop.city, shop.level);
-  const hiredPer = Math.round(HIRE.income * scale);
-  return base + shop.hired * hiredPer + (shop.bonus ?? 0);
+  const hiredPer = Math.round(HIRE.income * (shop?.scale ?? 1));
+  const raw = base + shop.hired * hiredPer + (shop.bonus ?? 0);
+  // 盟国商号另有加成
+  const mult = st ? pactShopMultiplier(st, shop.city) : 1;
+  return Math.round(raw * mult);
 }
 
 export function totalShopIncome(st) {
-  return normShops(st).reduce((a, s) => a + shopIncomeOf(s), 0);
+  return normShops(st).reduce((a, s) => a + shopIncomeOf(s, st), 0);
 }
 
 export function totalWages(st) {

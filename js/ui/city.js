@@ -23,9 +23,12 @@ import {
   canOpenShop, openShop, canUpgradeShop, upgradeShop, upgradeCostOf,
   canHire, hireClerk, canGive, giveAway, rankProgress, canBuyOffice, buyOffice,
   canGetPermit, getPermit, hasPermit, permitFeeAt, shopCostAt, shopIncomeBaseAt,
+
 } from '../systems/merchant.js';
-import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, PERMIT, PERMIT_ROLE_NAMES } from '../data/merchant.js';
+import { MERCHANT_RANKS, SHOP_LEVELS, SHOP_MAX_LEVEL, HIRE, GIVEAWAYS, PERMIT, PERMIT_ROLE_NAMES, VEHICLES, VEHICLE_IDS } from '../data/merchant.js';
 import { merchantRank as merchantRankName, normShops } from '../systems/merchant.js';
+import { canSignPact, signPact, hasPact, pactMonthlyEach, pactSummary } from '../systems/pact.js';
+import { vehicleOf, canBuyVehicle, buyVehicle, haulsOf, haulSummary, escortHaul } from '../systems/haul.js';
 
 import { offerModal } from './offer.js';
 import { currentPolicy, policySummary } from '../systems/policy.js';
@@ -258,6 +261,42 @@ function buildActions(st, app, c, owner) {
         app.after({});
       },
     });
+    {
+      const v = vehicleOf(st);
+      const next = VEHICLE_IDS.map(id => VEHICLES[id]).find(x => x.price > 0 && x.price > v.price);
+      if (next) {
+        const chk = canBuyVehicle(st, next.id);
+        add({
+          id: 'vehicle', name: `置${next.name}`, cost: `${next.price}金`,
+          desc: chk.ok
+            ? `载重 ${next.capacity}，装运 ${next.load}/日，体力系数 ${next.stamina}。现用${v.name}。`
+            : chk.msg,
+          disabled: !chk.ok,
+          run: () => runBuyVehicle(app, st, next.id),
+        });
+      }
+    }
+    {
+      const stateId = owner;
+      const cd = canSignPact(st, stateId);
+      if (cd.ok || hasPact(st, stateId)) {
+        add({
+          id: 'pact', name: hasPact(st, stateId) ? '商盟' : '与国盟誓',
+          cost: hasPact(st, stateId) ? '' : `${cd.fee}金`,
+          desc: hasPact(st, stateId)
+            ? `已与${stateName(stateId)}结质誓，月缴${(st.world.power[stateId] ?? 30) * pactMonthlyEach(st)}金。`
+            : `纳质金${cd.fee}金，盟国牙钱+6%、商号月入×1.5，须月缴军资。`,
+          run: () => (hasPact(st, stateId) ? pactPanel(app, st) : runSignPact(app, st, stateId)),
+        });
+      }
+    }
+    if (haulsOf(st).length) {
+      add({
+        id: 'cargo', name: '在途货运', cost: `${haulsOf(st).length}单`,
+        desc: haulsOf(st).map(h => `${h.goodId}`).length ? `共 ${haulsOf(st).length} 单在途。` : '',
+        run: () => cargoModal(app, st),
+      });
+    }
     add({
       id: 'give', name: '散财', cost: '1000金起',
       desc: `赈济、助军、修路。已散 ${p.givenAway ?? 0} 金。`,
@@ -853,5 +892,100 @@ function permitModal(app, st, cityId) {
       } },
     ],
   });
+  return h;
+}
+
+function runBuyVehicle(app, st, vehicleId) {
+  const r = buyVehicle(st, vehicleId);
+  if (!r.ok) { app.toast(r.msg, 'war'); return; }
+  app.log(r.msg, 'gain');
+  app.after({ notes: [r.msg] });
+}
+
+function runSignPact(app, st, stateId) {
+  const chk = canSignPact(st, stateId);
+  if (!chk.ok) { app.toast(chk.msg, 'war'); return; }
+  const list = pactSummary(st);
+  const h = app.modal({
+    title: '与国盟誓',
+    sub: `${stateName(stateId)} · 尔无我叛，我无强贾`,
+    body: `<p style="line-height:1.9">与${stateName(stateId)}质誓而盟：你保其市，其君不夺你财货；
+      国有兵事，你当输军资。</p>
+      <div class="kv">
+        <dt>质金</dt><dd>${chk.fee} 金（第 ${chk.ordinal + 1} 个商盟）</dd>
+        <dt>月缴</dt><dd>国势 × ${pactMonthlyEachAfter(st)}</dd>
+        <dt>盟国牙钱</dt><dd>+6%</dd>
+        <dt>盟国商号</dt><dd>月入 ×1.5</dd>
+      </div>
+      ${list.length ? `<div class="footnote">现有 ${list.length} 个商盟；多盟者月缴倍率递增，加盟后各盟月缴一并上涨。</div>` : ''}
+      <div class="footnote">国亡则盟绝，质金不复，名声有损。</div>`,
+    foot: [
+      { label: '作罢', close: true },
+      { label: `纳质金（${chk.fee}）`, cls: 'btn primary', onClick: (hh) => {
+        const r = signPact(st, stateId);
+        hh.close();
+        if (!r.ok) { app.toast(r.msg, 'war'); return; }
+        app.log(r.msg, 'big');
+        app.after({ notes: [r.msg] });
+      } },
+    ],
+  });
+  return h;
+}
+
+function pactMonthlyEachAfter(st) {
+  const n = (st.player.pacts ?? []).length + 1;
+  return 2 * Math.pow(2, n - 1);
+}
+
+function pactPanel(app, st) {
+  const list = pactSummary(st);
+  const h = app.modal({
+    title: '商盟',
+    sub: '质誓之国',
+    body: '',
+    foot: [{ label: '离开', close: true }],
+  });
+  const render = (extra = '') => {
+    h.setBody(`
+      <div class="footnote">多盟者月缴倍率递增：每多一盟，各盟月缴一并翻倍。</div>
+      <table class="table"><thead><tr><th>国</th><th class="num">国势</th><th class="num">月缴</th><th class="num">欠缴</th></tr></thead><tbody>
+        ${list.map(x => `<tr><td>${x.stateName}</td><td class="num">${x.power}</td>
+          <td class="num">${x.due}</td><td class="num" style="color:${x.arrears ? '#9c2b26' : '#6d6052'}">${x.arrears}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="footnote">欠缴满 2 月自动解盟，名声有损。</div>
+      ${extra ? `<div class="footnote" style="color:#4d6f56">${esc(extra)}</div>` : ''}`);
+  };
+  render();
+  return h;
+}
+
+function cargoModal(app, st) {
+  const h = app.modal({
+    title: '在途货运',
+    sub: '装运既毕，随你同行',
+    wide: true,
+    body: '',
+    foot: [{ label: '离开', close: true }],
+  });
+  const render = (extra = '') => {
+    const rows = haulSummary(st);
+    h.setBody(`
+      <div class="footnote">货单须运至目的地才卸货入库；途程越长越易遇劫。</div>
+      ${rows.length ? `<table class="table"><thead><tr><th>货</th><th class="num">量</th><th>往</th><th class="num">载重</th><th class="num">已行</th><th>护卫</th></tr></thead><tbody>
+        ${rows.map(x => `<tr>
+          <td>${x.goodName}</td><td class="num">${x.qty}${x.unit}</td><td>${x.toName}</td>
+          <td class="num">${x.bulk}</td><td class="num">${x.days}日</td>
+          <td>${x.escorted ? '有' : `<button class="btn sm" data-escort="${x.id}">雇护卫</button>`}</td>
+        </tr>`).join('')}
+      </tbody></table>` : '<div class="empty">并无在途之货。</div>'}
+      ${extra ? `<div class="footnote" style="color:#4d6f56">${esc(extra)}</div>` : ''}`);
+    onClick(h.bodyEl, '[data-escort]', (el) => {
+      const r = escortHaul(st, el.dataset.escort);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      render(r.msg);
+    });
+  };
+  render();
   return h;
 }

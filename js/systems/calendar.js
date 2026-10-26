@@ -12,6 +12,7 @@ import { checkPromotion } from './progression.js';
 import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
 import { totalShopIncome, totalWages, trackPeakMoney } from './merchant.js';
+import { tickPacts } from './pact.js';
 import { yearLabel, monthLabel, clamp } from '../util.js';
 
 // 时间基准统一由 util 提供，避免与各系统各写一份而差 1 日
@@ -154,6 +155,8 @@ function monthIncome(st, out) {
     if (wages > 0) { addMoney(st, -wages, true); out.notes.push(`伙计工食 ${wages} 金。`); }
     trackPeakMoney(st);
   }
+  // 商盟军资、欠缴与国亡
+  tickPacts(st, out);
   // 献金求仕后的旧商号转为养廉，仍收部分进项
   if (p.passiveIncome > 0 && p.profession !== 'shangren') {
     addMoney(st, p.passiveIncome, true);
