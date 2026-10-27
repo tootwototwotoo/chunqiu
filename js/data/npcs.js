@@ -24,7 +24,7 @@ export const NPCS = [
     quote: '商人不唯利是图，亦有利国之时。',
     desc: '郑国行商，曾以牛十二犒秦师，伪称郑君之命，全郑于危难。' },
 
-  { id: 'qi_huan', name: '齐桓公', title: '齐侯', state: 'qi', city: 'linzi', reign: [-685, -643], role: 'ruler',
+  { id: 'qi_huan', name: '齐桓公', title: '齐侯', state: 'qi', city: 'linzi', birth: -716, death: -643, reign: [-685, -643], role: 'ruler',
     stats: { wu: 62, zhi: 72, zheng: 80, mei: 86 }, skills: { bingfa: 4, quanmou: 4, xuewen: 3 }, bias: 'ming', pref: 'ma', teach: ['bingfa'],
     quote: '寡人欲伯诸侯，奈何？',
     desc: '齐国之主，任管仲而修内政，尊王攘夷，为春秋首霸。' },
@@ -39,7 +39,7 @@ export const NPCS = [
     quote: '知臣莫如君，知友莫如我。',
     desc: '齐之贤大夫，让相位以荐管仲，世称其知人。' },
 
-  { id: 'lu_yin', name: '鲁隐公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-722, -712], role: 'ruler',
+  { id: 'lu_yin', name: '鲁隐公', title: '鲁侯', state: 'lu', city: 'qufu', birth: -730, death: -712, reign: [-722, -712], role: 'ruler',
     stats: { wu: 40, zhi: 58, zheng: 62, mei: 60 }, skills: { xuewen: 4, biancai: 3 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
     quote: '礼，经国家、定社稷、序民人、利后嗣者也。',
     desc: '鲁国之君，摄位而治，好礼守正，然失于威断。' },
@@ -49,7 +49,7 @@ export const NPCS = [
     quote: '一鼓作气，再而衰，三而竭。',
     desc: '鲁国布衣，长勺之战论战于庄公，以弱胜强。' },
 
-  { id: 'jin_wen', name: '晋文公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-636, -628], role: 'ruler',
+  { id: 'jin_wen', name: '晋文公', title: '晋侯', state: 'jin', city: 'jiang', birth: -697, death: -628, reign: [-636, -628], role: 'ruler',
     stats: { wu: 64, zhi: 82, zheng: 78, mei: 80 }, skills: { bingfa: 6, quanmou: 7, biancai: 5 }, bias: 'ming', pref: 'ma', teach: ['bingfa', 'quanmou'],
     quote: '退避三舍，所以报也。',
     desc: '晋国之主，流亡十九年而后反国，城濮一战而伯诸侯。' },
@@ -64,7 +64,7 @@ export const NPCS = [
     quote: '兵者，诡道也。',
     desc: '晋国名将，城濮破楚、殽山败秦，谋勇兼资，为晋之柱石。' },
 
-  { id: 'chu_cheng', name: '楚成王', title: '楚王', state: 'chu', city: 'ying', reign: [-671, -626], role: 'ruler',
+  { id: 'chu_cheng', name: '楚成王', title: '楚王', state: 'chu', city: 'ying', birth: -700, death: -626, reign: [-671, -626], role: 'ruler',
     stats: { wu: 66, zhi: 76, zheng: 74, mei: 68 }, skills: { bingfa: 6, quanmou: 5 }, bias: 'shi', pref: 'qi', teach: ['bingfa'],
     quote: '楚虽蛮夷，亦欲观中国之政。',
     desc: '楚国之主，北向争衡，围宋救卫，一时兵威震于中原。' },
@@ -74,7 +74,7 @@ export const NPCS = [
     quote: '当官而行，何强之有？',
     desc: '楚之令尹，毁家纾难，治民有方，楚人颂之。' },
 
-  { id: 'qin_mu', name: '秦穆公', title: '秦伯', state: 'qin', city: 'yong', reign: [-659, -621], role: 'ruler',
+  { id: 'qin_mu', name: '秦穆公', title: '秦伯', state: 'qin', city: 'yong', birth: -683, death: -621, reign: [-659, -621], role: 'ruler',
     stats: { wu: 60, zhi: 80, zheng: 82, mei: 78 }, skills: { bingfa: 5, quanmou: 6, shanggu: 4 }, bias: 'yi', pref: 'ma', teach: ['quanmou'],
     quote: '吾不以一眚掩大德。',
     desc: '秦国之主，广纳贤才，东服强晋，西霸戎夷。' },
@@ -89,7 +89,7 @@ export const NPCS = [
     quote: '劳师以袭远，非所闻也。',
     desc: '秦之老臣，料事如神，殽之战前哭师，后果如其言。' },
 
-  { id: 'song_xiang', name: '宋襄公', title: '宋公', state: 'song', city: 'shangqiu', reign: [-650, -637], role: 'ruler',
+  { id: 'song_xiang', name: '宋襄公', title: '宋公', state: 'song', city: 'shangqiu', birth: -680, death: -637, reign: [-650, -637], role: 'ruler',
     stats: { wu: 52, zhi: 48, zheng: 58, mei: 76 }, skills: { xuewen: 5, biancai: 4 }, bias: 'ming', pref: 'yu', teach: ['xuewen'],
     quote: '君子不重伤，不禽二毛。',
     desc: '宋国之主，慕仁义之名，泓水之战不鼓不成列，遂败。' },
@@ -129,7 +129,7 @@ export const NPCS = [
     quote: '陶为天下之中，商旅辐辏，寡人亦有以自养。',
     desc: '曹国之君，据陶之利，国小而富。' },
 
-  { id: 'chu_zhuang', name: '楚庄王', title: '楚王', state: 'chu', city: 'ying', reign: [-613, -591], role: 'ruler',
+  { id: 'chu_zhuang', name: '楚庄王', title: '楚王', state: 'chu', city: 'ying', birth: -640, death: -591, reign: [-613, -591], role: 'ruler',
     stats: { wu: 72, zhi: 88, zheng: 88, mei: 80 }, skills: { bingfa: 7, quanmou: 8, biancai: 4 }, bias: 'shi', pref: 'qi', teach: ['bingfa', 'quanmou'],
     quote: '三年不蜚，蜚将冲天；三年不鸣，鸣将惊人。',
     desc: '楚国之主，问鼎中原，邲之战大败晋师，遂霸诸侯。' },
@@ -169,17 +169,17 @@ export const NPCS = [
     quote: '日暮途远，吾故倒行而逆施之。',
     desc: '楚之亡臣，父兄被戮，奔吴以谋复仇，终以吴师入郢。' },
 
-  { id: 'he_lu', name: '阖闾', title: '吴王', state: 'wu', city: 'gusu', reign: [-515, -496], role: 'ruler',
+  { id: 'he_lu', name: '阖闾', title: '吴王', state: 'wu', city: 'gusu', birth: -537, death: -496, reign: [-515, -496], role: 'ruler',
     stats: { wu: 74, zhi: 78, zheng: 76, mei: 70 }, skills: { bingfa: 6, quanmou: 6 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
     quote: '吴虽僻远，愿与上图一争高下。',
     desc: '吴国之主，任伍胥、孙武，西破楚而入郢，东南之势成。' },
 
-  { id: 'fu_cha', name: '夫差', title: '吴王', state: 'wu', city: 'gusu', reign: [-495, -473], role: 'ruler',
+  { id: 'fu_cha', name: '夫差', title: '吴王', state: 'wu', city: 'gusu', birth: -528, death: -473, reign: [-495, -473], role: 'ruler',
     stats: { wu: 80, zhi: 62, zheng: 58, mei: 70 }, skills: { bingfa: 6, jianshu: 7 }, bias: 'ming', pref: 'xiang', teach: ['jianshu'],
     quote: '寡人岂敢忘越王之杀吾父耶！',
     desc: '吴国之主，夫椒胜越，黄池会盟，然矜功自伐，终为越所灭。' },
 
-  { id: 'gou_jian', name: '勾践', title: '越王', state: 'yue', city: 'kuaiji', reign: [-496, -465], role: 'ruler',
+  { id: 'gou_jian', name: '勾践', title: '越王', state: 'yue', city: 'kuaiji', birth: -520, death: -465, reign: [-496, -465], role: 'ruler',
     stats: { wu: 70, zhi: 86, zheng: 80, mei: 66 }, skills: { quanmou: 8, bingfa: 5 }, bias: 'shi', pref: 'tie', teach: ['quanmou'],
     quote: '卧薪尝胆，十年生聚，十年教训。',
     desc: '越国之主，败于夫椒而不屈，忍辱负重，终以三千越甲吞吴。' },
@@ -270,7 +270,7 @@ export const NPCS = [
     quote: '浩浩乎白水！', desc: '饭牛车下，扣角而歌，桓公闻而异之，举为大夫。' },
   
   // ---- 齐国世系 ----
-  { id: 'qi_xiang', name: '齐襄公', title: '齐侯', state: 'qi', city: 'linzi', reign: [-697, -686], role: 'ruler',
+  { id: 'qi_xiang', name: '齐襄公', title: '齐侯', state: 'qi', city: 'linzi', birth: -720, death: -686, reign: [-697, -686], role: 'ruler',
     stats: { wu: 64, zhi: 58, zheng: 52, mei: 60 }, skills: { jianshu: 5, bingfa: 4 }, bias: 'shi', pref: 'ma', teach: ['jianshu'],
     quote: '及瓜而代。', desc: '齐僖公之子，通于文姜，杀鲁桓公。后为公孙无知所弑。' },
   { id: 'qi_xiao', name: '齐孝公', title: '齐侯', state: 'qi', city: 'linzi', reign: [-642, -633], role: 'ruler',
@@ -290,7 +290,7 @@ export const NPCS = [
     quote: '君若欲之，何患无有？', desc: '在位五十八年，晏婴佐之，齐国稍安。' },
 
   // ---- 晋国世系 ----
-  { id: 'jin_xian', name: '晋献公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-676, -651], role: 'ruler',
+  { id: 'jin_xian', name: '晋献公', title: '晋侯', state: 'jin', city: 'jiang', birth: -710, death: -651, reign: [-676, -651], role: 'ruler',
     stats: { wu: 60, zhi: 66, zheng: 60, mei: 54 }, skills: { bingfa: 6, quanmou: 5 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
     quote: '假道于虞以伐虢。', desc: '并国十七，服国三十八。然宠骊姬，杀太子申生，晋乱自此始。' },
   { id: 'jin_hui', name: '晋惠公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-650, -637], role: 'ruler',
@@ -305,7 +305,7 @@ export const NPCS = [
   { id: 'jin_jing', name: '晋景公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-599, -581], role: 'ruler',
     stats: { wu: 58, zhi: 70, zheng: 66, mei: 58 }, skills: { bingfa: 6, quanmou: 6 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
     quote: '尔无我诈。', desc: '邲之战败于楚，鞍之战败齐，晋势复振。' },
-  { id: 'jin_dao', name: '晋悼公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-573, -558], role: 'ruler',
+  { id: 'jin_dao', name: '晋悼公', title: '晋侯', state: 'jin', city: 'jiang', birth: -586, death: -558, reign: [-573, -558], role: 'ruler',
     stats: { wu: 56, zhi: 76, zheng: 74, mei: 64 }, skills: { quanmou: 8, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
     quote: '寡人始复先君之业。', desc: '十四岁即位，修政息民，三驾而楚不能与争。' },
   { id: 'jin_ping', name: '晋平公', title: '晋侯', state: 'jin', city: 'jiang', reign: [-557, -532], role: 'ruler',
@@ -339,15 +339,15 @@ export const NPCS = [
   { id: 'qin_huan', name: '秦桓公', title: '秦伯', state: 'qin', city: 'yong', reign: [-603, -577], role: 'ruler',
     stats: { wu: 50, zhi: 56, zheng: 52, mei: 50 }, skills: { bingfa: 4 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
     quote: '河曲之盟，背之何伤。', desc: '与晋争，麻隧之战为晋所败。' },
-  { id: 'qin_ai', name: '秦哀公', title: '秦伯', state: 'qin', city: 'yong', reign: [-536, -501], role: 'ruler',
+  { id: 'qin_ai', name: '秦哀公', title: '秦伯', state: 'qin', city: 'yong', birth: -560, death: -501, reign: [-536, -501], role: 'ruler',
     stats: { wu: 44, zhi: 60, zheng: 58, mei: 56 }, skills: { quanmou: 4 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
     quote: '楚虽无道，秦岂无义。', desc: '申包胥哭秦庭，哀公赋无衣，出师救楚。' },
 
   // ---- 鲁国世系 ----
-  { id: 'lu_huan', name: '鲁桓公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-711, -694], role: 'ruler',
+  { id: 'lu_huan', name: '鲁桓公', title: '鲁侯', state: 'lu', city: 'qufu', birth: -731, death: -694, reign: [-711, -694], role: 'ruler',
     stats: { wu: 52, zhi: 56, zheng: 58, mei: 56 }, skills: { quanmou: 4 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
     quote: '吾与舅氏，好会于泺。', desc: '与齐襄公会，为齐所杀，鲁人讳之。' },
-  { id: 'lu_zhuang', name: '鲁庄公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-693, -662], role: 'ruler',
+  { id: 'lu_zhuang', name: '鲁庄公', title: '鲁侯', state: 'lu', city: 'qufu', birth: -706, death: -662, reign: [-693, -662], role: 'ruler',
     stats: { wu: 62, zhi: 60, zheng: 58, mei: 60 }, skills: { jianshu: 5, bingfa: 5 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
     quote: '长勺之役，曹刿请见。', desc: '用曹刿败齐于长勺，鲁势稍振。' },
   { id: 'lu_wen', name: '鲁文公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-625, -609], role: 'ruler',
@@ -389,7 +389,7 @@ export const NPCS = [
     stats: { wu: 36, zhi: 44, zheng: 40, mei: 44 }, skills: {}, bias: 'yi', pref: 'su', teach: [],
     quote: '晋侯畏韩赵魏，反朝于三家。', desc: '公室卑弱，反朝于韩赵魏之君。' },
 
-  { id: 'lu_min', name: '鲁闵公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-661, -660], role: 'ruler',
+  { id: 'lu_min', name: '鲁闵公', title: '鲁侯', state: 'lu', city: 'qufu', birth: -675, death: -660, reign: [-661, -660], role: 'ruler',
     stats: { wu: 36, zhi: 48, zheng: 44, mei: 48 }, skills: {}, bias: 'yi', pref: 'si', teach: [],
     quote: '庆父不死，鲁难未已。', desc: '即位二年，为庆父所弑。' },
   { id: 'lu_xi', name: '鲁僖公', title: '鲁侯', state: 'lu', city: 'qufu', reign: [-659, -627], role: 'ruler',
@@ -553,11 +553,58 @@ export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
 export const WANDERER_NAMES = ['无名剑客', '游士', '负剑之徒', '落魄士人', '山野隐者', '行脚商人', '游方医者', '江湖客'];
 export const BANDIT_NAMES = ['山贼', '草寇', '劫道者', '野盗', '亡命之徒'];
 
-export const ROLE_NAMES = { ruler: '国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客' };
+export const ROLE_NAMES = { ruler: '国君', prince: '公子', retired: '前国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客' };
 
-// 国君用 reign（在位起止）判定是否可互动：即位前不出现，退位/身故后消失。
-// 其余角色仍用 birth/death。这样「在位」语义清晰，也不必为每个人补生卒。
+// 某人在某年的显示用身份名（国君随年份变化）
+export function stageTitleOf(npc, year) {
+  if (npc.role !== 'ruler') return ROLE_NAMES[npc.role] ?? '';
+  const stage = rulerStageOf(npc, year);
+  if (stage === 'ruler') return npc.title ?? '国君';
+  if (stage === 'prince') return '公子';
+  if (stage === 'retired') return '前国君';
+  return '';
+}
+
+// 国君的三段身分：公子 → 国君 → 前国君，最后身故消失。
+// 判定依据：birth（生年）、reign（在位起止）、death（卒年）。
+// 幼年继位（即位时不足及笄）不受「及笄才出现」限制，因为已经是一国之君。
+export const COMING_OF_AGE = 15;
+
+// 推算某位国君的生卒年（缺字段时按在位期反推）
+export function lifeSpanOf(npc) {
+  if (!Array.isArray(npc.reign)) {
+    return { birth: npc.birth ?? null, death: npc.death ?? null };
+  }
+  const [from, to] = npc.reign;
+  // 无生年：按「即位时约 30 岁」反推
+  const birth = npc.birth ?? from - 30;
+  // 无卒年：退位后 5~10 年身故（用 id 派生的稳定值，避免读档变化）
+  const death = npc.death ?? (to + 5 + stableHash(npc.id) % 6);
+  return { birth, death };
+}
+
+function stableHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+// 某人在某年的身分：'prince'（公子）/ 'ruler'（在位）/ 'retired'（前国君）/ null（不出现）
+export function rulerStageOf(npc, year) {
+  if (!Array.isArray(npc.reign)) return npc.role === 'ruler' ? 'ruler' : 'ruler';
+  const [from, to] = npc.reign;
+  const { birth, death } = lifeSpanOf(npc);
+
+  if (death != null && year > death) return null;           // 已身故
+  if (year >= from && year <= to) return 'ruler';           // 在位（含幼年继位）
+  if (year > to) return 'retired';                          // 退位未卒
+  // 即位之前：须已及笄
+  if (birth != null && year >= birth + COMING_OF_AGE) return 'prince';
+  return null;
+}
+
 export function npcAlive(npc, year) {
+  if (npc.role === 'ruler') return rulerStageOf(npc, year) != null;
   const span = npc.reign ?? [npc.birth, npc.death];
   const [from, to] = span;
   if (from != null && year < from) return false;
@@ -567,7 +614,7 @@ export function npcAlive(npc, year) {
 
 export const RULERS = NPCS.filter(n => n.role === 'ruler');
 
-// 某国在某年的在位国君
+// 某国在某年的在位国君（只认在位者，不含公子与前国君）
 export function rulerOf(state, year) {
-  return RULERS.find(n => n.state === state && npcAlive(n, year)) ?? null;
+  return RULERS.find(n => n.state === state && rulerStageOf(n, year) === 'ruler') ?? null;
 }

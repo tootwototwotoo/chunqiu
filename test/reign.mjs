@@ -1,6 +1,6 @@
 // 国君世系与继位事件
 import { newGame, player, rel } from '../js/state.js';
-import { NPCS, RULERS, npcAlive, rulerOf } from '../js/data/npcs.js';
+import { NPCS, RULERS, npcAlive, rulerOf, rulerStageOf, lifeSpanOf } from '../js/data/npcs.js';
 import { STATES } from '../js/data/world.js';
 import {
   rulerAt, reignChanges, makeReignEvent, isNotable,
@@ -27,16 +27,16 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   for (const n of NPCS) names.set(n.name, (names.get(n.name) ?? 0) + 1);
   ok([...names].every(([, c]) => c === 1), 'NPC 姓名唯一');
 
-  // 同一国同一年的在位国君至多一位
+  // 同一国同一年的「在位」国君至多一位（npcAlive 现在含公子与前国君期，不能用于此判断）
   const clash = [];
   for (const st of Object.keys(STATES)) {
     const list = RULERS.filter(r => r.state === st);
     for (let y = -722; y <= -473; y++) {
-      const alive = list.filter(r => npcAlive(r, y));
-      if (alive.length > 1) { clash.push(`${st}@${y}:${alive.map(x => x.name).join('/')}`); break; }
+      const onThrone = list.filter(r => rulerStageOf(r, y) === 'ruler');
+      if (onThrone.length > 1) { clash.push(`${st}@${y}:${onThrone.map(x => x.name).join('/')}`); break; }
     }
   }
-  ok(clash.length === 0, '同国同年不出现两位国君', clash.slice(0, 3).join(','));
+  ok(clash.length === 0, '同国同年不出现两位在位国君', clash.slice(0, 3).join(','));
 }
 
 // ---------------- 在世判定 ----------------
@@ -153,6 +153,51 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   const ratio = hasRuler / (hasRuler + noRuler);
   ok(ratio >= 0.85, '六大国国君在位覆盖率 ≥85%', `${(ratio * 100).toFixed(1)}%`);
 }
+
+// ---------------- 三段身分：公子 / 国君 / 前国君 ----------------
+{
+  const qiHuan = RULERS.find(r => r.id === 'qi_huan'); // reign [-685,-643] 生卒 -716/-643
+  ok(rulerStageOf(qiHuan, -710) === null, '未及笄时不出现', String(rulerStageOf(qiHuan, -710)));
+  ok(rulerStageOf(qiHuan, -700) === 'prince', '及笄后、即位前为公子', String(rulerStageOf(qiHuan, -700)));
+  ok(rulerStageOf(qiHuan, -685) === 'ruler', '即位当年为国君');
+  ok(rulerStageOf(qiHuan, -643) === 'ruler', '卒年仍为国君');
+  ok(rulerStageOf(qiHuan, -642) === null, '身故后不再出现');
+  ok(rulerStageOf(qiHuan, -702) === null, '及笄前不出现', String(rulerStageOf(qiHuan, -702)));
+  ok(rulerStageOf(qiHuan, -701) === 'prince', '及笄当年出现', String(rulerStageOf(qiHuan, -701)));
+
+  const jinDao = RULERS.find(r => r.id === 'jin_dao');
+  ok(rulerStageOf(jinDao, -574) === null, '幼年即位者即位前不出现（未及笄）',
+    String(rulerStageOf(jinDao, -574)));
+  ok(rulerStageOf(jinDao, -573) === 'ruler', '幼年即位者即位当年即为国君');
+
+  const retired = RULERS.find(r => {
+    const { death } = lifeSpanOf(r);
+    return death != null && r.reign[1] < death;
+  });
+  ok(!!retired, '存在退位但未身故的国君', retired?.name ?? '无');
+  if (retired) {
+    const mid = retired.reign[1] + 1;
+    const { death } = lifeSpanOf(retired);
+    if (mid <= death) ok(rulerStageOf(retired, mid) === 'retired', '退位后为前国君', `${retired.name}@${mid}`);
+  }
+
+  const guessed = RULERS.filter(r => r.birth == null);
+  ok(guessed.length > 0, '存在需推算生卒的国君', String(guessed.length));
+  const g = guessed[0];
+  const a = lifeSpanOf(g), b = lifeSpanOf(g);
+  ok(a.birth === b.birth && a.death === b.death, '推算结果稳定（读档不会变）', `${a.birth}/${a.death}`);
+  ok(a.death >= g.reign[1], '推算卒年不早于退位年', `${a.death} >= ${g.reign[1]}`);
+  ok(a.death - g.reign[1] >= 5 && a.death - g.reign[1] <= 10, '退位后 5~10 年身故',
+    String(a.death - g.reign[1]));
+}
+
+// ---------------- 在位判定不含公子与前国君 ----------------
+{
+  ok(rulerOf('qi', -700) === null || rulerOf('qi', -700)?.name !== '齐桓公',
+    '公子期不算在位国君', rulerOf('qi', -700)?.name ?? '无');
+  ok(rulerOf('qi', -680)?.name === '齐桓公', '-680 齐桓公在位');
+}
+
 
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n国君世系通过 ✓');
 process.exit(fails ? 1 : 0);

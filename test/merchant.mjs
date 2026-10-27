@@ -365,17 +365,26 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
 
   // 无人可授籍的城：可赴市亭告官立籍（费用更高）
   {
+    // 找一座「有市邑、但城中无可授籍之人」的城（国君扩到近百位后，陶城已有曹共公）
+    const { CITIES } = await import('../js/data/world.js');
     const s5 = newGame({ name: '商', profession: 'shangren', seed: 23, era: 'early' });
-    s5.player.cityId = 'tao';
     s5.player.money = 20000;
     s5.player.fame = 30;
-    ok(permitCandidates(s5).length === 0, '陶城无有司可托');
-    const chk5 = canGetPermit(s5, 'tao');
-    ok(chk5.ok && chk5.mode === 'official', '可赴市亭告官立籍', chk5.mode);
-    ok(chk5.fee > permitFeeAt(s5, 'tao'), '告官立籍费用更高', `${chk5.fee} > ${permitFeeAt(s5, 'tao')}`);
-    const r5 = getPermit(s5, 'tao');
-    ok(r5.ok && r5.by === null, '告官立籍成功且无举荐人');
-    ok(hasPermit(s5, 'tao'), '已获陶城市籍');
+    const emptyCity = CITIES.find(c => {
+      if (!c.tags.includes('market')) return false;
+      s5.player.cityId = c.id;
+      return permitCandidates(s5).length === 0;
+    });
+    ok(!!emptyCity, '存在无有司可托的市邑', emptyCity?.name ?? '无');
+    if (emptyCity) {
+      s5.player.cityId = emptyCity.id;
+      const chk5 = canGetPermit(s5, emptyCity.id);
+      ok(chk5.ok && chk5.mode === 'official', '可赴市亭告官立籍', chk5.mode);
+      ok(chk5.fee > permitFeeAt(s5, emptyCity.id), '告官立籍费用更高', `${chk5.fee} > ${permitFeeAt(s5, emptyCity.id)}`);
+      const r5 = getPermit(s5, emptyCity.id);
+      ok(r5.ok && r5.by === null, '告官立籍成功且无举荐人');
+      ok(hasPermit(s5, emptyCity.id), `已获${emptyCity.name}市籍`);
+    }
   }
 
   // 主要城邑的可得籍覆盖率：有司可托者靠交情，无可托者靠告官兜底

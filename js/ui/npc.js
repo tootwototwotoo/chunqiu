@@ -7,7 +7,7 @@ import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo } fro
 import { biasName, BIAS_TIP } from '../systems/debate.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
-import { skillName, onClick, avatar, relTierName } from './common.js';
+import { skillName, onClick, avatar, relTierName, stageLabel } from './common.js';
 
 import { npcEvidence, askNpc } from '../systems/evidence.js';
 import { advanceDays } from '../systems/calendar.js';
@@ -18,7 +18,7 @@ export function openNpc(app, st, npcId) {
 
   const handle = app.modal({
     title: def.name,
-    sub: `${def.title} · ${STATES[def.state].name}国 · ${CITY_MAP[def.city].name}`,
+    sub: `${stageLabel({ def, stage: st.npc[npcId]?.stage })} · ${STATES[def.state].name}国 · ${CITY_MAP[def.city].name}`,
     wide: true,
     body: '',
     foot: [{ label: '离开', close: true }],

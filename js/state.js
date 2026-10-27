@@ -1,7 +1,7 @@
 // 游戏状态：创建、存档、常用读写
 import { PROFESSIONS, RANKS, SCHOLAR_TIERS, SKILL_MAX, ERAS, PEERAGES } from './data/defs.js';
 import { CITIES, CITY_MAP, STATES } from './data/world.js';
-import { NPCS, npcAlive, NPC_MAP } from './data/npcs.js';
+import { NPCS, npcAlive, NPC_MAP, rulerStageOf } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
 import { TREASURES, TREASURE_IDS } from './data/treasures.js';
 import { merchantRank } from './systems/merchant.js';
@@ -155,7 +155,12 @@ export function rel(st, id) {
 export function npcsHere(st) {
   return Object.values(st.npc)
     .filter(n => n.alive && n.city === st.player.cityId)
-    .map(n => ({ ...n, def: NPC_MAP[n.id] }))
+    .map(n => {
+      const def = NPC_MAP[n.id];
+      // 国君随年份在「公子 / 国君 / 前国君」之间变化
+      const stage = def?.role === 'ruler' ? rulerStageOf(def, st.time.year) : null;
+      return { ...n, def, stage };
+    })
     .filter(n => n.def && npcAlive(n.def, st.time.year));
 }
 export function aliveNpcs(st) {

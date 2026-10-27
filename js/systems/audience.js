@@ -1,6 +1,6 @@
 // 三回合廷对：国君问政，布衣应对；第三问为追问
 import { AUDIENCE_QUESTIONS, AUDIENCE_FOLLOW_UPS } from '../data/audience.js';
-import { NPC_MAP } from '../data/npcs.js';
+import { NPC_MAP, rulerStageOf } from '../data/npcs.js';
 import { CITY_MAP } from '../data/world.js';
 import { canTakeOffice } from './progression.js';
 import { player, skillLevel, R } from '../state.js';
@@ -36,12 +36,19 @@ const RULER_TITLE = {
 export function audienceRuler(st, stateId) {
   const owner = (cityId) => st.world.owner[cityId] ?? CITY_MAP[cityId]?.state;
   const here = Object.values(st.npc).filter(x => x.alive && x.city && owner(x.city) === stateId);
-  // 优先真正的国君
-  const ruler = here.find(x => NPC_MAP[x.id]?.role === 'ruler');
+  const year = st.time.year;
+  // 只认「当前在位」的国君：公子与前国君不能代君应对
+  const ruler = here.find(x => {
+    const d = NPC_MAP[x.id];
+    return d?.role === 'ruler' && rulerStageOf(d, year) === 'ruler';
+  });
   if (ruler) return NPC_MAP[ruler.id];
-  // 该国没有可用的国君条目时，不可让卿相或名士冒充国君：
+  // 该国没有在位的国君条目时，不可让卿相或名士冒充国君：
   // 心性会因此判错，玩家也见不到「国君」。改用一个合成国君对象。
-  if (!here.some(x => NPC_MAP[x.id]?.role === 'ruler')) {
+  if (!here.some(x => {
+    const d = NPC_MAP[x.id];
+    return d?.role === 'ruler' && rulerStageOf(d, year) === 'ruler';
+  })) {
     return {
       id: null,
       name: RULER_TITLE[stateId] ?? '国君',

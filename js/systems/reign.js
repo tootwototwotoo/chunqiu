@@ -1,6 +1,6 @@
 // 国君更替：驾崩与继位
 // 只对「所仕之国」与「声名最盛之国」弹窗，其余只入纪事，避免刷屏。
-import { RULERS, npcAlive } from '../data/npcs.js';
+import { RULERS, rulerStageOf } from '../data/npcs.js';
 import { STATES } from '../data/world.js';
 import { player, addFame, addLog } from '../state.js';
 import { clamp } from '../util.js';
@@ -8,9 +8,9 @@ import { queueEvent } from './events.js';
 
 const reignOf = (n) => n.reign ?? [n.birth, n.death];
 
-// 某国在某年的在位国君
+// 某国在某年的在位国君（只认 stage === 'ruler'，公子与前国君不算）
 export function rulerAt(stateId, year) {
-  return RULERS.find(n => n.state === stateId && npcAlive(n, year)) ?? null;
+  return RULERS.find(n => n.state === stateId && rulerStageOf(n, year) === 'ruler') ?? null;
 }
 
 // 该国上一位国君（在位期结束年小于本年）

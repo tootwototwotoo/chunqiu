@@ -72,3 +72,14 @@ export function skillRowHtml(st, k, canTrain) {
 export function promotionText(p) {
   return `以功勋擢为${p.state}国${p.rank}`;
 }
+
+
+// 国君随年份在「公子 / 国君 / 前国君」之间变化，称号随之改变
+export function stageLabel(npcLike) {
+  const { def, stage } = npcLike ?? {};
+  if (!def) return '';
+  if (def.role !== 'ruler') return def.title ?? '';
+  if (stage === 'prince') return '公子';
+  if (stage === 'retired') return '前国君';
+  return def.title ?? '国君';
+}
