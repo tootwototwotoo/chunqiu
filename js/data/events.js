@@ -529,4 +529,125 @@ export const RANDOM_EVENTS = [
       { label: '前往受教', hint: '需束脩', effects: [{ t: 'money', v: -20 }, { t: 'skillxp', k: 'xuewen', v: 12 }], text: '你奉上束脩，贤者为你讲了一卷书。' },
       { label: '不往', hint: '', effects: [], text: '学在人心，不必在讲堂。' },
     ] },
+
+  { id: 'ferry', w: 8, title: '津渡无舟', body: '你赶到渡口，天色已暮，舟子收了跳板，说今日不再开船。',
+    choices: [
+      { label: '多给船资，请他破例', hint: '破费', effects: [{ t: 'money', v: -30 }], text: '舟子收了钱，骂骂咧咧地又撑开跳板。' },
+      { label: '露宿一夜，明日再渡', hint: '耗日', effects: [{ t: 'stamina', v: -4 }, { t: 'health', v: 2 }], text: '你在渡口草棚里歇了一夜，听了一夜水声。' },
+      { label: '另寻浅滩涉水', hint: '武艺', check: { k: 'jianshu', dc: 34 },
+        success: [{ t: 'fame', v: 2 }, { t: 'stamina', v: -6 }],
+        fail: [{ t: 'health', v: -8 }, { t: 'goods', g: 'su', v: -2 }],
+        text: '水没及腰，你扶石而过，行囊却湿了半边。' },
+    ] },
+
+  { id: 'smith', w: 7, title: '铁匠求售', body: '路旁铁铺的匠人拦住你，说新打的一把剑，愿贱价卖与识货之人。',
+    choices: [
+      { label: '看剑', hint: '身法', check: { k: 'jianshu', dc: 32 },
+        success: [{ t: 'money', v: -60 }, { t: 'skillxp', k: 'jianshu', v: 15 }],
+        fail: [{ t: 'money', v: -60 }],
+        text: '剑是好剑，只是与你手不合。匠人说：「用久了自会合。」' },
+      { label: '不买', hint: '', effects: [], text: '剑在匣中，你不缺剑，也不缺这一把。' },
+    ] },
+
+  { id: 'old_text', w: 6, title: '破肆残简', body: '旧书肆清仓，角落里堆着一捆竹简，积尘寸许，无人问价。',
+    choices: [
+      { label: '买下细读', hint: '破费', check: { k: 'xuewen', dc: 34 },
+        success: [{ t: 'money', v: -40 }, { t: 'skillxp', k: 'xuewen', v: 18 }, { t: 'fame', v: 2 }],
+        fail: [{ t: 'money', v: -40 }],
+        text: '简是残的，读来费力，但其中有几句前人未发之论。' },
+      { label: '弃之', hint: '', effects: [], text: '残简终归是残简。' },
+    ] },
+
+  { id: 'gambling', w: 7, title: '市上博戏', body: '市角有人开设博局，围观者众，呼喝声不绝。',
+    choices: [
+      { label: '下场一博', hint: '心算', check: { k: 'suanshu', dc: 36 },
+        success: [{ t: 'money', v: 70 }, { t: 'fame', v: 1 }],
+        fail: [{ t: 'money', v: -60 }],
+        text: '骰子落地，几家欢喜几家愁。' },
+      { label: '旁观不说话', hint: '', effects: [{ t: 'skillxp', k: 'suanshu', v: 6 }], text: '你看了一局，算清了其中的门道，却没有下场。' },
+    ] },
+
+  { id: 'dispute', w: 8, title: '市井争讼', body: '两个商贩为一秤之争吵得不可开交，众人围观，无人能断。',
+    choices: [
+      { label: '出面调停', hint: '口舌', check: { k: 'biancai', dc: 34 },
+        success: [{ t: 'fame', v: 4 }, { t: 'money', v: 20 }],
+        fail: [{ t: 'fame', v: -2 }],
+        text: '你令双方各出一秤，当众校之，理亏的一方低头认了。' },
+      { label: '不问是非', hint: '', effects: [], text: '市井之争，日日都有。' },
+    ] },
+
+  { id: 'wild_herb', w: 6, title: '山中灵药', body: '山行途中，你见崖畔生着一株异草，叶如翠羽。',
+    choices: [
+      { label: '攀崖采之', hint: '武艺', check: { k: 'jianshu', dc: 36 },
+        success: [{ t: 'health', v: 12 }, { t: 'goods', g: 'qi', v: 1 }],
+        fail: [{ t: 'health', v: -10 }],
+        text: '你攀到崖畔，采得异草。药香清冽，闻之神爽。' },
+      { label: '不冒险', hint: '', effects: [], text: '奇物虽好，命更要紧。' },
+    ] },
+
+  { id: 'refugee_family', w: 8, title: '道旁流民', body: '一对夫妇携幼子坐于道旁，面有饥色，见你经过，欲言又止。',
+    choices: [
+      { label: '分粮与钱', hint: '重义', effects: [{ t: 'money', v: -40 }, { t: 'fame', v: 5 }], text: '妇人连连叩谢，孩子抱着干粮不肯松手。' },
+      { label: '问其所自', hint: '', effects: [{ t: 'fame', v: 1 }, { t: 'skillxp', k: 'xuewen', v: 5 }], text: '他们说故邑遭兵，田庐尽毁。你记下了那个地名。' },
+      { label: '视而不见', hint: '', effects: [{ t: 'fame', v: -1 }], text: '你加快脚步，身后的哭声渐渐远了。' },
+    ] },
+
+  { id: 'old_friend', w: 7, title: '故人相逢', body: '你在市中撞见一位旧识，他乡相遇，两人都有些意外。',
+    choices: [
+      { label: '把酒叙旧', hint: '破费', effects: [{ t: 'money', v: -25 }, { t: 'stamina', v: 6 }, { t: 'fame', v: 2 }], text: '一壶浊酒，说了半宿旧事。' },
+      { label: '匆匆道别', hint: '', effects: [], text: '各自有事，只拱了拱手。' },
+    ] },
+
+  { id: 'horse_trade', w: 6,
+    when: st => st.player.profession === 'shangren',
+    title: '马市议价', body: '马市上有一匹良驹，牙人开价极高，说此马日行三百里。',
+    choices: [
+      { label: '验马议价', hint: '相马', check: { k: 'shanggu', dc: 34 },
+        success: [{ t: 'money', v: -100 }, { t: 'goods', g: 'ma', v: 2 }],
+        fail: [{ t: 'money', v: -120 }],
+        text: '你看过牙口与蹄铁，指出其三处瑕疵，牙人脸色一变，让了价。' },
+      { label: '不买', hint: '', effects: [], text: '此马虽好，你自有计较。' },
+    ] },
+
+  { id: 'tax_man', w: 7,
+    when: st => st.player.profession === 'shangren',
+    title: '关吏索贿', body: '过关时，关吏拦住你的货，说数目不符，要你「补些手续」。',
+    choices: [
+      { label: '给钱了事', hint: '破费', effects: [{ t: 'money', v: -50 }], text: '关吏收了钱，连数都没数便挥手放行。' },
+      { label: '据理力争', hint: '口舌', check: { k: 'biancai', dc: 36 },
+        success: [{ t: 'fame', v: 3 }, { t: 'money', v: 10 }],
+        fail: [{ t: 'money', v: -80 }, { t: 'fame', v: -1 }],
+        text: '你逐条比对关文，关吏语塞，最后只得放行。' },
+    ] },
+
+  { id: 'scholar_quarrel', w: 6,
+    when: st => st.player.profession === 'xuezhe',
+    title: '士林论难', body: '两位士人于讲堂争执经义，各执一说，请你评判。',
+    choices: [
+      { label: '为之剖判', hint: '学问', check: { k: 'xuewen', dc: 36 },
+        success: [{ t: 'fame', v: 6 }, { t: 'skillxp', k: 'xuewen', v: 12 }],
+        fail: [{ t: 'fame', v: -2 }],
+        text: '你引经据典，指出两人各得一半，众人皆服。' },
+      { label: '推辞不判', hint: '', effects: [], text: '你说「此非一日可了」，众人虽不悦，也无话可说。' },
+    ] },
+
+  { id: 'boat_offer', w: 6,
+    when: st => st.player.profession === 'shangren',
+    title: '船家兜售', body: '船家说他的船顺流而下可载重货，价钱公道，只是船旧了些。',
+    choices: [
+      { label: '验船再议', hint: '相货', check: { k: 'shanggu', dc: 32 },
+        success: [{ t: 'money', v: -150 }, { t: 'skillxp', k: 'shanggu', v: 10 }],
+        fail: [{ t: 'money', v: -150 }, { t: 'health', v: -4 }],
+        text: '船板虽旧，龙骨未朽，你压了价，船家终于点头。' },
+      { label: '不买', hint: '', effects: [], text: '旧船入水，多一分风险。' },
+    ] },
+
+  { id: 'noble_visit', w: 5, title: '贵人来访', body: '一位卿大夫的家臣找到你，说主人闻你之名，欲一见。',
+    choices: [
+      { label: '往见', hint: '', check: { k: 'biancai', dc: 32 },
+        success: [{ t: 'fame', v: 6 }, { t: 'money', v: 50 }],
+        fail: [{ t: 'fame', v: 1 }],
+        text: '卿大夫与你谈论时局，末了赠你一笔盘缠。' },
+      { label: '婉辞', hint: '', effects: [], text: '你说「山野之人，不足辱君之听」。' },
+    ] },
 ];

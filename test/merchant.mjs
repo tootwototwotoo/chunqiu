@@ -385,7 +385,9 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
     const s6 = newGame({ name: '商', profession: 'shangren', seed: 24 });
     let byOfficial = 0, byTrial = 0;
     const unreachable = [];
-    for (const c of CITIES) {
+    // 只有市邑（market）才可领籍，非市邑理应拒绝
+    const marketCities = CITIES.filter(c => c.tags.includes('market'));
+    for (const c of marketCities) {
       s6.player.cityId = c.id;
       s6.player.money = 20000;
       s6.player.fame = P.trialFame; // 名望线之上
@@ -394,9 +396,15 @@ ok(MERCHANT_RANKS[5].given > 0 && MERCHANT_RANKS[5].peak > 0, '陶朱公要求�
       if (chk.mode === 'official') byOfficial++;
       if (chk.mode === 'trial') byTrial++;
     }
-    ok(unreachable.length === 0, '31 城皆可得市籍', unreachable.join(','));
+    ok(unreachable.length === 0, '所有市邑皆可得市籍', unreachable.join(','));
     ok(byOfficial > 0, '存在只能告官立籍的城', String(byOfficial));
     ok(byTrial > 0, '存在需凭名望的城', String(byTrial));
+    // 非市邑应当拒绝
+    const nonMarket = CITIES.filter(c => !c.tags.includes('market'));
+    if (nonMarket.length) {
+      s6.player.cityId = nonMarket[0].id;
+      ok(!canGetPermit(s6, nonMarket[0].id).ok, '非市邑不可领籍', nonMarket[0].id);
+    }
   }
 
   // 已有商号的旧存档自动视为有籍

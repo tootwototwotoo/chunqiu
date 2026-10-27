@@ -31,6 +31,8 @@ export const LOCAL_SPECIALTY = {
   ju: 'yan', zhu: 'su', fei: 'si', diqiu: 'ge', quwo: 'tie', pingyang: 'ma',
   shen: 'tie', xi: 'qi', sui: 'ma', qi2: 'qi', pengcheng: 'su', zhoulai: 'ge',
   zhuji: 'si', xu: 'ge', linyi: 'ma',
+  yongqiu: 'su', zhi: 'ge', chengpu: 'su', taolin: 'ma',
+  huai: 'su', shu: 'qi', yun: 'tie', ju_chao: 'si',
 };
 
 // 各地对各货的需求系数（1 为平）

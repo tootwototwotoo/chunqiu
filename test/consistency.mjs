@@ -80,6 +80,8 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   const { LOCAL_SPECIALTY } = await import('../js/data/goods.js');
   const badSpecialty = Object.entries(LOCAL_SPECIALTY).filter(([cid, g]) => !CITY_MAP[cid] || !PLAIN_GOODS.includes(g));
   ok(badSpecialty.length === 0, '城池特产均为普通货物且城 id 有效', badSpecialty.slice(0, 3).map(x => x.join(':')).join(','));
+  const noSpecialty = CITIES.filter(c => !LOCAL_SPECIALTY[c.id]).map(c => c.id);
+  ok(noSpecialty.length === 0, '每座城都有特产', noSpecialty.join(','));
 
   // NPC 偏好必须是存在的货物
   const badPref = NPCS.filter(n => n.pref != null && !GOODS[n.pref]);
@@ -92,9 +94,9 @@ const PROF_IDS = Object.keys(PROFESSIONS);
 
 // ---------------- 4. 世界数据完整性 ----------------
 {
-  ok(CITIES.length === 31, '31 城', String(CITIES.length));
+  ok(CITIES.length >= 31, '城池数量充足', String(CITIES.length));
   ok(Object.keys(STATES).length === 19, '19 国', String(Object.keys(STATES).length));
-  ok(NPCS.length === 42, '42 位 NPC', String(NPCS.length));
+  ok(NPCS.length >= 42, 'NPC 数量充足', String(NPCS.length));
   const badState = CITIES.filter(c => !STATES[c.state]);
   ok(badState.length === 0, '每座城的国别有效');
   const badRoad = ROADS.filter(r => !CITY_MAP[r[0]] || !CITY_MAP[r[1]]);
@@ -106,7 +108,7 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   const st = newGame({ name: 'x', profession: 'youxia', seed: 1 });
   const from = CITIES[0].id;
   const unreachable = CITIES.filter(c => c.id !== from && !shortestPath(from, c.id, st));
-  ok(unreachable.length === 0, '31 城全部连通', unreachable.map(c => c.id).join(','));
+  ok(unreachable.length === 0, '所有城池连通', unreachable.map(c => c.id).join(','));
 }
 
 // ---------------- 5. 论辩 / 证据 / 书肆 数据自洽 ----------------

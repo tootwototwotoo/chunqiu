@@ -31,7 +31,7 @@ for (const a of CITIES) for (const b of CITIES) {
   if (a.id === b.id) continue;
   if (!shortestPath(a.id, b.id, st)) unreachable++;
 }
-ok(unreachable === 0, '31 城全互通', String(unreachable));
+ok(unreachable === 0, '所有城池全互通', String(unreachable));
 
 // 地名标注位置不越界
 const out = STATE_LABEL_POS.filter(([, x, y]) => x < 0 || x > 940 || y < 0 || y > 660);

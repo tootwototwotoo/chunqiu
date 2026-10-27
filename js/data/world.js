@@ -23,7 +23,7 @@ export const STATES = {
 };
 
 export const CITIES = [
-  { id: 'luoyi',    name: '洛邑', state: 'zhou',  x: 470, y: 330, pop: 62, tags: ['academy', 'market', 'court'], water: '黄河', good: 'yu',
+  { id: 'luoyi',    name: '洛邑', state: 'zhou',  x: 470, y: 330, pop: 62, tags: ['academy', 'market', 'court'], water: '黄河', good: 'si',
     desc: '周室东都，九鼎所在。天子虽微，礼乐犹存，天下士人往来不绝。' },
   { id: 'linzi',    name: '临淄', state: 'qi',    x: 742, y: 252, pop: 78, tags: ['market', 'barracks', 'academy', 'court'], water: '济水', good: 'yan',
     desc: '齐都，负海之国。通鱼盐之利，冠带衣履天下，市声昼夜不息。' },
@@ -41,7 +41,7 @@ export const CITIES = [
     desc: '宋都，殷商故地。宋人守礼而好仁义，处四战之地，常为兵冲。' },
   { id: 'chaoge',   name: '朝歌', state: 'wei',   x: 566, y: 272, pop: 40, tags: ['market', 'court'], water: '黄河', good: 'si',
     desc: '卫都，旧殷王畿。桑间濮上，风诗所出，然国势日蹙。' },
-  { id: 'xinzheng', name: '新郑', state: 'zheng', x: 536, y: 372, pop: 52, tags: ['market', 'court'], water: '颍水', good: 'yu',
+  { id: 'xinzheng', name: '新郑', state: 'zheng', x: 536, y: 372, pop: 52, tags: ['market', 'court'], water: '颍水', good: 'si',
     desc: '郑都，天下辐辏。商贾云集，弦高之属以商而闻于诸侯。' },
   { id: 'ji',       name: '蓟',   state: 'yan',   x: 700, y: 96,  pop: 30, tags: ['market', 'barracks', 'court'], good: 'ge',
     desc: '燕都，僻处北陲。近山戎，寒风凛冽，然为中原之北门。' },
@@ -71,7 +71,7 @@ export const CITIES = [
     desc: '楚之北门，申公所镇。扼方城之险，为问鼎中原之跳板。' },
   { id: 'xi',       name: '息',   state: 'chu',   x: 514, y: 500, pop: 28, tags: ['market'], water: '淮水', good: 'qi',
     desc: '息侯故国，为楚所并。漆园连片，淮上膏腴。' },
-  { id: 'sui',      name: '随',   state: 'sui',   x: 548, y: 522, pop: 24, tags: ['market', 'court'], good: 'yu',
+  { id: 'sui',      name: '随',   state: 'sui',   x: 548, y: 522, pop: 24, tags: ['market', 'court'], good: 'si',
     desc: '汉东大国，姬姓之封。随侯之珠名闻天下，楚人屡伐而不能灭。' },
   { id: 'qi2',      name: '岐',   state: 'qin',   x: 178, y: 300, pop: 30, tags: ['market'], good: 'qi',
     desc: '周原故地，岐山之下。秦人东猎，渐据以为根本。' },
@@ -85,6 +85,23 @@ export const CITIES = [
     desc: '许国，四岳之后。国微而处中原之冲，常为大国所迁。' },
   { id: 'linyi',    name: '临易', state: 'yan',   x: 748, y: 150, pop: 22, tags: ['market'], good: 'ma',
     desc: '燕之南都，易水之阳。北接戎狄，南望齐赵。' },
+  { id: 'yongqiu',  name: '雍丘', state: 'song',  x: 590, y: 366, pop: 30, tags: ['market'], good: 'su',
+    desc: '宋之西鄙，杞人故地。屡经兵燹，民多迁徙。' },
+  { id: 'zhi',      name: '制',   state: 'zheng', x: 520, y: 352, pop: 24, tags: ['barracks'], good: 'ge',
+    desc: '郑之岩邑，虎牢之险。一夫当关，天下莫能争。' },
+  { id: 'chengpu',  name: '城濮', state: 'wei',  x: 606, y: 340, pop: 26, tags: ['market'], good: 'su',
+    desc: '卫之边邑，晋楚尝大战于此。' },
+  { id: 'taolin',   name: '桃林', state: 'qin',  x: 424, y: 356, pop: 20, tags: [], good: 'ma',
+    desc: '秦之塞邑，桃林之野。扼关中之咽喉。' },
+  { id: 'huai',     name: '淮阳', state: 'chen', x: 610, y: 470, pop: 32, tags: ['market'], good: 'su',
+    desc: '陈之重镇，淮水之阳。号为中原粮仓。' },
+  { id: 'shu',      name: '舒',   state: 'chu',  x: 700, y: 520, pop: 28, tags: ['market'], good: 'qi',
+    desc: '群舒之地，楚之东鄙。水泽纵横，渔稻称饶。' },
+  { id: 'yun',      name: '郧',   state: 'chu',  x: 566, y: 520, pop: 22, tags: ['barracks'], good: 'tie',
+    desc: '楚之北鄙，汉水之滨。与随、邓相邻。' },
+  { id: 'ju_chao',  name: '郈',   state: 'lu',   x: 666, y: 318, pop: 24, tags: ['market'], good: 'si',
+    desc: '鲁之西鄙，三桓私邑。礼乐犹存而政在家门。' },
+
 ];
 
 export const CITY_MAP = Object.fromEntries(CITIES.map(c => [c.id, c]));
@@ -158,6 +175,24 @@ export const ROADS = [
   ['linyi', 'ji', 4],
   ['linyi', 'linzi', 7],
   ['linyi', 'handan', 8],
+  ['xinzheng', 'zhi', 2],
+  ['zhi', 'luoyi', 4],
+  ['shangqiu', 'yongqiu', 3],
+  ['yongqiu', 'chengpu', 2],
+  ['chengpu', 'chaoge', 3],
+  ['yong', 'taolin', 3],
+  ['taolin', 'luoyi', 5],
+  ['wanqiu', 'huai', 2],
+  ['huai', 'shangcai', 3],
+  ['ying', 'yun', 4],
+  ['yun', 'sui', 2],
+  ['yun', 'xi', 3],
+  ['ying', 'shu', 5],
+  ['shu', 'gusu', 6],
+  ['shu', 'kuaiji', 7],
+  ['qufu', 'ju_chao', 2],
+  ['ju_chao', 'linzi', 4],
+
 ];
 
 export function cityState(st, cityId) {
