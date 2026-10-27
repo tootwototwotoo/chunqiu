@@ -129,6 +129,18 @@ button{font-family:var(--serif);cursor:pointer;}
 /* ---- 标记开关下拉 ---- */
 .map-panel{position:relative;}
 .map-mark-bar{position:absolute;top:8px;right:10px;z-index:5;}
+.map-haul{color:#a67c34;pointer-events:none;}
+.map-event-ring{color:#8d6a2c;pointer-events:none;}
+.map-legend .lg-event{color:#8d6a2c;}
+@media (prefers-reduced-motion: reduce){
+  .map-event-ring animate{display:none;}
+  .map-event-ring circle{opacity:.75;}
+}
+.map-legend .lg-haul{color:#a67c34;}
+@media (prefers-reduced-motion: reduce){
+  .map-haul animate{display:none;}
+  .map-haul line{stroke-dasharray:none;}
+}
 .map-mark-menu{
   position:absolute;right:0;top:calc(100% + 4px);min-width:150px;
   background:#faf5e9;border:1px solid rgba(120,95,60,.35);border-radius:6px;

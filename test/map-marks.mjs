@@ -30,6 +30,7 @@ const state = await import('../js/state.js');
 const mapMod = await import('../js/ui/map.js');
 const { questMarks, shopMarks } = mapMod;
 const { refreshBoard, acceptQuest } = await import('../js/systems/quests.js');
+const { CITY_MAP, CITIES } = await import('../js/data/world.js');
 const { openShop, getPermit } = await import('../js/systems/merchant.js');
 
 const $ = (s) => document.querySelector(s);
@@ -52,7 +53,7 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   state.migrateState(st);
   const m = st.flags.mapMarks;
   ok(!!m, 'flags.mapMarks 存在');
-  ok(m.quest && m.shop && m.territory && m.stateLabel && m.road, '五项默认全开', JSON.stringify(m));
+  ok(m.quest && m.shop && m.haul && m.event && m.territory && m.stateLabel && m.road, '七项默认全开', JSON.stringify(m));
 }
 
 // ---------------- 差事标记：数据层 ----------------
@@ -237,10 +238,11 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(!$('#map-mark-menu').hidden, '点击后展开');
 
   const items = $$('[data-mark]');
-  ok(items.length === 5, '五个开关项', String(items.length));
+  ok(items.length === 7, '七个开关项', String(items.length));
   const labels = items.map(i => i.textContent.trim()).join(',');
-  ok(/差事目标/.test(labels) && /商号与市籍/.test(labels) && /本国疆域/.test(labels)
-    && /国名水印/.test(labels) && /道路/.test(labels), '五项名称正确', labels);
+  ok(/差事目标/.test(labels) && /商号与市籍/.test(labels) && /在途货运/.test(labels)
+    && /时事要地/.test(labels) && /本国疆域/.test(labels) && /国名水印/.test(labels)
+    && /道路/.test(labels), '七项名称正确', labels);
 
   // 关闭商号
   ok($$('.map-shop-mark').length >= 1, '关闭前有商号图形');
@@ -309,6 +311,107 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
     ok(side.includes('商号'), '侧栏显示商号行');
     ok(/月入/.test(side), '侧栏显示月入');
   }
+}
+
+
+// ---------------- 在途货运路线 ----------------
+{
+  const { startHaul } = await import('../js/systems/haul.js');
+  const st = state.newGame({ name: '运', profession: 'shangren', seed: 51 });
+  const p = st.player;
+  p.cityId = 'linzi';
+  p.money = 100000;
+  p.vehicle = 'wain';
+  p.caravan = 320;
+  state.migrateState(st);
+  p.money = 100000;
+
+  ok(mapMod.haulPaths(st).length === 0, '无货单时无货运路线');
+
+  const h = startHaul(st, 'su', 100, 'tao', 13);
+  ok(h.ok, '办货成功', h.msg ?? '');
+  const paths = mapMod.haulPaths(st);
+  ok(paths.length === 1, '生成一条货运路线', String(paths.length));
+  ok(paths[0].path.length >= 2, '路线含多个途经城', String(paths[0].path.length));
+  ok(paths[0].from === 'linzi' && paths[0].to === 'tao', '起终点正确');
+
+  await boot(st);
+  const lines = $$('.map-haul line');
+  ok(lines.length >= 1, '地图上画出货运线', String(lines.length));
+  // 流动动画
+  ok(!!$('.map-haul animate'), '货运线带流动动画');
+  const anim = $('.map-haul animate');
+  ok(anim?.getAttribute('attributeName') === 'stroke-dashoffset', '动画走 dashoffset（表现方向）',
+    anim?.getAttribute('attributeName') ?? '');
+  // 与差事路线的法线偏移
+  const seg = lines[0];
+  const x1 = Number(seg.getAttribute('x1')), y1 = Number(seg.getAttribute('y1'));
+  const fromCity = CITY_MAP[paths[0].path[0]];
+  ok(Math.hypot(x1 - fromCity.x, y1 - fromCity.y) > 1, '货运线做了法线偏移，不与道路重叠',
+    `偏移 ${Math.hypot(x1 - fromCity.x, y1 - fromCity.y).toFixed(1)}px`);
+  // 悬停提示
+  ok(/已行 \d+ 日/.test($('.map-haul title')?.textContent ?? ''), '货运线有悬停提示');
+
+  // 侧栏
+  const node = $$('.map-city').find(el => el.dataset.city === 'tao');
+  if (node) {
+    tap(node);
+    await wait(80);
+    ok(($('.map-side')?.textContent ?? '').includes('货运'), '侧栏显示货运行');
+  }
+
+  // 开关
+  tap($('[data-act="marks"]'));
+  await wait(50);
+  tap($('[data-mark="haul"]'));
+  await wait(80);
+  ok($$('.map-haul').length === 0, '关闭后货运线消失');
+}
+
+// ---------------- 时事要地 ----------------
+{
+  const { TIMELINE } = await import('../js/data/events.js');
+
+  const st = state.newGame({ name: '事', profession: 'youxia', seed: 61 });
+  state.migrateState(st);
+  ok(mapMod.eventMarks(st).size === 0, '初始无时事标记');
+
+  // 手动触发一个历史事件（用真实的 absDay，避免与存档起始日期错位）
+  const ev = TIMELINE.find(e => e.where?.state || e.where?.city);
+  const absDayOf = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + (t.day - 1);
+  st.events.firedOn = { [ev.id]: absDayOf(st.time) };
+  const marks = mapMod.eventMarks(st);
+  ok(marks.size >= 1, '触发后有标记', String(marks.size));
+  const [cid, info] = [...marks.entries()][0];
+  ok(!!CITY_MAP[cid], '标记落在有效城池', cid);
+  ok(info.days === 0, '当日事件 days=0', String(info.days));
+  ok(info.title === ev.title, '带事件标题', info.title);
+
+  // state 型 where 应落到该国人口最大的城
+  if (ev.where?.state) {
+    const candidates = CITIES.filter(c => (st.world.owner[c.id] ?? c.state) === ev.where.state);
+    const biggest = candidates.reduce((a, b) => (b.pop > a.pop ? b : a));
+    ok(cid === biggest.id, 'state 型事件标该国人口最大城', `${cid} vs ${biggest.id}`);
+  }
+
+  await boot(st);
+  ok($$('.map-event-ring').length >= 1, '渲染时事环');
+  ok(!!$('.map-event-ring animate'), '时事环有动画');
+  ok($('.map-legend').textContent.includes('时事要地'), '图例显示时事要地');
+
+  // 超过 30 日应消失
+  st.events.firedOn[ev.id] -= (mapMod.EVENT_MARK_DAYS + 1);
+  ok(mapMod.eventMarks(st).size === 0, `${mapMod.EVENT_MARK_DAYS} 日后标记消失`);
+
+  // 开关
+  st.events.firedOn[ev.id] += (mapMod.EVENT_MARK_DAYS + 1);
+  app.nav('map');
+  await wait(70);
+  tap($('[data-act="marks"]'));
+  await wait(50);
+  tap($('[data-mark="event"]'));
+  await wait(80);
+  ok($$('.map-event-ring').length === 0, '关闭后时事环消失');
 }
 
 ok(errors.length === 0, '全程无运行时错误' + (errors.length ? ': ' + errors[0].slice(0, 120) : ''));

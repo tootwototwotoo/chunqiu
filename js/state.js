@@ -495,7 +495,7 @@ export function migrateState(st) {
   if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
   // 地图标记开关：缺省全开，旧存档自动补齐
   st.flags.mapMarks = Object.assign(
-    { quest: true, shop: true, territory: true, stateLabel: true, road: true },
+    { quest: true, shop: true, haul: true, event: true, territory: true, stateLabel: true, road: true },
     st.flags.mapMarks && typeof st.flags.mapMarks === 'object' ? st.flags.mapMarks : {},
   );
   st.world.policy ||= null;

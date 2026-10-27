@@ -112,6 +112,9 @@ export function collectTimeline(st) {
     if (ev.year !== st.time.year || ev.month !== st.time.month) continue;
     if (st.events.fired.includes(ev.id)) continue;
     st.events.fired.push(ev.id);
+    // 记下触发日，供舆图「时事要地」显示；fired 仍用于去重
+    st.events.firedOn = st.events.firedOn ?? {};
+    st.events.firedOn[ev.id] = absDay(st.time);
     st.events.news.unshift({ year: ev.year, month: ev.month, title: ev.title, body: ev.body });
     if (st.events.news.length > 40) st.events.news.length = 40;
     addLog(st, `${ev.title}。`, 'war');

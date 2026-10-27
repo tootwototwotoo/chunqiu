@@ -1,5 +1,6 @@
 // 舆图
 import { CITIES, CITY_MAP, ROADS, STATES, STATE_LABEL_POS } from '../data/world.js';
+import { TIMELINE } from '../data/events.js';
 import { GOODS } from '../data/goods.js';
 import { biasName } from '../systems/debate.js';
 import { player, npcsHere } from '../state.js';
@@ -10,13 +11,14 @@ import { drawTerritory } from './territory.js';
 import { esc } from '../util.js';
 import { policySummary } from '../systems/policy.js';
 import { normShops, shopAt, shopIncomeOf, hasPermit } from '../systems/merchant.js';
+import { haulsOf } from '../systems/haul.js';
 
 let selected = null;
 
 // 读档 / 换角色时重置，避免沿用上一局的选中城与路线
 export function resetSelection() { selected = null; }
 
-const MARK_DEFAULTS = { quest: true, shop: true, territory: true, stateLabel: true, road: true };
+const MARK_DEFAULTS = { quest: true, shop: true, haul: true, event: true, territory: true, stateLabel: true, road: true };
 const marksOf = (st) => Object.assign({}, MARK_DEFAULTS, st.flags?.mapMarks ?? {});
 
 // 按目标城聚合在途的出行差事：只留最近的一件用于提示
@@ -40,6 +42,58 @@ function absDayOf(st) {
   return (t.year + 722) * 360 + (t.month - 1) * 30 + (t.day - 1);
 }
 
+// 在途货运：按路径段聚合，同一段可被多批货共用
+export function haulPaths(st) {
+  if (st.player.profession !== 'shangren') return [];
+  const now = absDayOf(st);
+  const out = [];
+  for (const h of haulsOf(st)) {
+    const sp = shortestPath(h.from, h.to, st);
+    if (!sp?.path || sp.path.length < 2) continue;
+    out.push({
+      id: h.id,
+      goodId: h.goodId,
+      qty: h.qty,
+      from: h.from,
+      to: h.to,
+      days: Math.max(0, now - (h.startedDay ?? now)),
+      escorted: !!h.escorted,
+      path: sp.path,
+    });
+  }
+  return out;
+}
+
+// 时事要地：近 30 日内触发的历史事件所在地
+export const EVENT_MARK_DAYS = 30;
+export function eventMarks(st) {
+  const fired = st.events?.firedOn ?? {};
+  const now = absDayOf(st);
+  const out = new Map(); // cityId -> { title, days }
+  for (const [id, day] of Object.entries(fired)) {
+    const ev = TIMELINE.find(e => e.id === id);
+    if (!ev) continue;
+    const days = now - day;
+    if (days < 0 || days > EVENT_MARK_DAYS) continue;
+    const cityId = cityOfEvent(st, ev);
+    if (!cityId) continue;
+    const prev = out.get(cityId);
+    // 同城多事只留最近一件
+    if (!prev || days < prev.days) out.set(cityId, { title: ev.title, days, id });
+  }
+  return out;
+}
+
+// where 既可能是 { state } 也可能是 { city }；state 时取该国人口最大的城
+function cityOfEvent(st, ev) {
+  const w = ev.where ?? {};
+  if (w.city && CITY_MAP[w.city]) return w.city;
+  if (!w.state) return null;
+  const candidates = CITIES.filter(c => (st.world.owner[c.id] ?? c.state) === w.state);
+  if (!candidates.length) return null;
+  return candidates.reduce((a, b) => (b.pop > a.pop ? b : a)).id;
+}
+
 // 商人：各城商号与市籍的状态
 export function shopMarks(st) {
   if (st.player.profession !== 'shangren') return new Map();
@@ -58,10 +112,13 @@ export function mount(root, st, app) {
   if (!selected) selected = cur;
   const plan = selected !== cur ? travelPlan(st, selected) : null;
   const path = selected !== cur ? shortestPath(cur, selected, st) : null;
+  const markFlags = { ...MARK_DEFAULTS, ...marksOf(st) };
   const marks = {
-    ...marksOf(st),
+    ...markFlags,
     quests: questMarks(st),
     shops: shopMarks(st),
+    hauls: haulPaths(st),
+    events: eventMarks(st),
   };
 
   root.innerHTML = `
@@ -84,6 +141,8 @@ export function mount(root, st, app) {
         <span><i class="lg-dot" style="background:#a67c34;opacity:.5"></i>本国疆域</span>
         ${marks.quest && marks.quests.size ? '<span class="lg-flag">⚑ 差事目标</span>' : ''}
         ${marks.shop && marks.shops.size ? '<span class="lg-shop">■ 商号</span><span class="lg-shop">○ 已领市籍</span>' : ''}
+        ${marks.haul && marks.hauls.length ? '<span class="lg-haul">┄ 在途货运</span>' : ''}
+        ${marks.event && marks.events.size ? '<span class="lg-event">◌ 时事要地</span>' : ''}
         <span>点击城邑以观其详</span>
       </div>
     </div>
@@ -144,6 +203,8 @@ export function mount(root, st, app) {
 const MARK_LABELS = {
   quest: '差事目标',
   shop: '商号与市籍',
+  haul: '在途货运',
+  event: '时事要地',
   territory: '本国疆域',
   stateLabel: '国名水印',
   road: '道路',
@@ -189,6 +250,34 @@ function mapSvg(st, cur, sel, path, marks) {
   const stateLabels = marks.stateLabel ? (STATE_LABEL_POS ?? []).map(([id, x, y]) =>
     `<text class="map-state-label" x="${x}" y="${y}">${STATES[id]?.name ?? id}</text>`).join('') : '';
 
+  // 在途货运：赭石虚线 + 流动动画，走向由 dashoffset 递减体现
+  const haulLines = marks.haul && marks.hauls.length
+    ? marks.hauls.flatMap(h => {
+      const segs = [];
+      for (let i = 1; i < h.path.length; i++) {
+        const A = CITY_MAP[h.path[i - 1]], B = CITY_MAP[h.path[i]];
+        if (!A || !B) continue;
+        segs.push(haulSegSvg(A, B, h));
+      }
+      return segs;
+    }).join('')
+    : '';
+
+  // 时事要地：暗金单环，1.6 秒快速扩散（与当前城的朱红双环区分）
+  const eventRings = marks.event
+    ? [...marks.events.entries()].map(([cid, e]) => {
+      const c = CITY_MAP[cid];
+      if (!c) return '';
+      return `<g class="map-event-ring">
+        <title>${escapeXml(`${e.title}（${e.days} 日前）`)}</title>
+        <circle cx="${c.x}" cy="${c.y}" r="6" fill="none" stroke="currentColor" stroke-width="1.2">
+          <animate attributeName="r" values="6;14;6" dur="1.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+      </g>`;
+    }).join('')
+    : '';
+
   // 差事旗与商号标记：分别受开关控制
   const questFlags = marks.quest
     ? [...marks.quests.values()].map(q => questFlagSvg(CITY_MAP[q.city], q)).join('')
@@ -210,7 +299,9 @@ function mapSvg(st, cur, sel, path, marks) {
     <path class="map-river thin" d="M 180 520 C 320 560, 460 540, 600 556 C 700 566, 760 556, 830 540" stroke="url(#riv)"/>
     <path class="map-river thin" d="M 470 340 C 500 400, 500 470, 490 548" stroke="url(#riv)"/>
     ${roads}
+    ${haulLines}
     ${cities}
+    ${eventRings}
     ${shopGlyphs}
     ${questFlags}
   </svg>`;
@@ -332,6 +423,23 @@ function cityMarkRows(st, cityId) {
     rows.push(`<dt>差事</dt><dd>${text}</dd>`);
   }
 
+  // 时事：近 30 日内此城发生的要事
+  const events = eventMarks(st);
+  const ev = events.get(cityId);
+  if (ev) rows.push(`<dt>时事</dt><dd>${esc(ev.title)}（${ev.days} 日前）</dd>`);
+
+  // 在途货运：该城作为起点或终点
+  const hauls = (st.player.hauls ?? []).filter(h => h.from === cityId || h.to === cityId);
+  if (hauls.length) {
+    const now = absDayOf(st);
+    const text = hauls.map(h => {
+      const days = Math.max(0, now - (h.startedDay ?? now));
+      const dir = h.to === cityId ? `运抵此地` : `由此发出`;
+      return `${GOODS[h.goodId]?.name ?? h.goodId} ${h.qty}${dir}（已行 ${days} 日${h.escorted ? '，有护卫' : ''}）`;
+    }).join('、');
+    rows.push(`<dt>货运</dt><dd>${esc(text)}</dd>`);
+  }
+
   // 商号与市籍：仅商人
   if (st.player.profession === 'shangren') {
     const shop = shopAt(st, cityId);
@@ -344,4 +452,21 @@ function cityMarkRows(st, cityId) {
   }
 
   return rows.length ? `<div class="kv city-mark-rows">${rows.join('')}</div>` : '';
+}
+
+
+// 货运线段：沿法线偏移 2.5px，与差事路线（朱红实线）平行不重叠
+function haulSegSvg(A, B, h) {
+  const dx = B.x - A.x, dy = B.y - A.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len * 2.5, ny = dx / len * 2.5;
+  const x1 = A.x + nx, y1 = A.y + ny, x2 = B.x + nx, y2 = B.y + ny;
+  const label = `${h.goodId} ${h.qty} → ${CITY_MAP[h.to]?.name ?? ''}（已行 ${h.days} 日${h.escorted ? '，有护卫' : ''}）`;
+  return `<g class="map-haul">
+    <title>${escapeXml(label)}</title>
+    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="currentColor" stroke-width="2" stroke-dasharray="4 3" opacity=".8">
+      <animate attributeName="stroke-dashoffset" from="0" to="-7" dur="1.4s" repeatCount="indefinite"/>
+    </line>
+  </g>`;
 }
