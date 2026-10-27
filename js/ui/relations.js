@@ -35,7 +35,7 @@ export function mount(root, st, app) {
         </div>
       </div>`;
     }).join('') : '<div class="empty">你尚未结识任何人。入城拜访城中人物，或于旅途中相遇。</div>'}
-    <div class="footnote">交情 25 以上可请教学艺；50 以上可请其举荐出仕；52 以上为知己，可托大事。</div>
+    <div class="footnote">交情 25 以上可请教学艺；要其举荐出仕须交情 75、名声 20；52 以上为知己。</div>
   </div>`;
   onClick(root, '[data-npc]', (el) => openNpc(app, st, el.dataset.npc));
 }
