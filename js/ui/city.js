@@ -181,6 +181,15 @@ function buildActions(st, app, c, owner) {
     run: () => app.nav('map'),
   });
 
+  // 献宝：凡朝中之人皆可进献，不限于某一职业
+  if (p.stateId === owner && c.tags.includes('court') && offerableTreasures(st).length) {
+    add({
+      id: 'offer', name: '献宝于朝', cost: '1日',
+      desc: `献${offerableTreasures(st).map(o => o.def.name).join('、')}于君，换功勋与名声。`,
+      run: () => offerModal(app, st),
+    });
+  }
+
   // ---- 职业专属 ----
   if (isWarrior(st)) {
     add({
@@ -224,13 +233,6 @@ function buildActions(st, app, c, owner) {
           const adv = advanceDays(st, 1);
           councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
-      });
-    }
-    if (p.stateId === owner && c.tags.includes('court') && offerableTreasures(st).length) {
-      add({
-        id: 'offer', name: '献宝于朝', cost: '1日',
-        desc: `献${offerableTreasures(st).map(o => o.def.name).join('、')}于君，换功勋与名声。`,
-        run: () => offerModal(app, st),
       });
     }
     if (p.stateId === owner && c.tags.includes('barracks')) {
@@ -406,13 +408,6 @@ function buildActions(st, app, c, owner) {
           const adv = advanceDays(st, 1);
           councilModal(app, st, p.stateId, { onEnd: () => app.after({ notes: adv.notes, events: adv.events, died: adv.died }) });
         },
-      });
-    }
-    if (p.stateId === owner && c.tags.includes('court') && offerableTreasures(st).length) {
-      add({
-        id: 'offer', name: '献宝于朝', cost: '1日',
-        desc: `献${offerableTreasures(st).map(o => o.def.name).join('、')}于君，换功勋与名声。`,
-        run: () => offerModal(app, st),
       });
     }
   }
