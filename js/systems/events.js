@@ -151,7 +151,7 @@ export function rollRandomEvent(st) {
 }
 
 // 先结算天下变化，再存入可序列化的待处理选择；弹窗只负责展示。
-function queueEvent(st, kind, ev) {
+export function queueEvent(st, kind, ev) {
   const effects = applyEffects(st, ev.effects);
   (st.events.pending ||= []).push({ kind, id: ev.id, effects });
   return { kind, ev, effects };

@@ -13,6 +13,7 @@ import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
 import { totalShopIncome, totalWages, trackPeakMoney } from './merchant.js';
 import { tickPacts } from './pact.js';
+import { collectReignChanges, applyReignEffect } from './reign.js';
 import { yearLabel, monthLabel, clamp } from '../util.js';
 
 // 时间基准统一由 util 提供，避免与各系统各写一份而差 1 日
@@ -85,6 +86,18 @@ function onMonth(st, out) {
   // 册命试炼逾期
   const failedTrial = checkTrialExpiry(st);
   if (failedTrial) out.notes.push(`册命之试逾期，另命「${failedTrial.title}」。`);
+  // 国君更替：先算影响，再决定是否弹窗
+  const reign = collectReignChanges(st, st.flags.reignNotified ?? []);
+  if (reign.events.length || reign.notes.length) {
+    for (const c of reign.noteworthy ?? []) {
+      st.flags.reignNotified = st.flags.reignNotified ?? [];
+      st.flags.reignNotified.push(c.to.id);
+      applyReignEffect(st, c);
+    }
+    for (const n of reign.notes) out.notes.push(n);
+    for (const ev of reign.events) out.events.push(ev);
+  }
+
   // 历史事件
   for (const ev of collectTimeline(st)) out.events.push(ev);
   // 随机事件

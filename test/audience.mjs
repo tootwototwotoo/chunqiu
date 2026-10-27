@@ -39,7 +39,11 @@ function run(level, tag = 'li', seed = 1, stateId = 'qi') {
   return d.agreement - before;
 }
 ok(run('hit') > run('reason'), '切中收益高于有道理');
-ok(run('evade', 'yi') < 0, '回避会扣认同');
+// 回避的基础惩罚为 -5；若所选 tag 恰合国君心性会 +5 抵消，
+// 故用一个与齐国国君心性相反的 tag，确保净值为负
+const qiHeart = audienceHeart(st, 'qi');
+const opposite = { li: 'yi', yi: 'li', ming: 'shi', shi: 'ming' }[qiHeart];
+ok(run('evade', opposite) < 0, '回避会扣认同', `opposite=${opposite}`);
 
 // 70 分成功线
 {
