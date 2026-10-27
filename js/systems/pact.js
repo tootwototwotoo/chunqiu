@@ -128,7 +128,7 @@ export function tickPacts(st, out) {
 
   // 战时额外征调
   for (const pact of p.pacts) {
-    const war = (st.world.wars ?? []).some(w => w.includes?.(pact.state) || w.a === pact.state || w.b === pact.state);
+    const war = (st.world.wars ?? []).some(w => w.a === pact.state || w.b === pact.state);
     if (war && !pact.warPaid) {
       if (player(st).money >= PACT.warLevy) {
         addMoney(st, -PACT.warLevy, true);

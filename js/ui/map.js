@@ -18,7 +18,7 @@ let selected = null;
 // 读档 / 换角色时重置，避免沿用上一局的选中城与路线
 export function resetSelection() { selected = null; }
 
-const MARK_DEFAULTS = { quest: true, shop: true, haul: true, event: true, territory: true, stateLabel: true, road: true };
+const MARK_DEFAULTS = { quest: true, shop: true, haul: true, event: true, war: true, territory: true, stateLabel: true, road: true };
 const marksOf = (st) => Object.assign({}, MARK_DEFAULTS, st.flags?.mapMarks ?? {});
 
 // 按目标城聚合在途的出行差事：只留最近的一件用于提示
@@ -94,6 +94,18 @@ function cityOfEvent(st, ev) {
   return candidates.reduce((a, b) => (b.pop > a.pop ? b : a)).id;
 }
 
+// 战争状态：哪些国在交战
+export function warStates(st) {
+  const wars = Array.isArray(st.world.wars) ? st.world.wars : [];
+  const map = new Map(); // stateId -> [对战方]
+  for (const w of wars) {
+    if (!STATES[w.a] || !STATES[w.b]) continue;
+    (map.get(w.a) ?? map.set(w.a, []).get(w.a)).push(w.b);
+    (map.get(w.b) ?? map.set(w.b, []).get(w.b)).push(w.a);
+  }
+  return map;
+}
+
 // 商人：各城商号与市籍的状态
 export function shopMarks(st) {
   if (st.player.profession !== 'shangren') return new Map();
@@ -119,6 +131,7 @@ export function mount(root, st, app) {
     shops: shopMarks(st),
     hauls: haulPaths(st),
     events: eventMarks(st),
+    wars: warStates(st),
   };
 
   root.innerHTML = `
@@ -143,6 +156,7 @@ export function mount(root, st, app) {
         ${marks.shop && marks.shops.size ? '<span class="lg-shop">■ 商号</span><span class="lg-shop">○ 已领市籍</span>' : ''}
         ${marks.haul && marks.hauls.length ? '<span class="lg-haul">┄ 在途货运</span>' : ''}
         ${marks.event && marks.events.size ? '<span class="lg-event">◌ 时事要地</span>' : ''}
+        ${marks.war && marks.wars.size ? '<span class="lg-war">◯ 交战</span>' : ''}
         <span>点击城邑以观其详</span>
       </div>
     </div>
@@ -205,6 +219,7 @@ const MARK_LABELS = {
   shop: '商号与市籍',
   haul: '在途货运',
   event: '时事要地',
+  war: '交战之国',
   territory: '本国疆域',
   stateLabel: '国名水印',
   road: '道路',
@@ -234,6 +249,8 @@ function mapSvg(st, cur, sel, path, marks) {
       <circle class="hit" cx="${c.x}" cy="${c.y}" r="22"/>
       <circle class="dot" cx="${c.x}" cy="${c.y}" r="${isCur ? 8 : isSel ? 7 : 5.5}"
         fill="${isCur ? '#9c2b26' : stateColor(owner)}" stroke="#f7efdc" stroke-width="2"/>
+      ${marks.war && marks.wars.has(owner) ? `<circle class="map-war-ring" cx="${c.x}" cy="${c.y}" r="10"
+        fill="none" stroke="currentColor" stroke-width="0.9" opacity=".85"/>` : ''}
       ${isSel ? `<circle cx="${c.x}" cy="${c.y}" r="13" fill="none" stroke="#a67c34" stroke-width="1.6" stroke-dasharray="3 3"/>` : ''}
       ${isCur ? `<circle class="here-ring" cx="${c.x}" cy="${c.y}" r="14" fill="none" stroke="#9c2b26" stroke-width="1.6">
         <animate attributeName="r" values="10;20;10" dur="2.4s" repeatCount="indefinite"/>
@@ -421,6 +438,13 @@ function cityMarkRows(st, cityId) {
       return `${esc(q.title)}${tail}`;
     }).join('、');
     rows.push(`<dt>差事</dt><dd>${text}</dd>`);
+  }
+
+  // 交战：该城所属国正在交兵
+  const wars = warStates(st);
+  const foes = wars.get(st.world.owner[cityId] ?? '');
+  if (foes?.length) {
+    rows.push(`<dt>交战</dt><dd>与${foes.map(id => STATES[id]?.name ?? id).join('、')}交兵</dd>`);
   }
 
   // 时事：近 30 日内此城发生的要事

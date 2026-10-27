@@ -222,7 +222,7 @@ const PROF_IDS = Object.keys(PROFESSIONS);
 {
   const { TIMELINE, RANDOM_EVENTS } = await import('../js/data/events.js');
   const SUPPORTED = new Set(['money', 'fame', 'merit', 'stat', 'skill', 'skillxp', 'rel',
-    'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel']);
+    'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel', 'war', 'peace']);
   const bad = [];
   const scan = (list, tag) => {
     for (const ev of list) {

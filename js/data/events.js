@@ -253,7 +253,7 @@ export const TIMELINE = [
 
   { id: 'chu_cheng_pu', year: -632, month: 4, title: '晋楚城濮之战', where: { state: 'jin' },
     body: '楚师围宋，宋告急于晋。晋文公伐曹卫以救宋，楚子玉怒而北上。晋侯退避三舍以报楚惠，楚师不退，战于城濮。晋以虎皮蒙马先犯陈蔡，陈蔡奔，楚师溃。',
-    effects: [{ t: 'power', s: 'jin', v: 12 }, { t: 'power', s: 'chu', v: -8 }, { t: 'flag', k: 'hegemon', v: 'jin' }],
+    effects: [{ t: 'war', a: 'jin', b: 'chu' }, { t: 'power', s: 'jin', v: 12 }, { t: 'power', s: 'chu', v: -8 }, { t: 'flag', k: 'hegemon', v: 'jin' }],
     choices: [
       { label: '观晋侯退避三舍', hint: '重义', check: { k: 'xuewen', dc: 32 },
         success: [{ t: 'fame', v: 5 }, { t: 'skill', k: 'xuewen', v: 1 }],
@@ -291,7 +291,7 @@ export const TIMELINE = [
 
   { id: 'qin_mu_youyu', year: -627, month: 4, title: '秦晋殽之战', where: { state: 'qin' },
     body: '秦穆公不听蹇叔之谏，使孟明视等袭郑。郑商人弦高遇之于滑，以牛十二犒师，且遽告于郑。秦师知郑有备，灭滑而还，归途为晋所邀于殽，秦师尽没。',
-    effects: [{ t: 'power', s: 'qin', v: -10 }, { t: 'power', s: 'jin', v: 6 }],
+    effects: [{ t: 'war', a: 'jin', b: 'qin' }, { t: 'power', s: 'qin', v: -10 }, { t: 'power', s: 'jin', v: 6 }],
     choices: [
       { label: '从弦高犒师', hint: '重义', effects: [{ t: 'fame', v: 8 }, { t: 'rel', id: 'xian_gao', v: 12 }],
         text: '你随弦高驱牛十二头迎秦师，诈称郑伯之命。秦师驻足，郑国得以戒备。' },
@@ -303,7 +303,7 @@ export const TIMELINE = [
 
   { id: 'wu_ru_ying', year: -506, month: 11, title: '吴入郢都', where: { state: 'wu' },
     body: '吴王阖闾用伍子胥、孙武之谋，五战及郢。楚昭王出奔，吴人入郢，处其宫室。伍子胥掘楚平王墓，鞭尸三百。',
-    effects: [{ t: 'power', s: 'wu', v: 14 }, { t: 'power', s: 'chu', v: -14 }],
+    effects: [{ t: 'war', a: 'wu', b: 'chu' }, { t: 'power', s: 'wu', v: 14 }, { t: 'power', s: 'chu', v: -14 }],
     choices: [
       { label: '观孙武用兵', hint: '兵法', check: { k: 'bingfa', dc: 36 },
         success: [{ t: 'skill', k: 'bingfa', v: 2 }, { t: 'rel', id: 'sun_wu', v: 8 }],
@@ -341,7 +341,7 @@ export const TIMELINE = [
 
   { id: 'goujian_ji_xin', year: -494, month: 3, title: '夫椒之败', where: { state: 'yue' },
     body: '吴王夫差败越于夫椒，报檇李之仇。越王勾践以甲楯五千保于会稽，使大夫种行成于吴。吴王许之，勾践入吴为臣，执养马之役。',
-    effects: [{ t: 'power', s: 'wu', v: 10 }, { t: 'power', s: 'yue', v: -12 }],
+    effects: [{ t: 'war', a: 'wu', b: 'yue' }, { t: 'power', s: 'wu', v: 10 }, { t: 'power', s: 'yue', v: -12 }],
     choices: [
       { label: '随勾践入吴', hint: '重义', effects: [{ t: 'fame', v: 6 }, { t: 'rel', id: 'wen_zhong', v: 8 }, { t: 'stamina', v: -10 }],
         text: '你随越王入吴，见其执鞭立于马厩之外，面无愠色。' },
@@ -449,7 +449,7 @@ export const TIMELINE = [
     ] },
   { id: 'yue_mie_wu', year: -473, month: 11, title: '越灭吴', where: { state: 'yue' },
     body: '越王勾践围吴三年，吴师溃。夫差使公孙雄肉袒膝行请成，勾践不许，曰：「昔天以越赐吴，吴不受；今天以吴赐越，孤敢不听？」夫差自刭。',
-    effects: [{ t: 'power', s: 'yue', v: 10 }, { t: 'power', s: 'wu', v: -14 }, { t: 'flag', k: 'hegemon', v: 'yue' }],
+    effects: [{ t: 'peace', a: 'wu', b: 'yue' }, { t: 'power', s: 'yue', v: 10 }, { t: 'power', s: 'wu', v: -14 }, { t: 'flag', k: 'hegemon', v: 'yue' }],
     choices: [
       { label: '往吊吴王', hint: '重义', effects: [{ t: 'fame', v: 10 }, { t: 'rel', id: 'fan_li', v: 8 }], text: '你看着夫差以布蒙面自刭，说「吾无面目以见子胥也」。' },
       { label: '贺越王于姑苏台', hint: '声名', effects: [{ t: 'money', v: 50 }, { t: 'fame', v: 6 }, { t: 'rel', id: 'gou_jian', v: 8 }], text: '姑苏台上，越王勾践受诸侯之贺，而范蠡已泛舟五湖。' },

@@ -14,7 +14,8 @@ export function roadDays(st, base, destCity) {
   if (isWinter(st.time)) d *= 1.2;
   if (st.time.month >= 6 && st.time.month <= 8) d *= 1.05; // 雨季
   const owner = st.world.owner[destCity];
-  if (st.world.wars?.includes(`${owner}`)) d *= 1.1;
+  // wars 为 { a, b, since } 对象数组，非字符串数组
+  if ((st.world.wars ?? []).some(w => w.a === owner || w.b === owner)) d *= 1.1;
   return d;
 }
 

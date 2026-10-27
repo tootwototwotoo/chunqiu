@@ -53,7 +53,7 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   state.migrateState(st);
   const m = st.flags.mapMarks;
   ok(!!m, 'flags.mapMarks 存在');
-  ok(m.quest && m.shop && m.haul && m.event && m.territory && m.stateLabel && m.road, '七项默认全开', JSON.stringify(m));
+  ok(m.quest && m.shop && m.haul && m.event && m.war && m.territory && m.stateLabel && m.road, '八项默认全开', JSON.stringify(m));
 }
 
 // ---------------- 差事标记：数据层 ----------------
@@ -238,11 +238,11 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(!$('#map-mark-menu').hidden, '点击后展开');
 
   const items = $$('[data-mark]');
-  ok(items.length === 7, '七个开关项', String(items.length));
+  ok(items.length === 8, '八个开关项', String(items.length));
   const labels = items.map(i => i.textContent.trim()).join(',');
   ok(/差事目标/.test(labels) && /商号与市籍/.test(labels) && /在途货运/.test(labels)
-    && /时事要地/.test(labels) && /本国疆域/.test(labels) && /国名水印/.test(labels)
-    && /道路/.test(labels), '七项名称正确', labels);
+    && /时事要地/.test(labels) && /交战之国/.test(labels) && /本国疆域/.test(labels)
+    && /国名水印/.test(labels) && /道路/.test(labels), '八项名称正确', labels);
 
   // 关闭商号
   ok($$('.map-shop-mark').length >= 1, '关闭前有商号图形');
@@ -412,6 +412,63 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   tap($('[data-mark="event"]'));
   await wait(80);
   ok($$('.map-event-ring').length === 0, '关闭后时事环消失');
+}
+
+
+// ---------------- 战争状态（只做视觉） ----------------
+{
+  const { applyEffects } = await import('../js/systems/events.js');
+
+  const st = state.newGame({ name: '战', profession: 'youxia', seed: 71 });
+  state.migrateState(st);
+  ok(mapMod.warStates(st).size === 0, '初始无交战');
+
+  applyEffects(st, [{ t: 'war', a: 'jin', b: 'chu' }]);
+  ok(Array.isArray(st.world.wars) && st.world.wars.length === 1, 'war 效果写入状态',
+    JSON.stringify(st.world.wars));
+  const ws = mapMod.warStates(st);
+  ok(ws.size === 2, '双方各记一次', String(ws.size));
+  ok(ws.get('jin')?.includes('chu') && ws.get('chu')?.includes('jin'), '互为交战方');
+
+  await boot(st);
+  const rings = $$('.map-war-ring');
+  ok(rings.length > 0, '地图上出现交战标记', String(rings.length));
+  // 只有交战国之城有标记：晋有4城，楚有3城
+  const jinCities = CITIES.filter(c => (st.world.owner[c.id] ?? c.state) === 'jin');
+  ok(rings.length === jinCities.length + CITIES.filter(c => (st.world.owner[c.id] ?? c.state) === 'chu').length,
+    '标记数与交战国城池数一致', `${rings.length}`);
+
+  // 非交战国无标记
+  const qi = $$('.map-war-ring').length;
+  const allCities = $$('.map-city').length;
+  ok(qi < allCities, '并非所有城都有交战标记', `${qi}/${allCities}`);
+
+  // 侧栏
+  const jinNode = $$('.map-city').find(el => el.dataset.city === jinCities[0].id);
+  if (jinNode) {
+    tap(jinNode);
+    await wait(80);
+    ok(($('.map-side')?.textContent ?? '').includes('交战'), '侧栏显示交战国');
+    ok(($('.map-side')?.textContent ?? '').includes('楚'), '侧栏列出对手国');
+  }
+
+  // 和平
+  applyEffects(st, [{ t: 'peace', a: 'jin', b: 'chu' }]);
+  ok(mapMod.warStates(st).size === 0, 'peace 后交战状态清除');
+  app.nav('map');
+  await wait(80);
+  ok($$('.map-war-ring').length === 0, '和平后标记消失');
+
+  // 开关
+  applyEffects(st, [{ t: 'war', a: 'wu', b: 'yue' }]);
+  app.nav('map');
+  await wait(80);
+  ok($$('.map-war-ring').length > 0, '再次交战后有标记');
+  tap($('[data-act="marks"]'));
+  await wait(50);
+  tap($('[data-mark="war"]'));
+  await wait(80);
+  ok($$('.map-war-ring').length === 0, '关闭后交战标记消失');
 }
 
 ok(errors.length === 0, '全程无运行时错误' + (errors.length ? ': ' + errors[0].slice(0, 120) : ''));

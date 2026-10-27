@@ -131,6 +131,8 @@ button{font-family:var(--serif);cursor:pointer;}
 .map-mark-bar{position:absolute;top:8px;right:10px;z-index:5;}
 .map-haul{color:#a67c34;pointer-events:none;}
 .map-event-ring{color:#8d6a2c;pointer-events:none;}
+.map-war-ring{color:#8f2f22;pointer-events:none;}
+.map-legend .lg-war{color:#8f2f22;}
 .map-legend .lg-event{color:#8d6a2c;}
 @media (prefers-reduced-motion: reduce){
   .map-event-ring animate{display:none;}

@@ -97,6 +97,18 @@ export function applyEffects(st, effects = []) {
         out.notes.push(`${GOODS[e.g]?.name ?? e.g}价${e.v > 0 ? '腾贵' : '回落'}。`);
         break;
       }
+      case 'war': {
+        // 只记录战争状态，不影响玩法；舆图据此给交战国城点加标记
+        st.world.wars = Array.isArray(st.world.wars) ? st.world.wars : [];
+        if (e.a && e.b && !st.world.wars.some(w => (w.a === e.a && w.b === e.b) || (w.a === e.b && w.b === e.a))) {
+          st.world.wars.push({ a: e.a, b: e.b, since: absDay(st.time) });
+        }
+        break;
+      }
+      case 'peace': {
+        st.world.wars = (st.world.wars ?? []).filter(w => !((w.a === e.a && w.b === e.b) || (w.a === e.b && w.b === e.a)));
+        break;
+      }
       case 'duel':
         out.pendingDuel = { name: '挑衅的剑客', wu: 44 + ri(st, 0, 14), skill: 2 + ri(st, 0, 3) };
         break;
