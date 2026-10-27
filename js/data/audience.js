@@ -167,4 +167,45 @@ export const AUDIENCE_FOLLOW_UPS = [
     { tag: 'yi', level: 'reason', text: '依周礼尊卑定席次，不偏不倚。', reply: '国君叹道：「礼若能定，就不会争了。」' },
     { tag: 'ming', level: 'evade', text: '谁给的好处多，就站谁那边。', reply: '国君冷笑：「今日贪利，明日两边都轻你。」' },
   ]},
+  { id: 'fu_trade', follow: true, q: '君复问：若商旅来时课以轻税，府库入不敷出，君当如何？', options: [
+    { tag: 'li', level: 'hit', text: '先养商三年，再渐增其税；商既成群，税自重。', reply: '国君点头：「先养后取，才取得到。」' },
+    { tag: 'yi', level: 'reason', text: '省去冗费，胜于加税。', reply: '国君沉吟：「省费也是难事，冗员都是人情。」' },
+    { tag: 'shi', level: 'evade', text: '商既愿来，多取一些无妨。', reply: '国君反问：「多取一些，他们还来第二回吗？」' },
+  ]},
+  { id: 'fu_scholars', follow: true, q: '君复问：士人既议朝政，其言又多迂阔，君尚纳之乎？', options: [
+    { tag: 'ming', level: 'hit', text: '纳其言之可行者，迂阔者不罪，自无怨望。', reply: '国君笑道：「只取可用的，不必与他争辩。」' },
+    { tag: 'yi', level: 'reason', text: '设学宫养其才，使有为而不为乱。', reply: '国君点头：「给他们去处，比堵他们的嘴强。」' },
+    { tag: 'shi', level: 'evade', text: '择其言事切直者，先治一二人以立威。', reply: '国君摇头：「立了威，清议只会更凶。」' },
+  ]},
+  { id: 'fu_plague', follow: true, q: '君复问：疫气既起，若封城断行，恐民生断绝，君当如何？', options: [
+    { tag: 'yi', level: 'hit', text: '不封全城，只隔病户，粮药仍由官送。', reply: '国君点头：「隔病不隔人，才是正办。」' },
+    { tag: 'li', level: 'reason', text: '募医者巡诊，官给其食，重赏之下必有应者。', reply: '国君沉吟：「重赏募医，也是一法。」' },
+    { tag: 'shi', level: 'evade', text: '尽封四门，任其自生自灭。', reply: '国君面色一变：「这是要死多少人？」' },
+  ]},
+  { id: 'fu_saltiron', follow: true, q: '君复问：官营既立，豪民必怨，君将何以处之？', options: [
+    { tag: 'li', level: 'hit', text: '许其承办一隅，官定其价，纳课于官。', reply: '国君点头：「留他们一条活路，省得生乱。」' },
+    { tag: 'shi', level: 'reason', text: '严刑峻法，有犯者没其家。', reply: '国君叹道：「杀得几个人，杀不尽人心。」' },
+    { tag: 'yi', level: 'evade', text: '既已官营，不必再问其怨。', reply: '国君反问：「不问其怨，其怨就不在吗？」' },
+  ]},
+  { id: 'fu_luxury', follow: true, q: '君复问：禁用奢侈，恐失诸侯欢心，君当如何取舍？', options: [
+    { tag: 'yi', level: 'hit', text: '君自俭以率下，不禁人之所有。', reply: '国君点头：「上不奢，下自知节。」' },
+    { tag: 'ming', level: 'reason', text: '于国用者禁之，于礼宾者许之。', reply: '国君沉吟：「内外有别，倒也可行。」' },
+    { tag: 'shi', level: 'evade', text: '一概严令禁止，违者罚金。', reply: '国君皱眉：「罚得诸侯不来，值吗？」' },
+  ]},
+  { id: 'fu_heir', follow: true, q: '君复问：若诸子各结党羽，君将何以定储？', options: [
+    { tag: 'yi', level: 'hit', text: '早定长幼之序，明告于宗庙，绝其觊觎。', reply: '国君颔首：「名分早定，才少流血。」' },
+    { tag: 'shi', level: 'reason', text: '择其贤者，藉朝臣之议以定。', reply: '国君叹道：「议出来的储君，未必肯认。」' },
+    { tag: 'li', level: 'evade', text: '此事延后再议，先观其行。', reply: '国君反问：「延到何时？等他们先动手吗？」' },
+  ]},
+  { id: 'fu_tribute', follow: true, q: '君复问：天子既弱，贡赋尚输否？', options: [
+    { tag: 'yi', level: 'hit', text: '如数输之，使天下知君守礼，而王师可借其名。', reply: '国君点头：「礼数守着，名分就在我这边。」' },
+    { tag: 'li', level: 'reason', text: '量力输之，不必全额。', reply: '国君沉吟：「半输半留，天子也无可奈何。」' },
+    { tag: 'shi', level: 'evade', text: '王室既微，不必再输。', reply: '国君反问：「不输贡赋，诸侯怎样看你？」' },
+  ]},
+  { id: 'fu_granary', follow: true, q: '君复问：积谷既多，若遇灾年尽散，来年又当如何？', options: [
+    { tag: 'li', level: 'hit', text: '常留三分之一为来年种食，散其有余。', reply: '国君点头：「留底再散，才散得起。」' },
+    { tag: 'yi', level: 'reason', text: '尽散以救眼下，来年再募粟补仓。', reply: '国君叹道：「来年募粟，价必更高。」' },
+    { tag: 'ming', level: 'evade', text: '紧要时全数散出，以收民心。', reply: '国君反问：「民心收了，明年拿什么救？」' },
+  ]},
+
 ];

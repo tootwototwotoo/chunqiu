@@ -17,9 +17,13 @@ const STATE_HEART = {
   chen: 'ming', cai: 'ming', cao: 'li', ju: 'ming', zhu: 'yi', sui: 'yi', xu: 'ming',
 };
 
+// 每题对应一条追问；未列出的题目会随机取一条，避免反复出仕时追问重复
 const FOLLOW_BY_QUESTION = {
   famine: 'fu_grain', army: 'fu_army', clans: 'fu_clans', justice: 'fu_justice',
   oath: 'fu_oath', flood: 'fu_river', talent: 'fu_talent', diplomacy: 'fu_meeting',
+  trade: 'fu_trade', scholars: 'fu_scholars', plague: 'fu_plague',
+  saltiron: 'fu_saltiron', luxury: 'fu_luxury', heir: 'fu_heir',
+  tribute_king: 'fu_tribute', granary: 'fu_granary',
 };
 
 // 缺国君的国家的名号（周室及若干小国在世人物里没有 role: 'ruler'）

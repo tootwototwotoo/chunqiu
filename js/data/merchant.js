@@ -181,6 +181,66 @@ export const PARLEY_QUESTIONS = [
     { tag: 'li', level: 'reason', text: '我愿先垫使费，成则君取其名，我取其利。', reply: '国君笑道：「你出钱我出名，倒也公道。」' },
     { tag: 'yi', level: 'evade', text: '闭关便闭关，何须强求。', reply: '国君摇头：「货不通，府库只会更空。」' },
   ]},
+  { id: 'p_weights', topic: 'price', q: '市中度量不一，斗斛权衡各从其私，君将何以齐之？', options: [
+    { tag: 'yi', level: 'hit', text: '颁一国之量，刻石置于市门，私造者没其货。', reply: '国君抚掌：「量既齐，争讼自少，税也查得清。」' },
+    { tag: 'li', level: 'reason', text: '使商贾自校其器，岁一验之，官不与闻。', reply: '国君沉吟：「自校省事，就怕他们通同作弊。」' },
+    { tag: 'shi', level: 'evade', text: '此事琐细，不必劳君费心。', reply: '国君冷笑：「市上天天争吵，你说是琐细？」' },
+  ]},
+  { id: 'p_coin', topic: 'price', q: '列国钱布不同，商旅换算折耗甚巨，君欲通之乎？', options: [
+    { tag: 'li', level: 'hit', text: '许民间以粟帛为市，与钱并行，换算之弊自减。', reply: '国君点头：「粟帛人人识得，比钱省事。」' },
+    { tag: 'ming', level: 'reason', text: '与邻国约，两国钱布互相通行，各定其值。', reply: '国君沉吟：「约是好的，就怕邻国变卦。」' },
+    { tag: 'yi', level: 'evade', text: '各用其钱，何必强同。', reply: '国君反问：「商旅折耗，最后还不是算在货价上？」' },
+  ]},
+  { id: 'p_hoard', topic: 'price', q: '富室囤积居奇，米价三倍，君将何以处之？', options: [
+    { tag: 'yi', level: 'hit', text: '开官仓平粜，囤者见利薄，自然出货。', reply: '国君颔首：「不夺其财，只夺其利，此为上策。」' },
+    { tag: 'shi', level: 'reason', text: '籍其囤积之数，限日出售，违者没入官。', reply: '国君皱眉：「硬来也行，但豪族要记恨。」' },
+    { tag: 'li', level: 'evade', text: '价高自有粮来，不必干预。', reply: '国君反问：「等粮来时，饿死的人怎么算？」' },
+  ]},
+  { id: 'p_road_toll', topic: 'price', q: '道有私设关卡，抽税重叠，商旅苦之，君知之乎？', options: [
+    { tag: 'shi', level: 'hit', text: '撤私关、定一税，遣吏巡察，再犯者罢其邑宰。', reply: '国君目光一凛：「私关之弊，寡人早有耳闻。」' },
+    { tag: 'yi', level: 'reason', text: '明令禁止，许商旅赴官陈告。', reply: '国君叹道：「告到官里，官里未必肯管。」' },
+    { tag: 'li', level: 'evade', text: '关卡虽多，商旅仍有利可图。', reply: '国君冷笑：「利都被关卡吃了，谁还来？」' },
+  ]},
+  { id: 'p_famine_trade', topic: 'grain', q: '岁歉谷贵，邻国禁粜，君欲得粮，将以何术？', options: [
+    { tag: 'li', level: 'hit', text: '以重价私下籴之，商人趋利，禁亦不禁。', reply: '国君眼中一亮：「利之所在，禁令挡不住。」' },
+    { tag: 'yi', level: 'reason', text: '遣使请籴于邻，许以他日相偿。', reply: '国君沉吟：「邻国肯不肯，要看交情。」' },
+    { tag: 'ming', level: 'evade', text: '禁粜便禁粜，我另寻他路。', reply: '国君摇头：「路在哪里？你倒是说。」' },
+  ]},
+  { id: 'p_army_feed', topic: 'grain', q: '师行在道，粮道为敌所断，君将何以济之？', options: [
+    { tag: 'li', level: 'hit', text: '募商贾转输，许以军功之赏，重赏之下必有勇夫。', reply: '国君点头：「商人图利也图名，这法子可行。」' },
+    { tag: 'shi', level: 'reason', text: '就近取粮于属邑，先解燃眉。', reply: '国君叹道：「就近取粮，属邑也要饿肚子。」' },
+    { tag: 'yi', level: 'evade', text: '粮道既断，唯有退兵。', reply: '国君面色一沉：「退兵？那这一仗白打了。」' },
+  ]},
+  { id: 'p_storage', topic: 'grain', q: '仓廪不修，粟朽于廪，君将何以处之？', options: [
+    { tag: 'li', level: 'hit', text: '岁检仓廪，陈粟先出，新粟后入，使无朽坏。', reply: '国君抚掌：「先出陈后入新，一句话省了无数粟。」' },
+    { tag: 'yi', level: 'reason', text: '命老成者司仓，岁终核其数。', reply: '国君点头：「用人比立法更要紧。」' },
+    { tag: 'shi', level: 'evade', text: '粟朽则朽，来年再种便是。', reply: '国君反问：「那今年冬天吃什么？」' },
+  ]},
+  { id: 'p_caravan', topic: 'passage', q: '商队屡遭劫掠，君之境内道路不宁，何以处之？', options: [
+    { tag: 'shi', level: 'hit', text: '设亭障、遣戍卒巡道，商旅纳少许道税以养之。', reply: '国君目光一振：「取之于商，用之于商，可行。」' },
+    { tag: 'li', level: 'reason', text: '许商队自募壮士，官给符信免其盘查。', reply: '国君沉吟：「省钱是好，就怕壮士成了新的盗。」' },
+    { tag: 'yi', level: 'evade', text: '盗贼古今皆有，非君之过。', reply: '国君冷笑：「那商旅也可以古今都不来。」' },
+  ]},
+  { id: 'p_river', topic: 'passage', q: '舟楫不通，货物皆从陆运，费重而迟，君欲开之乎？', options: [
+    { tag: 'li', level: 'hit', text: '疏浚故道、设津渡之吏，舟通则运费大减。', reply: '国君颔首：「一水之利，胜过千乘。」' },
+    { tag: 'yi', level: 'reason', text: '募民开渠，以工代赈，兼济贫弱。', reply: '国君点头：「开渠还能养民，一举两得。」' },
+    { tag: 'ming', level: 'evade', text: '陆运虽贵，倒也无妨。', reply: '国君反问：「无妨？那你的货为何卖不动？」' },
+  ]},
+  { id: 'p_neighbor_market', topic: 'passage', q: '邻国市盛而我市衰，商旅皆往，君将何以招之？', options: [
+    { tag: 'li', level: 'hit', text: '我市减税一岁，又设客舍以居远商，商自归之。', reply: '国君抚掌：「减税加客舍，这是实在的招法。」' },
+    { tag: 'ming', level: 'reason', text: '请诸侯会盟，约两市互通，各不设限。', reply: '国君沉吟：「会盟要有人肯来才成。」' },
+    { tag: 'yi', level: 'evade', text: '商旅去留，听其自便。', reply: '国君反问：「那要你这个当国的做什么？」' },
+  ]},
+  { id: 'p_hostel', topic: 'passage', q: '远商至而无宿处，露宿于市，君可为之计乎？', options: [
+    { tag: 'yi', level: 'hit', text: '于市侧设客舍，官定其价，禁其苛索。', reply: '国君点头：「客舍一立，远商自安。」' },
+    { tag: 'li', level: 'reason', text: '许民家自开逆旅，官取其税。', reply: '国君笑道：「民得其利，官得其税，两便。」' },
+    { tag: 'shi', level: 'evade', text: '露宿之事，非国之大体。', reply: '国君反问：「远商露宿一夜，明日就去别国了。」' },
+  ]},
+  { id: 'p_seed', topic: 'grain', q: '春耕无种，民将弃田而走，君有以济之乎？', options: [
+    { tag: 'li', level: 'hit', text: '贷种于民，秋收加一成偿还，农不废耕，官不亏本。', reply: '国君颔首：「借出去的是种，收回的是人心。」' },
+    { tag: 'yi', level: 'reason', text: '直接赈给，不取偿还，以安民心。', reply: '国君叹道：「赈是该赈，可府库撑得住几回？」' },
+    { tag: 'ming', level: 'evade', text: '民自有其法，不必官办。', reply: '国君反问：「民若有法，为何要来告？」' },
+  ]},
   { id: 'p_trust', topic: 'price', q: '商人屡有欺诈，市不信贾，君将何以立信？', options: [
     { tag: 'yi', level: 'hit', text: '立质剂之法：凡市易皆立券，违者没其货。信立则市兴。', reply: '国君抚掌：「立券为凭，这个法子好。」' },
     { tag: 'li', level: 'reason', text: '择商之贤者为市师，使自纠其属。', reply: '国君沉吟：「让他们自管，怕的是官商一气。」' },

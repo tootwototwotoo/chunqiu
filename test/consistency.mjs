@@ -178,6 +178,68 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   ok(!('jade' in st.world), '不再残留旧 world.jade');
 }
 
+
+
+// ---------------- 廷对与商人交涉的题库自洽 ----------------
+{
+  const { AUDIENCE_QUESTIONS, AUDIENCE_FOLLOW_UPS } = await import('../js/data/audience.js');
+  const { PARLEY_QUESTIONS, PARLEY_TOPICS } = await import('../js/data/merchant.js');
+
+  ok(AUDIENCE_QUESTIONS.length >= 20, '廷对题目数量充足', String(AUDIENCE_QUESTIONS.length));
+  ok(AUDIENCE_FOLLOW_UPS.length >= 12, '廷对追问数量充足', String(AUDIENCE_FOLLOW_UPS.length));
+  const qIds = new Set(AUDIENCE_QUESTIONS.map(q => q.id));
+  ok(qIds.size === AUDIENCE_QUESTIONS.length, '廷对题目 id 唯一');
+  const fIds = new Set(AUDIENCE_FOLLOW_UPS.map(f => f.id));
+  ok(fIds.size === AUDIENCE_FOLLOW_UPS.length, '追问问 id 唯一');
+
+  // 每道题都是三选一，且恰好一个 evade
+  const badQ = AUDIENCE_QUESTIONS.filter(q => q.options.length !== 3
+    || q.options.filter(o => o.level === 'evade').length !== 1);
+  ok(badQ.length === 0, '廷对题目均为三选一且恰一回避', badQ.map(q => q.id).join(','));
+  const badF = AUDIENCE_FOLLOW_UPS.filter(f => f.options.length !== 3
+    || f.options.filter(o => o.level === 'evade').length !== 1);
+  ok(badF.length === 0, '追问问均为三选一且恰一回避', badF.map(f => f.id).join(','));
+
+  // 商人交涉
+  ok(PARLEY_QUESTIONS.length >= 15, '商人交涉题库充足', String(PARLEY_QUESTIONS.length));
+  const pIds = new Set(PARLEY_QUESTIONS.map(q => q.id));
+  ok(pIds.size === PARLEY_QUESTIONS.length, '交涉题目 id 唯一');
+  const badP = PARLEY_QUESTIONS.filter(q => q.options.length !== 3
+    || q.options.filter(o => o.level === 'hit').length !== 1);
+  ok(badP.length === 0, '交涉题目均为三选一且恰一切中', badP.map(q => q.id).join(','));
+  const badTopic = PARLEY_QUESTIONS.filter(q => !PARLEY_TOPICS[q.topic]);
+  ok(badTopic.length === 0, '交涉题目的议题均有效', badTopic.map(q => q.id).join(','));
+  // 三个议题都要有题
+  for (const t of Object.keys(PARLEY_TOPICS)) {
+    const n = PARLEY_QUESTIONS.filter(q => q.topic === t).length;
+    ok(n >= 1, `议题「${PARLEY_TOPICS[t].name}」有对应题目`, String(n));
+  }
+}
+
+// ---------------- 事件效果类型必须被系统支持 ----------------
+{
+  const { TIMELINE, RANDOM_EVENTS } = await import('../js/data/events.js');
+  const SUPPORTED = new Set(['money', 'fame', 'merit', 'stat', 'skill', 'skillxp', 'rel',
+    'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel']);
+  const bad = [];
+  const scan = (list, tag) => {
+    for (const ev of list) {
+      for (const e of ev.effects ?? []) if (!SUPPORTED.has(e.t)) bad.push(`${tag}/${ev.id}: ${e.t}`);
+      for (const c of ev.choices ?? []) {
+        for (const e of c.effects ?? []) if (!SUPPORTED.has(e.t)) bad.push(`${tag}/${ev.id}/choice: ${e.t}`);
+        for (const e of c.success ?? []) if (!SUPPORTED.has(e.t)) bad.push(`${tag}/${ev.id}/success: ${e.t}`);
+        for (const e of c.fail ?? []) if (!SUPPORTED.has(e.t)) bad.push(`${tag}/${ev.id}/fail: ${e.t}`);
+      }
+    }
+  };
+  scan(TIMELINE, 'timeline');
+  scan(RANDOM_EVENTS, 'random');
+  ok(bad.length === 0, '事件效果类型均被支持', bad.slice(0, 5).join(','));
+  ok(TIMELINE.length >= 34, '历史事件数量充足', String(TIMELINE.length));
+  const ids = new Set(TIMELINE.map(e => e.id));
+  ok(ids.size === TIMELINE.length, '历史事件 id 唯一');
+}
+
 // ---------------- 10. 无 Math.random 出现在游戏逻辑 ----------------
 {
   const files = [];
