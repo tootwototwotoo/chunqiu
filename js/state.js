@@ -493,6 +493,11 @@ export function migrateState(st) {
   st.player.evidence = Array.isArray(st.player.evidence) ? st.player.evidence.filter(x => typeof x === 'string') : [];
   st.flags ||= {};
   if (st.flags.evidenceCooldown && typeof st.flags.evidenceCooldown !== 'object') st.flags.evidenceCooldown = {};
+  // 地图标记开关：缺省全开，旧存档自动补齐
+  st.flags.mapMarks = Object.assign(
+    { quest: true, shop: true, territory: true, stateLabel: true, road: true },
+    st.flags.mapMarks && typeof st.flags.mapMarks === 'object' ? st.flags.mapMarks : {},
+  );
   st.world.policy ||= null;
   // 珍宝：旧存档的 world.jade 迁移为 world.treasures.yu
   const legacyJade = st.world.jade;

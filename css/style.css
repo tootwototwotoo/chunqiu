@@ -113,6 +113,45 @@ button{font-family:var(--serif);cursor:pointer;}
 .map-state-label{font-family:var(--serif);font-size:26px;fill:rgba(80,60,40,.22);letter-spacing:8px;pointer-events:none;}
 #player-token{transition:transform .8s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
 .map-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-3);padding:8px 4px 0;}
+
+/* ---- 地图标记：差事旗与商号 ---- */
+.map-quest-flag{color:#9c2b26;pointer-events:none;}
+.map-quest-flag.urgent{color:#d4553f;}
+.map-quest-flag.urgent polygon{stroke:#f7efdc;stroke-width:.8;}
+.map-shop-mark{color:#a67c34;pointer-events:none;}
+.map-shop-mark.permit{color:#a67c34;}
+.map-shop-mark.shop2{color:#8d6a2c;}
+.map-shop-mark.shop3{color:#6f5320;}
+.map-legend .lg-flag{color:#9c2b26;}
+.map-legend .lg-shop{color:#a67c34;}
+.city-mark-rows{margin-top:6px;}
+
+/* ---- 标记开关下拉 ---- */
+.map-panel{position:relative;}
+.map-mark-bar{position:absolute;top:8px;right:10px;z-index:5;}
+.map-mark-menu{
+  position:absolute;right:0;top:calc(100% + 4px);min-width:150px;
+  background:#faf5e9;border:1px solid rgba(120,95,60,.35);border-radius:6px;
+  box-shadow:0 6px 18px rgba(60,45,30,.18);padding:6px;
+}
+.map-mark-menu[hidden]{display:none;}
+.map-mark-title{font-size:11.5px;color:var(--ink-3);padding:2px 6px 6px;letter-spacing:1px;}
+.map-mark-item{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;border:0;cursor:pointer;padding:5px 6px;border-radius:4px;
+  font-family:inherit;font-size:13px;color:var(--ink-1);text-align:left;
+}
+.map-mark-item:hover{background:rgba(166,124,52,.12);}
+.map-mark-item .mk-box{
+  width:15px;height:15px;flex:0 0 15px;display:grid;place-items:center;
+  border:1px solid rgba(120,95,60,.5);border-radius:3px;font-size:11px;line-height:1;
+  color:#4d6f56;background:#fffdf7;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .map-quest-flag.urgent animateTransform{display:none;}
+  .map-quest-flag.urgent polygon{stroke-width:1.4;}
+}
 .map-legend span{display:flex;align-items:center;gap:5px;}
 .lg-dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
 

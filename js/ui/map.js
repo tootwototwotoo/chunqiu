@@ -7,31 +7,83 @@ import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 
 import { onClick, stateColor, stateName, cityTag } from './common.js';
 import { drawTerritory } from './territory.js';
+import { esc } from '../util.js';
 import { policySummary } from '../systems/policy.js';
+import { normShops, shopAt, shopIncomeOf, hasPermit } from '../systems/merchant.js';
 
 let selected = null;
 
 // 读档 / 换角色时重置，避免沿用上一局的选中城与路线
 export function resetSelection() { selected = null; }
 
+const MARK_DEFAULTS = { quest: true, shop: true, territory: true, stateLabel: true, road: true };
+const marksOf = (st) => Object.assign({}, MARK_DEFAULTS, st.flags?.mapMarks ?? {});
+
+// 按目标城聚合在途的出行差事：只留最近的一件用于提示
+export function questMarks(st) {
+  const byCity = new Map();
+  for (const q of st.quests?.active ?? []) {
+    if (q.mode !== 'travel' || !q.targetCity) continue;
+    const left = q.exp != null ? Math.max(0, q.exp - absDayOf(st)) : null;
+    const cur = byCity.get(q.targetCity);
+    if (!cur || (left != null && (cur.left == null || left < cur.left))) {
+      byCity.set(q.targetCity, { city: q.targetCity, title: q.title, left, count: (cur?.count ?? 0) + 1 });
+    } else {
+      cur.count += 1;
+    }
+  }
+  return byCity;
+}
+
+function absDayOf(st) {
+  const t = st.time;
+  return (t.year + 722) * 360 + (t.month - 1) * 30 + (t.day - 1);
+}
+
+// 商人：各城商号与市籍的状态
+export function shopMarks(st) {
+  if (st.player.profession !== 'shangren') return new Map();
+  const out = new Map();
+  for (const shop of normShops(st)) {
+    out.set(shop.city, { kind: 'shop', level: shop.level, income: shopIncomeOf(shop, st) });
+  }
+  for (const p of st.player.permits ?? []) {
+    if (!out.has(p.city)) out.set(p.city, { kind: 'permit' });
+  }
+  return out;
+}
+
 export function mount(root, st, app) {
   const cur = player(st).cityId;
   if (!selected) selected = cur;
   const plan = selected !== cur ? travelPlan(st, selected) : null;
   const path = selected !== cur ? shortestPath(cur, selected, st) : null;
+  const marks = {
+    ...marksOf(st),
+    quests: questMarks(st),
+    shops: shopMarks(st),
+  };
 
   root.innerHTML = `
   <div class="map-wrap">
     <div class="panel map-panel">
+      <div class="map-mark-bar">
+        <button class="btn sm ghost" data-act="marks">⚙ 标记</button>
+        <div class="map-mark-menu" id="map-mark-menu" hidden>
+          ${markMenuHtml(marks)}
+        </div>
+      </div>
       <div class="map-svg-box">
         <canvas id="map-territory" width="940" height="660"></canvas>
-        ${mapSvg(st, cur, selected, path)}
+        ${mapSvg(st, cur, selected, path, marks)}
       </div>
       <div class="map-legend">
         <span><i class="lg-dot" style="background:#9c2b26"></i>所在</span>
         <span><i class="lg-dot" style="background:#a67c34"></i>城邑</span>
         <span><i class="lg-dot" style="background:#7d97a6"></i>河川</span>
         <span><i class="lg-dot" style="background:#a67c34;opacity:.5"></i>本国疆域</span>
+        ${marks.quest && marks.quests.size ? '<span class="lg-flag">⚑ 差事目标</span>' : ''}
+        ${marks.shop && marks.shops.size ? '<span class="lg-shop">■ 商号</span><span class="lg-shop">○ 已领市籍</span>' : ''}
         <span>点击城邑以观其详</span>
       </div>
     </div>
@@ -53,7 +105,9 @@ export function mount(root, st, app) {
     </div>
   </div>`;
 
-  drawTerritory(root.querySelector('#map-territory'), st);
+  const terr = root.querySelector('#map-territory');
+  if (marks.territory) drawTerritory(terr, st);
+  else if (terr) terr.style.visibility = 'hidden';
 
   onClick(root, '.map-city', (el) => {
     selected = el.dataset.city;
@@ -69,15 +123,47 @@ export function mount(root, st, app) {
   });
   onClick(root, '[data-act="enter"]', () => { app.nav('city'); });
   onClick(root, '[data-act="center"]', () => { selected = cur; mount(root, st, app); });
+
+  // 标记下拉菜单
+  const menu = root.querySelector('#map-mark-menu');
+  onClick(root, '[data-act="marks"]', (el) => {
+    el.blur?.();
+    if (menu) menu.hidden = !menu.hidden;
+  });
+  onClick(root, '[data-mark]', (el) => {
+    const key = el.dataset.mark;
+    const on = el.getAttribute('aria-checked') === 'true';
+    st.flags.mapMarks = { ...marksOf(st), [key]: !on };
+    mount(root, st, app);
+    // 重绘后菜单保持展开
+    const again = root.querySelector('#map-mark-menu');
+    if (again) again.hidden = false;
+  });
 }
 
-function mapSvg(st, cur, sel, path) {
+const MARK_LABELS = {
+  quest: '差事目标',
+  shop: '商号与市籍',
+  territory: '本国疆域',
+  stateLabel: '国名水印',
+  road: '道路',
+};
+
+function markMenuHtml(marks) {
+  return `<div class="map-mark-title">地图标记</div>
+    ${Object.entries(MARK_LABELS).map(([k, label]) => `
+      <button class="map-mark-item" data-mark="${k}" role="checkbox" aria-checked="${marks[k] ? 'true' : 'false'}">
+        <span class="mk-box">${marks[k] ? '✓' : ''}</span><span>${label}</span>
+      </button>`).join('')}`;
+}
+
+function mapSvg(st, cur, sel, path, marks) {
   const roadSet = new Set((path?.path ?? []).map((id, i, arr) => i ? [arr[i - 1], id].sort().join('|') : null).filter(Boolean));
-  const roads = ROADS.map(([a, b]) => {
+  const roads = marks.road ? ROADS.map(([a, b]) => {
     const A = CITY_MAP[a], B = CITY_MAP[b];
     const active = roadSet.has([a, b].sort().join('|'));
     return `<line class="map-road" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" ${active ? 'style="stroke:#9c2b26;stroke-width:2.6;stroke-dasharray:none;opacity:.85"' : ''}/>`;
-  }).join('');
+  }).join('') : '';
 
   const cities = CITIES.map(c => {
     const owner = st.world.owner[c.id];
@@ -100,8 +186,16 @@ function mapSvg(st, cur, sel, path) {
     </g>`;
   }).join('');
 
-  const stateLabels = (STATE_LABEL_POS ?? []).map(([id, x, y]) =>
-    `<text class="map-state-label" x="${x}" y="${y}">${STATES[id]?.name ?? id}</text>`).join('');
+  const stateLabels = marks.stateLabel ? (STATE_LABEL_POS ?? []).map(([id, x, y]) =>
+    `<text class="map-state-label" x="${x}" y="${y}">${STATES[id]?.name ?? id}</text>`).join('') : '';
+
+  // 差事旗与商号标记：分别受开关控制
+  const questFlags = marks.quest
+    ? [...marks.quests.values()].map(q => questFlagSvg(CITY_MAP[q.city], q)).join('')
+    : '';
+  const shopGlyphs = marks.shop
+    ? [...marks.shops.entries()].map(([cid, m]) => shopGlyphSvg(CITY_MAP[cid], m)).join('')
+    : '';
 
   return `<svg id="map-svg" viewBox="0 0 940 660" preserveAspectRatio="xMidYMid meet">
     <defs>
@@ -117,6 +211,8 @@ function mapSvg(st, cur, sel, path) {
     <path class="map-river thin" d="M 470 340 C 500 400, 500 470, 490 548" stroke="url(#riv)"/>
     ${roads}
     ${cities}
+    ${shopGlyphs}
+    ${questFlags}
   </svg>`;
 }
 
@@ -142,6 +238,7 @@ function cityCardHtml(st, cityId, plan, cur) {
       ${(c.tags ?? []).map(t => `<span class="tag">${tags[t] ?? t}</span>`).join('')}
       ${cityId === cur ? '<span class="tag war">你在此地</span>' : ''}
     </div>
+    ${cityMarkRows(st, cityId)}
     <div class="route-line">
       ${cityId === cur ? '脚下之城，可入城中行走。' : plan ? `
         路程 <em>${plan.days}</em> 日 · 路费 <em>${plan.cost}</em> 金 · 耗力 <em>${plan.stamina}</em><br>
@@ -171,4 +268,80 @@ function npcHereHtml(st, cityId, cur) {
         </div>`).join('')}
     </div>
   </div>`;
+}
+
+
+// 差事目标：三角旗，紧急时左右摆动（与当前城的呼吸圆环区分开）
+function questFlagSvg(c, q) {
+  if (!c) return '';
+  const urgent = q.left != null && q.left <= 3;
+  const x = c.x + 9, y = c.y - 9;
+  const label = `${q.title ?? '差事'}${q.left != null ? `（余 ${q.left} 日）` : ''}`;
+  const sway = urgent
+    ? `<animateTransform attributeName="transform" type="rotate"
+        values="-12 ${x} ${y};12 ${x} ${y};-12 ${x} ${y}" dur="1.1s" repeatCount="indefinite"/>`
+    : '';
+  return `<g class="map-quest-flag${urgent ? ' urgent' : ''}">
+    <title>${escapeXml(label)}</title>
+    <line x1="${x}" y1="${y}" x2="${x}" y2="${y + 11}" stroke="currentColor" stroke-width="1.4"/>
+    <polygon points="${x},${y} ${x + 8},${y + 3} ${x},${y + 6}" fill="currentColor"/>
+    ${sway}
+  </g>`;
+}
+
+// 商号（实心方块，按等级放大）与市籍（空心圆环）
+function shopGlyphSvg(c, m) {
+  if (!c) return '';
+  const x = c.x - 14, y = c.y - 14;
+  if (m.kind === 'permit') {
+    return `<g class="map-shop-mark permit">
+      <title>${escapeXml(`${c.name} · 已领市籍`)}</title>
+      <circle cx="${x}" cy="${y}" r="5" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".75"/>
+    </g>`;
+  }
+  const size = [7, 9, 11][Math.max(0, Math.min(2, (m.level ?? 1) - 1))];
+  const half = size / 2;
+  const stroke = m.level >= 3 ? 2 : m.level >= 2 ? 1 : 0;
+  const label = `${c.name} · ${['小肆', '大铺', '总号'][Math.max(0, Math.min(2, (m.level ?? 1) - 1))]}（月入 ${m.income ?? 0}）`;
+  return `<g class="map-shop-mark shop${m.level ?? 1}">
+    <title>${escapeXml(label)}</title>
+    <rect x="${x - half}" y="${y - half}" width="${size}" height="${size}" fill="currentColor"
+      stroke="#f7efdc" stroke-width="${stroke}" rx="1"/>
+  </g>`;
+}
+
+function escapeXml(s) {
+  return String(s).replace(/[<>&"]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch]));
+}
+
+
+// 侧栏：该城的差事、商号、市籍
+function cityMarkRows(st, cityId) {
+  const rows = [];
+
+  // 差事：列出全部指向此城的出行差事
+  const quests = (st.quests?.active ?? []).filter(q => q.mode === 'travel' && q.targetCity === cityId);
+  if (quests.length) {
+    const now = absDayOf(st);
+    const text = quests.map(q => {
+      const left = q.exp != null ? Math.max(0, q.exp - now) : null;
+      const warn = left != null && left <= 3;
+      const tail = left != null ? `（<span style="color:${warn ? '#9c2b26' : '#6d6052'}">余 ${left} 日</span>）` : '';
+      return `${esc(q.title)}${tail}`;
+    }).join('、');
+    rows.push(`<dt>差事</dt><dd>${text}</dd>`);
+  }
+
+  // 商号与市籍：仅商人
+  if (st.player.profession === 'shangren') {
+    const shop = shopAt(st, cityId);
+    if (shop) {
+      const names = ['小肆', '大铺', '总号'];
+      rows.push(`<dt>商号</dt><dd>${names[Math.max(0, Math.min(2, shop.level - 1))]} · 月入 ${shopIncomeOf(shop, st)} 金 · 伙计 ${shop.hired}</dd>`);
+    } else if (hasPermit(st, cityId)) {
+      rows.push(`<dt>市籍</dt><dd>已领，尚未设肆</dd>`);
+    }
+  }
+
+  return rows.length ? `<div class="kv city-mark-rows">${rows.join('')}</div>` : '';
 }
