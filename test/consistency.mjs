@@ -97,6 +97,14 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   ok(CITIES.length >= 31, '城池数量充足', String(CITIES.length));
   ok(Object.keys(STATES).length === 19, '19 国', String(Object.keys(STATES).length));
   ok(NPCS.length >= 42, 'NPC 数量充足', String(NPCS.length));
+  // id 去重之外还要按姓名查重：同一角色被写成两个 id 时，id 检查拦不住
+  const byName = new Map();
+  for (const n of NPCS) {
+    if (!byName.has(n.name)) byName.set(n.name, []);
+    byName.get(n.name).push(n.id);
+  }
+  const dupNames = [...byName].filter(([, ids]) => ids.length > 1);
+  ok(dupNames.length === 0, 'NPC 姓名不重复', dupNames.map(([n, ids]) => `${n}:${ids.join('/')}`).join(','));
   const badState = CITIES.filter(c => !STATES[c.state]);
   ok(badState.length === 0, '每座城的国别有效');
   const badRoad = ROADS.filter(r => !CITY_MAP[r[0]] || !CITY_MAP[r[1]]);

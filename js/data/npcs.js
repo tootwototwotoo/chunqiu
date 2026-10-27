@@ -261,9 +261,6 @@ export const NPCS = [
   { id: 'bo_pi', name: '伯嚭', title: '吴之太宰', state: 'wu', city: 'gusu', birth: -560, death: -473, role: 'minister',
     stats: { wu: 40, zhi: 80, zheng: 70, mei: 66 }, skills: { quanmou: 8, biancai: 7 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
     quote: '越既服矣，何求焉？', desc: '吴之佞臣，受越之赂，谮杀伍子胥，吴遂亡。' },
-  { id: 'zhong_fu', name: '文种', title: '越之大夫', state: 'yue', city: 'kuaiji', birth: -560, death: -472, role: 'minister',
-    stats: { wu: 38, zhi: 88, zheng: 86, mei: 72 }, skills: { quanmou: 9, biancai: 7 }, bias: 'li', pref: 'yu', teach: ['quanmou', 'biancai'],
-    quote: '飞鸟尽，良弓藏。', desc: '越大夫种，佐勾践灭吴，后为勾践所赐死。' },
 
   { id: 'gao_xi', name: '高傒', title: '齐之上卿', state: 'qi', city: 'linzi', birth: -730, death: -637, role: 'minister',
     stats: { wu: 60, zhi: 78, zheng: 84, mei: 68 }, skills: { quanmou: 7, biancai: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
