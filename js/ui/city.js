@@ -30,6 +30,7 @@ import { merchantRank as merchantRankName, normShops } from '../systems/merchant
 import { canSignPact, signPact, hasPact, pactMonthlyEach, pactSummary } from '../systems/pact.js';
 import { canParley } from '../systems/parley.js';
 import { parleyTopicModal } from './parley.js';
+import { unheardRumors, hearRumor } from '../systems/lore.js';
 import { rankIndexOf as rankIndexOfSafe } from '../systems/merchant.js';
 import { vehicleOf, canBuyVehicle, buyVehicle, haulsOf, haulSummary, escortHaul } from '../systems/haul.js';
 
@@ -173,6 +174,19 @@ function buildActions(st, app, c, owner) {
       disabled: cd > 0 || p.stamina < 8,
       run: () => openInvestigate(app, st, clues),
     });
+  }
+
+  // 僻远之城：无知名之士，改以市井传闻相告
+  {
+    const rumors = unheardRumors(st);
+    if (rumors.length) {
+      add({
+        id: 'rumor', name: '听市井传闻', cost: '半日 · 5力',
+        desc: `此地无知名之士，唯有乡老闲谈。尚有 ${rumors.length} 事未闻。`,
+        disabled: p.stamina < 5,
+        run: () => openRumors(app, st),
+      });
+    }
   }
 
   add({
@@ -993,6 +1007,37 @@ function cargoModal(app, st) {
       const r = escortHaul(st, el.dataset.escort);
       if (!r.ok) { app.toast(r.msg, 'war'); return; }
       render(r.msg);
+    });
+  };
+  render();
+  return h;
+}
+
+// 市井传闻：僻远城池的内容来源，听成功则记入证据
+function openRumors(app, st) {
+  const h = app.modal({
+    title: '市井传闻',
+    sub: `${CITY_MAP[player(st).cityId].name} · 乡老闲谈`,
+    wide: true,
+    body: '',
+    foot: [{ label: '离开', close: true }],
+  });
+  const render = (extra = '') => {
+    const list = unheardRumors(st);
+    h.setBody(`
+      <div class="footnote">此地僻远，无知名之士可访。市井之间，尚可闻些旧事。</div>
+      ${list.length ? `<div class="choices">
+        ${list.map(r => `<button class="choice-btn" data-rumor="${r.id}">${esc(r.name)}
+          <small>${esc(r.text)}</small></button>`).join('')}
+      </div>` : '<div class="empty">乡老已无新事可讲。</div>'}
+      ${extra ? `<div class="footnote" style="color:#4d6f56;font-size:13px">${esc(extra)}</div>` : ''}`);
+    onClick(h.bodyEl, '[data-rumor]', (el) => {
+      const r = hearRumor(st, el.dataset.rumor);
+      if (!r.ok) { app.toast(r.msg, 'war'); return; }
+      app.refreshHud();
+      const adv = advanceDays(st, 1);
+      app.after({ notes: [r.msg, r.note, ...adv.notes], events: adv.events, died: adv.died });
+      h.close();
     });
   };
   render();

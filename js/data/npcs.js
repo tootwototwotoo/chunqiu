@@ -1,8 +1,40 @@
+const LOCAL_NOTABLE_LIST = [
+  { id: 'pengcheng_dafu', name: '彭城大夫', title: '宋之东鄙大夫', state: 'song', city: 'pengcheng', birth: -620, death: -560, role: 'minister',
+    stats: { wu: 46, zhi: 72, zheng: 74, mei: 64 }, skills: { quanmou: 6, bingfa: 5 }, bias: 'yi', pref: 'su', teach: ['quanmou'],
+    quote: '彭城为泗上之会，不敢不守。', desc: '宋之东鄙守臣，名不见经传，史籍仅载其守邑之事。' },
+  { id: 'huai_cangli', name: '淮阳仓吏', title: '陈之仓吏', state: 'chen', city: 'huai', birth: -600, death: -540, role: 'minister',
+    stats: { wu: 36, zhi: 70, zheng: 76, mei: 60 }, skills: { suanshu: 7, shanggu: 6 }, bias: 'li', pref: 'su', teach: ['suanshu'],
+    quote: '仓中之粟，颗粒皆民之膏血。', desc: '陈之仓吏，掌淮阳粮仓。名不见经传，唯仓籍上留其姓。' },
+  { id: 'yongqiu_yizai', name: '雍丘邑宰', title: '宋之杞邑宰', state: 'song', city: 'yongqiu', birth: -620, death: -560, role: 'minister',
+    stats: { wu: 44, zhi: 70, zheng: 72, mei: 62 }, skills: { quanmou: 5, xuewen: 5 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
+    quote: '杞人忧天，吾忧其田。', desc: '宋之杞邑宰。名不见经传，史籍仅载其治邑。' },
+  { id: 'qi2_shouchen', name: '岐山守臣', title: '秦之周原守臣', state: 'qin', city: 'qi2', birth: -680, death: -620, role: 'minister',
+    stats: { wu: 48, zhi: 74, zheng: 76, mei: 64 }, skills: { xuewen: 6, quanmou: 5 }, bias: 'yi', pref: 'su', teach: ['xuewen'],
+    quote: '周原膴膴，堇荼如饴。', desc: '秦之守臣，守岐山周原故地。名不见经传，唯诗存其地。' },
+  { id: 'juchao_yizai', name: '郈邑宰', title: '鲁之郈邑宰', state: 'lu', city: 'ju_chao', birth: -580, death: -520, role: 'minister',
+    stats: { wu: 40, zhi: 72, zheng: 74, mei: 62 }, skills: { quanmou: 6 }, bias: 'li', pref: 'si', teach: ['quanmou'],
+    quote: '郈为季氏之邑，吾为季氏之宰。', desc: '鲁之郈邑宰，实为三桓家臣。名不见经传，政在家门。' },
+  { id: 'pingyang_bianjiang', name: '平阳边将', title: '晋之边将', state: 'jin', city: 'pingyang', birth: -620, death: -560, role: 'general',
+    stats: { wu: 74, zhi: 68, zheng: 58, mei: 56 }, skills: { bingfa: 7, jianshu: 6 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '胡马南来，吾当之。', desc: '晋北边将，御戎狄于平阳。名不见经传，唯烽燧下有碑记其守。' },
+  { id: 'zhoulai_shujiang', name: '州来戍将', title: '吴之戍将', state: 'wu', city: 'zhoulai', birth: -560, death: -500, role: 'general',
+    stats: { wu: 78, zhi: 66, zheng: 56, mei: 54 }, skills: { bingfa: 7, sheshu: 6 }, bias: 'shi', pref: 'tie', teach: ['sheshu'],
+    quote: '州来一日三易主，吾不知明日属谁。', desc: '吴之西境戍将，守州来。名不见经传，吴楚争此城，屡易其主。' },
+  { id: 'zhi_shoujiang', name: '虎牢守将', title: '郑之制邑守将', state: 'zheng', city: 'zhi', birth: -620, death: -570, role: 'general',
+    stats: { wu: 76, zhi: 70, zheng: 58, mei: 54 }, skills: { bingfa: 8 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '制，岩邑也，虢叔死焉。', desc: '郑之制邑守将，守虎牢之险。名不见经传，唯险要之地需人守。' },
+  { id: 'yun_shujiang', name: '郧邑戍将', title: '楚之北鄙戍将', state: 'chu', city: 'yun', birth: -600, death: -540, role: 'general',
+    stats: { wu: 70, zhi: 68, zheng: 62, mei: 56 }, skills: { bingfa: 6, quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
+    quote: '汉水之滨，楚之门户。', desc: '楚之北鄙戍将，守郧。名不见经传，唯与随、邓相邻。' },
+
+];
+
 // 列国人物。birth/death 为负的公元前年份，null 表示不详（按出场年份判断）。
 // role: ruler 国君 / minister 卿相 / general 将帅 / scholar 名士 / merchant 富商 / retainer 门客
 // bias: li 好利 / yi 重义 / ming 好名 / shi 慕强（重实力与形势） —— 游说时的突破口
 // pref: 偏爱的礼物；teach: 可传授的技能
 
+// 本地人物：给僻远大邑配的「名不见经传」的守臣，与史载人物同表
 export const NPCS = [
   { id: 'zheng_zhuang', name: '郑庄公', title: '郑伯', state: 'zheng', city: 'xinzheng', reign: [-722, -701], role: 'ruler',
     stats: { wu: 58, zhi: 78, zheng: 86, mei: 72 }, skills: { jianshu: 2, bingfa: 4, quanmou: 6, biancai: 3 }, bias: 'shi', pref: 'yu', teach: ['quanmou'],
@@ -1502,6 +1534,7 @@ export const NPCS = [
     stats: { wu: 66, zhi: 66, zheng: 58, mei: 54 }, skills: { bingfa: 5 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
     quote: '许之事楚，非本心也。', desc: '许之大夫，郑庄公使居许西偏。' },
 
+  ...LOCAL_NOTABLE_LIST,
 ];
 
 export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
