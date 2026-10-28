@@ -450,7 +450,7 @@ function buildActions(st, app, c, owner) {
       desc: '城中若有名士，可与论难，以广见闻。',
       disabled: p.stamina < 6,
       run: () => {
-        const target = npcsHere(st).find(n => ['scholar', 'minister'].includes(n.def.role));
+        const target = npcsHere(st).find(n => ['scholar', 'minister'].includes(n.effectiveRole ?? n.def.role));
         if (!target) { app.toast('城中无可论辩之人。', 'war'); return; }
         debateModal(app, st, { ...npcDebateInfo(st, target.id), title: target.def.title, stats: target.def.stats }, {
           sub: '论道', topic: '学问',
@@ -649,12 +649,12 @@ function openInvestigate(app, st, clues) {
 
 function openPersuade(app, st) {
   const here = npcsHere(st);
-  const target = here.find(n => n.def.role === 'ruler') ?? here.find(n => n.def.role === 'minister') ?? here[0];
+  const target = here.find(n => (n.effectiveRole ?? n.def.role) === 'ruler') ?? here.find(n => (n.effectiveRole ?? n.def.role) === 'minister') ?? here[0];
   if (!target) { app.toast('此地无人可说服。', 'war'); return; }
   debateModal(app, st, {
     id: target.id, name: target.def.name, title: target.def.title, bias: target.def.bias,
   }, {
-    category: categoryForRole(target.def.role),
+    category: categoryForRole(target.effectiveRole ?? target.def.role),
     onEnd: ({ result }) => {
       const p = player(st);
       if (result === 'success') {

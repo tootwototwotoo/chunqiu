@@ -76,10 +76,11 @@ export function promotionText(p) {
 
 // 国君随年份在「公子 / 国君 / 前国君」之间变化，称号随之改变
 export function stageLabel(npcLike) {
-  const { def, stage } = npcLike ?? {};
+  const { def, effectiveRole } = npcLike ?? {};
   if (!def) return '';
-  if (def.role !== 'ruler') return def.title ?? '';
-  if (stage === 'prince') return '公子';
-  if (stage === 'retired') return '前国君';
-  return def.title ?? '国君';
+  const role = effectiveRole ?? def.role;
+  if (role === 'prince') return '公子';
+  if (role === 'retired') return '前国君';
+  if (role === 'ruler') return def.title ?? '国君';
+  return def.title ?? '';
 }

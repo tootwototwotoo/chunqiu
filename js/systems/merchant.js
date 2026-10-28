@@ -86,11 +86,12 @@ export function permitFeeAt(st, cityId) {
 export function permitCandidates(st) {
   const here = npcsHere(st);
   return here
-    .filter(n => PERMIT_ROLES.includes(n.def.role))
+    .filter(n => PERMIT_ROLES.includes(n.effectiveRole ?? n.def.role))
     .map(n => {
       const r = rel(st, n.id);
-      const rank = PERMIT_ROLES.indexOf(n.def.role);
-      return { id: n.id, def: n.def, aff: r.aff, role: n.def.role, order: rank };
+      const effRole = n.effectiveRole ?? n.def.role;
+      const rank = PERMIT_ROLES.indexOf(effRole);
+      return { id: n.id, def: n.def, aff: r.aff, role: effRole, order: rank };
     })
     .sort((a, b) => a.order - b.order || b.aff - a.aff);
 }

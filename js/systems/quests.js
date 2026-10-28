@@ -103,7 +103,7 @@ const TEMPLATES = {
     };
   },
   persuade(st, city) {
-    const here = npcsHere(st).filter(n => n.def.role !== 'ruler');
+    const here = npcsHere(st).filter(n => (n.effectiveRole ?? n.def.role) !== 'ruler');
     const target = here.length ? R.pick(st, here).def : null;
     const other = R.pick(st, Object.keys(STATES).filter(s => s !== cityState(st, city.id) && s !== 'zhou'));
     const g = giverOf(st, city);

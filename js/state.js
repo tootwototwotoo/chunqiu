@@ -157,9 +157,13 @@ export function npcsHere(st) {
     .filter(n => n.alive && n.city === st.player.cityId)
     .map(n => {
       const def = NPC_MAP[n.id];
-      // 国君随年份在「公子 / 国君 / 前国君」之间变化
+      // 国君随年份在「公子 / 国君 / 前国君」之间变化；
+      // 非在位者按普通人物对待（role 仍写实，但 effectiveRole 用于界面与交互）
       const stage = def?.role === 'ruler' ? rulerStageOf(def, st.time.year) : null;
-      return { ...n, def, stage };
+      const effectiveRole = def?.role === 'ruler' && stage !== 'ruler'
+        ? (stage === 'prince' ? 'prince' : stage === 'retired' ? 'retired' : def.role)
+        : def?.role;
+      return { ...n, def, stage, effectiveRole };
     })
     .filter(n => n.def && npcAlive(n.def, st.time.year));
 }

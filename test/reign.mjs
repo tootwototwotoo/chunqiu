@@ -245,5 +245,71 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   ok(!r.synthetic, '不是合成对象');
 }
 
+
+// ---------------- 合成国君只作国君，不参与普通 NPC 机制 ----------------
+{
+  const { audienceRuler } = await import('../js/systems/audience.js');
+  const { npcsHere } = await import('../js/state.js');
+  const { NPC_MAP } = await import('../js/data/npcs.js');
+  const st = newGame({ name: 'x', profession: 'youxia', era: 'early', seed: 31 });
+
+  // 找一段史料缺载的年份，且玩家站在该国都城
+  let found = null;
+  for (const sid of Object.keys(STATES)) {
+    for (let y = -722; y <= -473 && !found; y += 1) {
+      if (!rulerAt(sid, y)) found = { sid, y };
+    }
+    if (found) break;
+  }
+  ok(!!found, '存在缺载年份用于测试', found ? `${found.sid}@${found.y}` : '无');
+
+  if (found) {
+    st.time.year = found.y; st.time.month = 1; st.time.day = 1;
+    const r = audienceRuler(st, found.sid);
+    ok(r?.synthetic === true, '该年返回合成国君');
+
+    // 合成对象不在 NPC 数据表里（不是真人物）
+    ok(r.id === null && !NPC_MAP[r.id], '合成国君没有 id，不进 NPC 表', String(r.id));
+    ok(!NPC_MAP[r.name], '也不是以国号入表的真人物', r.name);
+
+    // 城中人物列表不会因为合成国君而多出一个人
+    const anyCity = Object.values(st.npc).find(n => n.alive);
+    if (anyCity) {
+      st.player.cityId = anyCity.city;
+      const here = npcsHere(st);
+      ok(!here.some(n => n.def?.synthetic), '城中人物列表不含合成国君');
+      ok(here.every(n => n.id), '列表里全是有 id 的真实人物');
+    }
+
+    // 合成国君无「公子/前国君」阶段
+    ok(r.reign === undefined, '合成国君没有 reign，不存在三段身分');
+    ok(r.birth === undefined && r.death === undefined, '合成国君没有生卒，不会推演身分');
+  }
+}
+
+// ---------------- 在位国君以外的国君条目按普通人物对待 ----------------
+{
+  const { npcsHere } = await import('../js/state.js');
+  const { stageLabel } = await import('../js/ui/common.js');
+
+  const st = newGame({ name: 'x', profession: 'youxia', era: 'early', seed: 32 });
+  const { advanceDays } = await import('../js/systems/calendar.js');
+  advanceDays(st, 360 * 45); // 约 -677
+  st.player.cityId = 'jiang';
+  const here = npcsHere(st);
+  const rulers = here.filter(n => n.def.role === 'ruler');
+  ok(rulers.length >= 1, '绛城有国君条目', String(rulers.length));
+
+  // 同一时刻至多一位 effectiveRole === 'ruler'
+  const onThrone = here.filter(n => (n.effectiveRole ?? n.def.role) === 'ruler');
+  ok(onThrone.length <= 1, '同城至多一位在位国君', onThrone.map(n => n.def.name).join('/'));
+
+  // 非在位的国君条目应显示为公子/前国君
+  for (const n of rulers) {
+    if (n.stage === 'prince') ok(stageLabel(n) === '公子', `${n.def.name} 显示为公子`, stageLabel(n));
+    if (n.stage === 'retired') ok(stageLabel(n) === '前国君', `${n.def.name} 显示为前国君`, stageLabel(n));
+  }
+}
+
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n国君世系通过 ✓');
 process.exit(fails ? 1 : 0);
