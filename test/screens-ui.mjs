@@ -319,6 +319,43 @@ const boot = async (profession, seed = 9) => {
   ok(errors.length === 0, '舆图无运行时错误', errors[0]?.slice(0, 100) ?? '');
 }
 
+
+// ---------------- 女性角色（noble）可正常互动 ----------------
+{
+  const st = await boot('youxia', 33);
+  const nobleEntry = Object.values(st.npc).find(n => {
+    const d = NPC_MAP[n.id];
+    return d?.role === 'noble' && n.alive;
+  });
+  ok(!!nobleEntry, '存在在世的女性角色', nobleEntry ? NPC_MAP[nobleEntry.id].name : '无');
+  if (nobleEntry) {
+    const def = NPC_MAP[nobleEntry.id];
+    st.player.cityId = nobleEntry.city;
+    rel(st, nobleEntry.id).met = true;
+    rel(st, nobleEntry.id).aff = 40;
+    app.nav('relations');
+    await wait(60);
+    const side = screenText();
+    ok(side.includes(def.name), '交游列表出现女性角色', def.name);
+    const btn = $$('[data-npc]').find(b => b.dataset.npc === nobleEntry.id);
+    ok(!!btn, '可点击往见');
+    if (btn) {
+      tap(btn);
+      await wait(70);
+      ok(!!$('.modal'), '人物弹窗打开');
+      const mt = modalText();
+      ok(mt.length > 10, '弹窗有内容');
+      ok(mt.includes(def.name), '弹窗显示其名');
+      ok(!/undefined/.test(mt), '无 undefined');
+      // 交谈可用
+      const talk = $('[data-act="talk"]');
+      ok(!!talk, '有交谈按钮');
+      await closeModal();
+    }
+  }
+  ok(errors.length === 0, '女性角色交互无运行时错误', errors[0]?.slice(0, 100) ?? '');
+}
+
 // ---------------- 全职业开局不崩 ----------------
 {
   const errs = [];

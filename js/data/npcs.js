@@ -1103,6 +1103,87 @@ export const NPCS = [
     stats: { wu: 32, zhi: 44, zheng: 40, mei: 44 }, skills: {}, bias: 'li', pref: 'yu', teach: [],
     quote: '', desc: '在位二十一年。' },
 
+  // ================= 女性角色 =================
+  { id: 'xi_gui', name: '息妫', title: '息侯夫人', state: 'chu', city: 'xi', birth: -710, death: -640, role: 'noble',
+    stats: { wu: 30, zhi: 82, zheng: 66, mei: 96 }, skills: { xuewen: 7, biancai: 8 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'biancai'],
+    quote: '吾一妇人而事二夫，纵弗能死，其又奚言？',
+    desc: '息侯之夫人，蔡哀公戏之，息侯怒而引楚伐蔡，楚文王遂灭息，纳之。入楚后不言者数年。' },
+
+  { id: 'xia_ji', name: '夏姬', title: '陈之寡居', state: 'chen', city: 'wanqiu', birth: -640, death: -580, role: 'noble',
+    stats: { wu: 34, zhi: 76, zheng: 58, mei: 98 }, skills: { quanmou: 7, biancai: 6 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '妾之不幸，至于此乎。',
+    desc: '郑穆公之女，嫁于陈之夏御叔。三为王后、七为夫人，公侯争之，死者数人，亡国数国。' },
+
+  { id: 'wen_jiang', name: '文姜', title: '鲁桓公夫人', state: 'lu', city: 'qufu', birth: -735, death: -673, role: 'noble',
+    stats: { wu: 32, zhi: 78, zheng: 64, mei: 92 }, skills: { xuewen: 8, biancai: 6 }, bias: 'ming', pref: 'si', teach: ['xuewen'],
+    quote: '齐与鲁，甥舅之国也。',
+    desc: '齐襄公之妹，嫁鲁桓公。与兄通，桓公知之而怒，齐襄公遂杀桓公于车中。' },
+
+  { id: 'ai_jiang', name: '哀姜', title: '鲁庄公夫人', state: 'lu', city: 'qufu', birth: -700, death: -659, role: 'noble',
+    stats: { wu: 30, zhi: 70, zheng: 56, mei: 88 }, skills: { quanmou: 5 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾自齐来，岂知鲁事。',
+    desc: '齐女，嫁鲁庄公。与庆父通，庄公卒后谋立庆父，事败，齐人杀之于夷。' },
+
+  { id: 'xu_mu_furen', name: '许穆夫人', title: '许侯夫人', state: 'xu', city: 'xu', birth: -690, death: -630, role: 'noble',
+    stats: { wu: 34, zhi: 84, zheng: 62, mei: 86 }, skills: { xuewen: 9, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'biancai'],
+    quote: '载驰载驱，归唁卫侯。',
+    desc: '卫宣公之女，嫁于许。狄灭卫，夫人欲归唁其兄，许人不许，乃赋《载驰》。中国最早有名字的女诗人。' },
+
+  { id: 'li_ji', name: '骊姬', title: '晋献公夫人', state: 'jin', city: 'jiang', birth: -700, death: -650, role: 'noble',
+    stats: { wu: 28, zhi: 88, zheng: 60, mei: 90 }, skills: { quanmou: 9, biancai: 7 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾欲立奚齐。',
+    desc: '骊戎之女，晋献公伐骊戎所得。谮杀太子申生，逐重耳、夷吾，晋乱二十年。' },
+
+  { id: 'nan_zi', name: '南子', title: '卫灵公夫人', state: 'wei', city: 'diqiu', birth: -560, death: -480, role: 'noble',
+    stats: { wu: 30, zhi: 80, zheng: 58, mei: 92 }, skills: { xuewen: 7, biancai: 8 }, bias: 'ming', pref: 'yu', teach: ['biancai'],
+    quote: '四方之君子不辱欲与寡君为兄弟者，必见寡小君。',
+    desc: '宋女，卫灵公夫人。孔子适卫，南子请见，孔子见之，子路不悦。' },
+
+  { id: 'huai_ying', name: '怀嬴', title: '秦穆公之女', state: 'qin', city: 'yong', birth: -640, death: -580, role: 'noble',
+    stats: { wu: 32, zhi: 78, zheng: 64, mei: 88 }, skills: { biancai: 6, quanmou: 6 }, bias: 'yi', pref: 'si', teach: ['biancai'],
+    quote: '秦晋，匹也，何以卑我？',
+    desc: '秦穆公之女，先嫁晋怀公，后嫁晋文公。文公初慢之，怀嬴怒曰「秦晋匹也」。' },
+
+  { id: 'mu_ji', name: '穆姬', title: '秦穆公夫人', state: 'qin', city: 'yong', birth: -680, death: -620, role: 'noble',
+    stats: { wu: 30, zhi: 80, zheng: 66, mei: 84 }, skills: { xuewen: 6, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['biancai'],
+    quote: '吾兄弟之故，敢以死请。',
+    desc: '晋献公之女，嫁秦穆公。晋惠公韩原之败为秦所虏，穆姬登台履薪以死请，乃归惠公。' },
+
+  { id: 'deng_man', name: '邓曼', title: '楚武王夫人', state: 'chu', city: 'ying', birth: -730, death: -680, role: 'noble',
+    stats: { wu: 28, zhi: 90, zheng: 68, mei: 82 }, skills: { xuewen: 8, quanmou: 8 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'quanmou'],
+    quote: '王禄尽矣。盈而荡，天之道也。',
+    desc: '楚武王夫人。武王将伐随，邓曼知其必死，果薨于樠木之下。' },
+
+  { id: 'ding_jiang', name: '定姜', title: '卫定公夫人', state: 'wei', city: 'diqiu', birth: -600, death: -540, role: 'noble',
+    stats: { wu: 28, zhi: 86, zheng: 70, mei: 80 }, skills: { xuewen: 8, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
+    quote: '是先君宗卿之嗣也，大国又以为请。',
+    desc: '卫定公夫人。定公卒，其子衎不哀，定姜曰「是夫也，将不唯卫国之败」。后衎果出奔。' },
+
+  { id: 'jing_jiang', name: '敬姜', title: '鲁之寡妇', state: 'lu', city: 'qufu', birth: -600, death: -520, role: 'noble',
+    stats: { wu: 34, zhi: 88, zheng: 72, mei: 78 }, skills: { xuewen: 10, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
+    quote: '民劳则思，思则善心生。',
+    desc: '鲁大夫公父穆伯之妻。夫死子幼，犹纺绩不辍。孔子称其「不淫」。' },
+
+  { id: 'shu_kui', name: '叔隗', title: '狄人之女', state: 'jin', city: 'jiang', birth: -690, death: -630, role: 'noble',
+    stats: { wu: 44, zhi: 74, zheng: 58, mei: 84 }, skills: { jianshu: 4, quanmou: 5 }, bias: 'shi', pref: 'ma', teach: ['quanmou'],
+    quote: '狄土虽陋，亦有礼义。',
+    desc: '晋文公流亡至狄，狄人伐廧咎如，得二女，长曰叔隗，以妻重耳。' },
+
+  { id: 'ji_kui', name: '季隗', title: '狄人之女', state: 'jin', city: 'jiang', birth: -688, death: -628, role: 'noble',
+    stats: { wu: 40, zhi: 76, zheng: 56, mei: 86 }, skills: { xuewen: 5, quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '我二十五年矣，又如是而嫁，则就木焉。请待子。',
+    desc: '叔隗之妹，嫁晋文公。文公将去狄，嘱其待己，季隗以「就木」对，后终得团聚。' },
+
+  { id: 'cai_ji', name: '蔡姬', title: '齐桓公夫人', state: 'qi', city: 'linzi', birth: -710, death: -650, role: 'noble',
+    stats: { wu: 32, zhi: 68, zheng: 54, mei: 88 }, skills: { quanmou: 4 }, bias: 'ming', pref: 'yu', teach: ['quanmou'],
+    quote: '荡舟何惧，君试观之。',
+    desc: '蔡穆公之女，齐桓公夫人。与桓公荡舟，荡而公惧，怒而归之蔡。蔡人另嫁之，桓公遂伐蔡。' },
+
+  { id: 'sheng_ji', name: '声姬', title: '齐灵公夫人', state: 'qi', city: 'linzi', birth: -590, death: -530, role: 'noble',
+    stats: { wu: 28, zhi: 72, zheng: 60, mei: 84 }, skills: { quanmou: 5 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾子牙，当立。',
+    desc: '鲁女，齐灵公夫人。生子牙，谋立之，废太子光。后光复位为庄公。' },
+
 ];
 
 export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
@@ -1111,7 +1192,7 @@ export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
 export const WANDERER_NAMES = ['无名剑客', '游士', '负剑之徒', '落魄士人', '山野隐者', '行脚商人', '游方医者', '江湖客'];
 export const BANDIT_NAMES = ['山贼', '草寇', '劫道者', '野盗', '亡命之徒'];
 
-export const ROLE_NAMES = { ruler: '国君', prince: '公子', retired: '前国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客' };
+export const ROLE_NAMES = { ruler: '国君', prince: '公子', retired: '前国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客', noble: '夫人' };
 
 // 某人在某年的显示用身份名（国君随年份变化）
 export function stageTitleOf(npc, year) {

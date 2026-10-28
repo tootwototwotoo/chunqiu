@@ -226,6 +226,31 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   }
 }
 
+
+// ---------------- 角色类别与女性角色 ----------------
+{
+  const { ROLE_NAMES } = await import('../js/data/npcs.js');
+  const nobles = NPCS.filter(n => n.role === 'noble');
+  ok(nobles.length >= 12, '女性角色数量充足', String(nobles.length));
+  ok(ROLE_NAMES.noble === '夫人', 'noble 类别名为「夫人」', ROLE_NAMES.noble);
+
+  // 每位 noble 都有完整的可用字段
+  const bad = nobles.filter(n => !n.name || !n.title || !n.city || !n.bias || !n.desc);
+  ok(bad.length === 0, '女性角色字段完整', bad.map(n => n.id).join(','));
+
+  // 心性合法
+  const badBias = nobles.filter(n => !['li', 'yi', 'ming', 'shi'].includes(n.bias));
+  ok(badBias.length === 0, '女性角色心性合法', badBias.map(n => n.id).join(','));
+
+  // 分布在不同国家，不是全挤在一处
+  const states = new Set(nobles.map(n => n.state));
+  ok(states.size >= 6, '女性角色分布多国', String(states.size));
+
+  // 所有 role 都在 ROLE_NAMES 里
+  const unknown = [...new Set(NPCS.map(n => n.role))].filter(r => !ROLE_NAMES[r]);
+  ok(unknown.length === 0, '所有角色类别都有名称', unknown.join(','));
+}
+
 // ---------------- 事件效果类型必须被系统支持 ----------------
 {
   const { TIMELINE, RANDOM_EVENTS } = await import('../js/data/events.js');

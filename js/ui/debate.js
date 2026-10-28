@@ -10,6 +10,7 @@ const RESULT_COLOR = { success: '#4d6f56', compromise: '#a67c34', fail: '#9c2b26
 export const categoryForRole = (role) => ({
   ruler: 'court', minister: 'domestic', general: 'military',
   merchant: 'trade', scholar: 'court', retainer: 'court',
+  noble: 'court', prince: 'court', retired: 'court',
 }[role] ?? 'court');
 
 export function debateModal(app, st, npc, opts = {}) {
