@@ -1235,6 +1235,273 @@ export const NPCS = [
     quote: '匠石运斤成风，听而斫之。',
     desc: '楚之巧匠。有郢人以白垩涂鼻端如蝇翼，匠石运斤成风而斫之，尽垩而鼻不伤。' },
 
+  // ================= 卿相扩充（第二批） =================
+  // ---- 周室 ----
+  { id: 'zhou_gong', name: '周公黑肩', title: '周之卿士', state: 'zhou', city: 'luoyi', birth: -760, death: -694, role: 'minister',
+    stats: { wu: 42, zhi: 76, zheng: 80, mei: 62 }, skills: { xuewen: 7, quanmou: 6 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'quanmou'],
+    quote: '王纲虽替，礼不可废。', desc: '周桓公，周之卿士。欲弑王而立王子克，事败见杀。' },
+  { id: 'zhou_wang_sun', name: '王孙满', title: '周之大夫', state: 'zhou', city: 'luoyi', birth: -630, death: -570, role: 'minister',
+    stats: { wu: 34, zhi: 88, zheng: 82, mei: 70 }, skills: { xuewen: 9, biancai: 8 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'biancai'],
+    quote: '在德不在鼎。', desc: '周定王时大夫。楚庄王问鼎轻重，对曰「在德不在鼎」，楚子乃退。' },
+  { id: 'zhou_dan_mu', name: '单穆公', title: '周之卿士', state: 'zhou', city: 'luoyi', birth: -570, death: -510, role: 'minister',
+    stats: { wu: 36, zhi: 84, zheng: 82, mei: 66 }, skills: { quanmou: 7, xuewen: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '绝民用以实王府，犹塞川原而为潢污也。', desc: '周景王时将铸大钱，单穆公谏以「绝民用以实王府」之害。' },
+
+  // ---- 齐国 ----
+  { id: 'qi_bao', name: '齐鲍叔牙', title: '齐之大夫', state: 'qi', city: 'linzi', birth: -716, death: -644, role: 'minister',
+    stats: { wu: 44, zhi: 82, zheng: 84, mei: 70 }, skills: { quanmou: 7, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '君若欲霸王，非管夷吾不可。', desc: '与管仲友善，荐之为相。管仲曰「生我者父母，知我者鲍子也」。' },
+  { id: 'qi_yan_ruo', name: '齐晏弱', title: '齐之大夫', state: 'qi', city: 'linzi', birth: -620, death: -556, role: 'minister',
+    stats: { wu: 40, zhi: 78, zheng: 76, mei: 66 }, skills: { quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '晏氏世为齐卿。', desc: '晏婴之父，齐之世卿。' },
+  { id: 'qi_cui_wu', name: '齐崔杼', title: '齐之大夫', state: 'qi', city: 'linzi', birth: -620, death: -546, role: 'minister',
+    stats: { wu: 56, zhi: 74, zheng: 66, mei: 58 }, skills: { quanmou: 8, bingfa: 5 }, bias: 'li', pref: 'ma', teach: ['quanmou'],
+    quote: '吾弑其君，太史书之。', desc: '弑齐庄公，太史书「崔杼弑其君」，杀之；其弟继书，乃止。' },
+  { id: 'qi_chen_qi', name: '齐陈乞', title: '齐之大夫', state: 'qi', city: 'linzi', birth: -560, death: -485, role: 'minister',
+    stats: { wu: 42, zhi: 82, zheng: 72, mei: 60 }, skills: { quanmou: 9 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '陈氏厚施，民归之矣。', desc: '陈僖子，以大斗贷、小斗收，收齐国之民心，陈氏自此专齐。' },
+
+  // ---- 晋国 ----
+  { id: 'jin_zhao_dun', name: '赵盾', title: '晋之正卿', state: 'jin', city: 'jiang', birth: -650, death: -601, role: 'minister',
+    stats: { wu: 50, zhi: 86, zheng: 84, mei: 66 }, skills: { quanmou: 8, bingfa: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou', 'bingfa'],
+    quote: '冬日之日，夏日之日。', desc: '晋之正卿，专国政二十年。太史书「赵盾弑其君」，孔子曰「越竟乃免」。' },
+  { id: 'jin_shi_hui', name: '士会', title: '晋之大夫', state: 'jin', city: 'jiang', birth: -640, death: -580, role: 'minister',
+    stats: { wu: 48, zhi: 86, zheng: 82, mei: 64 }, skills: { quanmou: 8, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['quanmou', 'biancai'],
+    quote: '民之多幸，国之不幸也。', desc: '晋之贤大夫，随武子。历事四君，为政宽而有法。' },
+  { id: 'jin_han_xuan', name: '韩宣子', title: '晋之正卿', state: 'jin', city: 'jiang', birth: -600, death: -541, role: 'minister',
+    stats: { wu: 40, zhi: 82, zheng: 84, mei: 68 }, skills: { quanmou: 7, xuewen: 6 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '周礼尽在鲁矣。', desc: '韩起，晋之正卿。聘于鲁，观《易象》与《鲁春秋》，叹「周礼尽在鲁矣」。' },
+  { id: 'jin_wei_shu', name: '魏舒', title: '晋之正卿', state: 'jin', city: 'jiang', birth: -580, death: -509, role: 'general',
+    stats: { wu: 66, zhi: 78, zheng: 70, mei: 58 }, skills: { bingfa: 8, quanmou: 6 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '毁车为行。', desc: '魏献子。大原之役毁车为行，以步兵胜狄，开中国步兵之先。' },
+
+  // ---- 楚国 ----
+
+  { id: 'chu_zhi_wei', name: '薳子冯', title: '楚之令尹', state: 'chu', city: 'ying', birth: -600, death: -545, role: 'minister',
+    stats: { wu: 44, zhi: 80, zheng: 78, mei: 62 }, skills: { quanmou: 7 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾闻之，君子不以其所能者病人。', desc: '楚之令尹，以病辞位。' },
+  { id: 'chu_shen_wu', name: '申无宇', title: '楚之大夫', state: 'chu', city: 'shen', birth: -600, death: -540, role: 'minister',
+    stats: { wu: 42, zhi: 82, zheng: 76, mei: 62 }, skills: { quanmou: 6, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '国有大城，未有利也。', desc: '楚之大夫，谏灵王城陈蔡不羹，以「末大必折，尾大不掉」为喻。' },
+  { id: 'chu_wu_she', name: '伍奢', title: '楚之太子太傅', state: 'chu', city: 'ying', birth: -620, death: -522, role: 'minister',
+    stats: { wu: 46, zhi: 84, zheng: 80, mei: 66 }, skills: { quanmou: 7, xuewen: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '王独奈何以谗贼小臣疏骨肉之亲乎？', desc: '伍子胥之父，楚平王杀之，子胥奔吴。' },
+
+  // ---- 秦国 ----
+  { id: 'qin_you_yu2', name: '秦子车', title: '秦之大夫', state: 'qin', city: 'yong', birth: -650, death: -600, role: 'minister',
+    stats: { wu: 44, zhi: 78, zheng: 74, mei: 66 }, skills: { quanmou: 6, xuewen: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '三良殉葬，国人哀之。', desc: '子车氏三良之一，秦穆公卒而从死，国人赋《黄鸟》。' },
+  { id: 'qin_gu_rui', name: '秦庶长鼌', title: '秦之庶长', state: 'qin', city: 'yong', birth: -540, death: -480, role: 'minister',
+    stats: { wu: 56, zhi: 70, zheng: 66, mei: 56 }, skills: { bingfa: 6, quanmou: 5 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '庶长专秦政。', desc: '秦之庶长，逼怀公自杀，专秦国之政。' },
+
+  // ---- 鲁国 ----
+  { id: 'lu_zang_wen', name: '臧哀伯', title: '鲁之大夫', state: 'lu', city: 'qufu', birth: -730, death: -680, role: 'minister',
+    stats: { wu: 36, zhi: 82, zheng: 80, mei: 68 }, skills: { xuewen: 8, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
+    quote: '君人者，将昭德塞违。', desc: '臧哀伯，鲁之大夫。桓公取郜大鼎于宋，哀伯谏以「昭德塞违」。' },
+  { id: 'lu_shu_sun', name: '叔孙豹', title: '鲁之卿', state: 'lu', city: 'qufu', birth: -600, death: -537, role: 'minister',
+    stats: { wu: 40, zhi: 84, zheng: 82, mei: 70 }, skills: { xuewen: 8, biancai: 8 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'biancai'],
+    quote: '太上立德，其次立功，其次立言。', desc: '叔孙穆子，鲁之三桓之一。聘于晋，论「三不朽」。' },
+  { id: 'lu_ji_wu_zi', name: '季武子', title: '鲁之正卿', state: 'lu', city: 'qufu', birth: -620, death: -535, role: 'minister',
+    stats: { wu: 38, zhi: 80, zheng: 84, mei: 64 }, skills: { quanmou: 7 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '三分公室，而各有其一。', desc: '季孙宿，鲁之正卿。三分公室而季氏取其二，公室自此卑弱。' },
+
+
+  { id: 'song_yu_shi', name: '鱼石', title: '宋之大夫', state: 'song', city: 'shangqiu', birth: -620, death: -560, role: 'minister',
+    stats: { wu: 42, zhi: 74, zheng: 70, mei: 58 }, skills: { quanmou: 6 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾出奔楚，终归于宋。', desc: '宋之大夫，出奔楚，后借楚力入于彭城。' },
+  { id: 'song_le_xi', name: '乐喜', title: '宋之司城', state: 'song', city: 'shangqiu', birth: -600, death: -540, role: 'minister',
+    stats: { wu: 38, zhi: 84, zheng: 86, mei: 70 }, skills: { quanmou: 7, xuewen: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '天生五材，民并用之，废一不可。', desc: '宋之司城子罕。宋饥，请出粟以贷，而以门之左为师。' },
+
+  // ---- 郑国 ----
+  { id: 'zheng_gao_ke', name: '高克', title: '郑之大夫', state: 'zheng', city: 'xinzheng', birth: -730, death: -670, role: 'minister',
+    stats: { wu: 48, zhi: 70, zheng: 66, mei: 58 }, skills: { bingfa: 5 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '郑伯使我将兵，久而不召。', desc: '郑之大夫，帅师久而不召，师溃而奔陈。' },
+  { id: 'zheng_zi_zhan', name: '子展', title: '郑之上卿', state: 'zheng', city: 'xinzheng', birth: -600, death: -544, role: 'minister',
+    stats: { wu: 40, zhi: 82, zheng: 84, mei: 66 }, skills: { quanmou: 7, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '郑之七穆，罕氏为长。', desc: '罕虎之祖，郑之上卿，与子产同秉国政。' },
+  { id: 'zheng_ran_ming', name: '然明', title: '郑之大夫', state: 'zheng', city: 'xinzheng', birth: -580, death: -520, role: 'minister',
+    stats: { wu: 36, zhi: 84, zheng: 78, mei: 64 }, skills: { biancai: 7, quanmou: 6 }, bias: 'yi', pref: 'si', teach: ['biancai'],
+    quote: '视民如伤。', desc: '郑之大夫鬷蔑。子产问政，对曰「视民如伤，岂敢慢之」。' },
+
+  // ---- 卫国 ----
+  { id: 'wei_shi_que', name: '石碏', title: '卫之大夫', state: 'wei', city: 'chaoge', birth: -750, death: -700, role: 'minister',
+    stats: { wu: 44, zhi: 80, zheng: 84, mei: 68 }, skills: { quanmou: 7, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '大义灭亲。', desc: '卫之老臣。子石厚助州吁弑君，石碏设计诛之，《春秋》称「大义灭亲」。' },
+  { id: 'wei_ning_wu', name: '宁武子', title: '卫之大夫', state: 'wei', city: 'diqiu', birth: -660, death: -600, role: 'minister',
+    stats: { wu: 38, zhi: 84, zheng: 82, mei: 68 }, skills: { quanmou: 7, xuewen: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '邦有道则知，邦无道则愚。', desc: '宁俞，卫之大夫。孔子曰「其知可及也，其愚不可及也」。' },
+  { id: 'wei_shi_yu', name: '史鱼', title: '卫之大夫', state: 'wei', city: 'diqiu', birth: -540, death: -490, role: 'minister',
+    stats: { wu: 34, zhi: 82, zheng: 80, mei: 66 }, skills: { biancai: 7, xuewen: 6 }, bias: 'yi', pref: 'si', teach: ['biancai'],
+    quote: '尸谏。', desc: '史鰌，卫之大夫。将死，命其子以尸谏灵公用蘧伯玉。孔子称其「直」。' },
+  { id: 'wei_qu_bo_yu', name: '蘧伯玉', title: '卫之贤大夫', state: 'wei', city: 'diqiu', birth: -570, death: -490, role: 'minister',
+    stats: { wu: 34, zhi: 86, zheng: 84, mei: 72 }, skills: { xuewen: 8, quanmou: 7 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
+    quote: '欲寡其过而未能也。', desc: '蘧瑗，卫之贤大夫。孔子称「君子哉蘧伯玉，邦有道则仕，邦无道则可卷而怀之」。' },
+
+  // ---- 燕国 ----
+  { id: 'yan_zhao_gong', name: '燕召公', title: '燕之卿', state: 'yan', city: 'ji', birth: -720, death: -660, role: 'minister',
+    stats: { wu: 40, zhi: 78, zheng: 78, mei: 64 }, skills: { quanmou: 6, xuewen: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '燕僻北隅，守其宗庙。', desc: '燕之世卿，守宗庙于北隅。' },
+  { id: 'yan_guo_wei', name: '郭隗', title: '燕之大夫', state: 'yan', city: 'ji', birth: -350, death: -280, role: 'minister',
+    stats: { wu: 34, zhi: 84, zheng: 82, mei: 70 }, skills: { biancai: 8, quanmou: 7 }, bias: 'ming', pref: 'yu', teach: ['biancai'],
+    quote: '王必欲致士，先从隗始。', desc: '燕昭王欲招贤，郭隗曰「先从隗始」，于是乐毅、邹衍皆至。' },
+
+  // ---- 吴国 ----
+  { id: 'wu_ji_zha', name: '季札', title: '吴之公子', state: 'wu', city: 'gusu', birth: -580, death: -507, role: 'minister',
+    stats: { wu: 42, zhi: 90, zheng: 86, mei: 82 }, skills: { xuewen: 10, biancai: 9 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'biancai'],
+    quote: '观止矣。若有他乐，吾不敢请已。', desc: '吴之公子，寿梦少子。屡让国而不受，聘于鲁观周乐，叹「观止」。' },
+  { id: 'wu_bei_li', name: '被离', title: '吴之大夫', state: 'wu', city: 'gusu', birth: -540, death: -490, role: 'minister',
+    stats: { wu: 40, zhi: 78, zheng: 72, mei: 62 }, skills: { quanmou: 6 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾观员之为人，不可亲也。', desc: '吴之大夫，伍子胥之友，后为伯嚭所谗。' },
+  { id: 'wu_sun_luo', name: '孙骆', title: '吴之行人', state: 'wu', city: 'gusu', birth: -520, death: -470, role: 'minister',
+    stats: { wu: 38, zhi: 80, zheng: 76, mei: 70 }, skills: { biancai: 8 }, bias: 'ming', pref: 'si', teach: ['biancai'],
+    quote: '吴之行人，通使于晋。', desc: '吴之行人，黄池之会时为吴王通款于晋。' },
+
+  // ---- 越国 ----
+
+  { id: 'yue_ji_ni', name: '计倪', title: '越之大夫', state: 'yue', city: 'kuaiji', birth: -540, death: -470, role: 'minister',
+    stats: { wu: 36, zhi: 84, zheng: 80, mei: 64 }, skills: { shanggu: 7, suanshu: 8 }, bias: 'li', pref: 'su', teach: ['shanggu', 'suanshu'],
+    quote: '知斗则修备，时用则知物。', desc: '越大夫计然，善治生。范蠡用其术，十年国富。' },
+
+  // ---- 陈国 ----
+  { id: 'chen_yuan_tao', name: '辕涛涂', title: '陈之大夫', state: 'chen', city: 'wanqiu', birth: -680, death: -630, role: 'minister',
+    stats: { wu: 40, zhi: 76, zheng: 74, mei: 62 }, skills: { quanmou: 6, biancai: 6 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '师出于陈郑之间，国必甚病。', desc: '陈之大夫。齐桓公伐楚还，欲道于陈郑，涛涂诱之东归，致齐师陷于沛泽。' },
+  { id: 'chen_kong_ning', name: '孔宁', title: '陈之大夫', state: 'chen', city: 'wanqiu', birth: -640, death: -590, role: 'minister',
+    stats: { wu: 38, zhi: 66, zheng: 60, mei: 58 }, skills: { quanmou: 4 }, bias: 'li', pref: 'yu', teach: ['quanmou'],
+    quote: '吾与夏姬，戏于朝。', desc: '陈之大夫，与仪行父同通于夏姬，后奔楚。' },
+
+  // ---- 蔡国 ----
+  { id: 'cai_sheng_zi', name: '蔡声子', title: '蔡之大夫', state: 'cai', city: 'shangcai', birth: -620, death: -560, role: 'minister',
+    stats: { wu: 36, zhi: 82, zheng: 76, mei: 66 }, skills: { biancai: 8, quanmou: 6 }, bias: 'yi', pref: 'si', teach: ['biancai'],
+    quote: '楚多淫刑，其大夫逃死于四方。', desc: '蔡之声子，与伍举善。使晋还楚，为伍举游说，复其位。' },
+
+  // ---- 曹国 ----
+  { id: 'cao_xi_fu', name: '僖负羁', title: '曹之大夫', state: 'cao', city: 'tao', birth: -690, death: -630, role: 'minister',
+    stats: { wu: 40, zhi: 78, zheng: 74, mei: 66 }, skills: { quanmou: 6, biancai: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '晋公子贤，而穷于外，从者皆国器。', desc: '曹之大夫。晋文公过曹，曹共公观其骈胁，僖负羁独馈盘飧置璧。后晋伐曹，免其族。' },
+
+  // ---- 莒国 ----
+  { id: 'ju_wan', name: '莒仆', title: '莒之大夫', state: 'ju', city: 'ju', birth: -600, death: -550, role: 'minister',
+    stats: { wu: 42, zhi: 72, zheng: 66, mei: 58 }, skills: { quanmou: 5 }, bias: 'shi', pref: 'ma', teach: ['quanmou'],
+    quote: '莒虽小，可持其政。', desc: '莒之大夫，为政于莒。' },
+
+  // ---- 邾国 ----
+  { id: 'zhu_mao', name: '茅地', title: '邾之大夫', state: 'zhu', city: 'zhu', birth: -580, death: -530, role: 'minister',
+    stats: { wu: 38, zhi: 72, zheng: 68, mei: 58 }, skills: { quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '邾事鲁，不敢违。', desc: '邾之大夫，从政于鲁邾之间。' },
+
+  // ---- 随国 ----
+
+  { id: 'xu_bai_feng', name: '许伯', title: '许之大夫', state: 'xu', city: 'xu', birth: -660, death: -610, role: 'minister',
+    stats: { wu: 40, zhi: 74, zheng: 70, mei: 60 }, skills: { quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
+    quote: '许事楚，不敢有二。', desc: '许之大夫，从君迁于楚。' },
+
+  // ================= 将帅扩充 =================
+  { id: 'qi_tian_rang_ju2', name: '田穰苴', title: '齐之大司马', state: 'qi', city: 'linzi', birth: -590, death: -520, role: 'general',
+    stats: { wu: 88, zhi: 82, zheng: 68, mei: 60 }, skills: { bingfa: 10, jianshu: 7 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '将受命之日则忘其家。', desc: '即司马穰苴，田完之后。斩监军庄贾以立威，晋燕之师闻风而退。' },
+
+  { id: 'qi_guan_zhi_fu', name: '管至父', title: '齐之大夫', state: 'qi', city: 'linzi', birth: -720, death: -685, role: 'general',
+    stats: { wu: 60, zhi: 68, zheng: 62, mei: 56 }, skills: { bingfa: 6 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '及瓜而代。', desc: '齐之大夫，与连称戍葵丘，瓜时而往，曰「及瓜而代」。期至而不代，遂弑襄公。' },
+
+  { id: 'jin_xian_zhen2', name: '荀林父', title: '晋之中军元帅', state: 'jin', city: 'jiang', birth: -620, death: -593, role: 'general',
+    stats: { wu: 74, zhi: 82, zheng: 74, mei: 60 }, skills: { bingfa: 8, quanmou: 6 }, bias: 'yi', pref: 'ma', teach: ['bingfa'],
+    quote: '吾为元帅，师不用命，是吾罪也。', desc: '荀伯，晋之中军元帅。邲之战败于楚，请死，晋侯不许。' },
+  { id: 'jin_xi_bo', name: '郤克', title: '晋之上卿', state: 'jin', city: 'jiang', birth: -600, death: -583, role: 'general',
+    stats: { wu: 76, zhi: 78, zheng: 72, mei: 52 }, skills: { bingfa: 8 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '所不此报，无能涉河。', desc: '郤献子，跛而眇。使齐受辱，后帅师败齐于鞍。' },
+  { id: 'jin_luan_shu2', name: '荀罃', title: '晋之武子', state: 'jin', city: 'jiang', birth: -600, death: -560, role: 'general',
+    stats: { wu: 70, zhi: 86, zheng: 78, mei: 62 }, skills: { bingfa: 9, quanmou: 7 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
+    quote: '吾不难以身易国。', desc: '荀罃，晋之智将。邲之战为楚所俘，九年后归，后主晋国之政。' },
+
+  { id: 'chu_pan_dang', name: '潘党', title: '楚之将军', state: 'chu', city: 'ying', birth: -620, death: -580, role: 'general',
+    stats: { wu: 78, zhi: 70, zheng: 60, mei: 56 }, skills: { bingfa: 7, jianshu: 6 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '臣闻克敌必示子孙。', desc: '楚之将军，邲之战后请筑京观，庄王不许。' },
+  { id: 'chu_zi_fan2', name: '子反', title: '楚之大司马', state: 'chu', city: 'ying', birth: -620, death: -575, role: 'general',
+    stats: { wu: 76, zhi: 72, zheng: 62, mei: 58 }, skills: { bingfa: 8 }, bias: 'li', pref: 'yu', teach: ['bingfa'],
+    quote: '吾不能以见先君。', desc: '公子侧，楚之大司马。鄢陵之败，因醉误军，自杀。' },
+  { id: 'chu_tang_mei', name: '唐昧', title: '楚之将', state: 'chu', city: 'ying', birth: -560, death: -500, role: 'general',
+    stats: { wu: 74, zhi: 68, zheng: 58, mei: 54 }, skills: { bingfa: 7 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '楚师虽众，将不一也。', desc: '楚之将，与吴争于江淮。' },
+
+  { id: 'qin_meng_ming', name: '孟明视', title: '秦之将军', state: 'qin', city: 'yong', birth: -660, death: -600, role: 'general',
+    stats: { wu: 80, zhi: 74, zheng: 64, mei: 58 }, skills: { bingfa: 8, jianshu: 6 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '吾未获一军，敢不自勉。', desc: '百里视，百里奚之子。殽之败而后修政，终败晋师于王官，秦霸西戎。' },
+  { id: 'qin_xi_qi_shu', name: '西乞术', title: '秦之将军', state: 'qin', city: 'yong', birth: -660, death: -600, role: 'general',
+    stats: { wu: 74, zhi: 70, zheng: 62, mei: 56 }, skills: { bingfa: 7 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '三将俱没，幸得归国。', desc: '蹇叔之子，与孟明视同败于殽。' },
+
+  { id: 'lu_cao_mo', name: '曹沫', title: '鲁之将', state: 'lu', city: 'qufu', birth: -700, death: -660, role: 'general',
+    stats: { wu: 82, zhi: 64, zheng: 56, mei: 60 }, skills: { jianshu: 9, bingfa: 5 }, bias: 'yi', pref: 'tie', teach: ['jianshu'],
+    quote: '齐强鲁弱，君其图之。', desc: '即曹刿。长勺之战以「一鼓作气」败齐。一说齐桓公会鲁，曹沫执匕首劫之，尽返鲁地。' },
+  { id: 'lu_shu_liang_he', name: '叔梁纥', title: '鲁之陬邑大夫', state: 'lu', city: 'qufu', birth: -622, death: -549, role: 'general',
+    stats: { wu: 90, zhi: 62, zheng: 58, mei: 62 }, skills: { jianshu: 8, sheshu: 7, bingfa: 5 }, bias: 'shi', pref: 'tie', teach: ['jianshu', 'sheshu'],
+    quote: '有力如虎。', desc: '孔子之父。偪阳之战以双手托悬门，救出诸侯之师。' },
+
+
+  { id: 'wu_fu_gai', name: '夫概', title: '吴之将军', state: 'wu', city: 'gusu', birth: -540, death: -490, role: 'general',
+    stats: { wu: 78, zhi: 68, zheng: 58, mei: 56 }, skills: { bingfa: 7 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '吾兄在楚，吾当归国。', desc: '阖闾之弟。吴入郢，夫概先归自立，为阖闾所败，奔楚。' },
+
+  { id: 'yue_zhu_ji', name: '诸稽郢', title: '越之大夫', state: 'yue', city: 'kuaiji', birth: -540, death: -480, role: 'general',
+    stats: { wu: 70, zhi: 80, zheng: 70, mei: 64 }, skills: { bingfa: 7, biancai: 7 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
+    quote: '请为吴王前马。', desc: '越大夫，善辞令。夫椒之败后为使于吴，卑辞厚礼以存越。' },
+  { id: 'yue_ling_gu', name: '灵姑浮', title: '越之将军', state: 'yue', city: 'kuaiji', birth: -560, death: -500, role: 'general',
+    stats: { wu: 82, zhi: 66, zheng: 56, mei: 58 }, skills: { jianshu: 8, bingfa: 6 }, bias: 'shi', pref: 'tie', teach: ['jianshu'],
+    quote: '伤吴王趾。', desc: '越之将军。檇李之战，以戈击吴王阖闾，伤其趾，阖闾遂死。' },
+
+  { id: 'song_hua_ou', name: '华耦', title: '宋之司马', state: 'song', city: 'shangqiu', birth: -620, death: -580, role: 'general',
+    stats: { wu: 70, zhi: 72, zheng: 64, mei: 58 }, skills: { bingfa: 7 }, bias: 'yi', pref: 'ma', teach: ['bingfa'],
+    quote: '宋之司马，帅师从晋。', desc: '宋之司马，屡从晋师。' },
+  { id: 'song_xiang_dai', name: '向带', title: '宋之大夫', state: 'song', city: 'shangqiu', birth: -620, death: -575, role: 'general',
+    stats: { wu: 66, zhi: 70, zheng: 62, mei: 56 }, skills: { bingfa: 6 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
+    quote: '宋虽小，亦有死士。', desc: '宋之大夫，帅师御楚。' },
+
+  { id: 'wei_sun_liang', name: '孙良夫', title: '卫之大夫', state: 'wei', city: 'diqiu', birth: -620, death: -570, role: 'general',
+    stats: { wu: 68, zhi: 74, zheng: 66, mei: 58 }, skills: { bingfa: 7, quanmou: 5 }, bias: 'yi', pref: 'ma', teach: ['bingfa'],
+    quote: '卫之社稷，赖君是赖。', desc: '孙桓子，卫之大夫。新筑之败后如晋乞师，败齐于鞍。' },
+  { id: 'wei_bei_gong', name: '北宫括', title: '卫之大夫', state: 'wei', city: 'diqiu', birth: -600, death: -550, role: 'general',
+    stats: { wu: 66, zhi: 70, zheng: 62, mei: 56 }, skills: { bingfa: 6 }, bias: 'yi', pref: 'tie', teach: ['bingfa'],
+    quote: '卫之世卿，帅师从晋。', desc: '北宫懿子，卫之世卿。' },
+
+  { id: 'zheng_gao_qu_mi', name: '高渠弥', title: '郑之大夫', state: 'zheng', city: 'xinzheng', birth: -720, death: -694, role: 'general',
+    stats: { wu: 74, zhi: 66, zheng: 60, mei: 56 }, skills: { bingfa: 7, jianshu: 5 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '吾弑昭公，立子亹。', desc: '郑之大夫。繻葛之战为郑庄公车右，后弑昭公。' },
+  { id: 'zheng_zhu_dan', name: '祝聃', title: '郑之将军', state: 'zheng', city: 'xinzheng', birth: -740, death: -690, role: 'general',
+    stats: { wu: 80, zhi: 66, zheng: 58, mei: 54 }, skills: { sheshu: 8, bingfa: 6 }, bias: 'shi', pref: 'ma', teach: ['sheshu', 'bingfa'],
+    quote: '射王中肩。', desc: '郑之将军。繻葛之战射周桓王中肩，天子之威自此尽失。' },
+
+  { id: 'chen_xia_zheng_shu2', name: '夏徵舒', title: '陈之大夫', state: 'chen', city: 'wanqiu', birth: -625, death: -598, role: 'general',
+    stats: { wu: 76, zhi: 64, zheng: 56, mei: 62 }, skills: { jianshu: 7, sheshu: 6 }, bias: 'shi', pref: 'ma', teach: ['sheshu'],
+    quote: '吾不忍其辱。', desc: '陈之大夫，夏姬之子。弑陈灵公，楚庄王讨而诛之。' },
+
+  { id: 'cai_gong_zi_xie', name: '蔡公子燮', title: '蔡之司马', state: 'cai', city: 'shangcai', birth: -620, death: -553, role: 'general',
+    stats: { wu: 68, zhi: 72, zheng: 64, mei: 58 }, skills: { bingfa: 6, quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
+    quote: '蔡之存亡，在此一举。', desc: '蔡之司马，谋从晋而见杀。' },
+
+  { id: 'cao_xin_shi', name: '辛巳', title: '曹之大夫', state: 'cao', city: 'tao', birth: -640, death: -590, role: 'general',
+    stats: { wu: 66, zhi: 68, zheng: 60, mei: 54 }, skills: { bingfa: 6 }, bias: 'yi', pref: 'tie', teach: ['bingfa'],
+    quote: '曹小，勉从大国之役。', desc: '曹之大夫，从晋楚之役。' },
+
+  { id: 'ju_zi_zhu', name: '莒拏', title: '莒之大夫', state: 'ju', city: 'ju', birth: -600, death: -550, role: 'general',
+    stats: { wu: 70, zhi: 64, zheng: 58, mei: 54 }, skills: { bingfa: 6, jianshu: 5 }, bias: 'shi', pref: 'ma', teach: ['jianshu'],
+    quote: '莒人好武。', desc: '莒之大夫，以勇闻于鲁莒之间。' },
+
+  { id: 'zhu_shu_liang', name: '邾庶其', title: '邾之大夫', state: 'zhu', city: 'zhu', birth: -600, death: -550, role: 'general',
+    stats: { wu: 64, zhi: 68, zheng: 60, mei: 56 }, skills: { bingfa: 5 }, bias: 'li', pref: 'su', teach: ['bingfa'],
+    quote: '以邑奔鲁。', desc: '邾之大夫，以漆闾丘奔鲁，鲁侯厚待之。' },
+
+  { id: 'sui_shao_shi', name: '少师', title: '随之大夫', state: 'sui', city: 'sui', birth: -720, death: -690, role: 'general',
+    stats: { wu: 60, zhi: 54, zheng: 50, mei: 52 }, skills: { bingfa: 5 }, bias: 'shi', pref: 'ma', teach: ['bingfa'],
+    quote: '速战而不设备。', desc: '随之少师，宠于随侯。楚武王侵随，少师请追之，随师败于速杞。' },
+
+  { id: 'xu_gong_sun', name: '许公孙获', title: '许之大夫', state: 'xu', city: 'xu', birth: -720, death: -680, role: 'general',
+    stats: { wu: 66, zhi: 66, zheng: 58, mei: 54 }, skills: { bingfa: 5 }, bias: 'yi', pref: 'si', teach: ['bingfa'],
+    quote: '许之事楚，非本心也。', desc: '许之大夫，郑庄公使居许西偏。' },
+
 ];
 
 export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));

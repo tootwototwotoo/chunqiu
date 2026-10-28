@@ -246,6 +246,15 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   const states = new Set(nobles.map(n => n.state));
   ok(states.size >= 6, '女性角色分布多国', String(states.size));
 
+  // 各国有卿相或将帅（避免某国完全没有可对话的臣属）
+  const noOfficer = Object.keys(STATES).filter(sid =>
+    !NPCS.some(n => n.state === sid && (n.role === 'minister' || n.role === 'general')));
+  ok(noOfficer.length === 0, '每国都有卿相或将帅', noOfficer.join(','));
+  ok(NPCS.filter(n => n.role === 'minister').length >= 50, '卿相数量充足',
+    String(NPCS.filter(n => n.role === 'minister').length));
+  ok(NPCS.filter(n => n.role === 'general').length >= 25, '将帅数量充足',
+    String(NPCS.filter(n => n.role === 'general').length));
+
   // 百工
   const artisans = NPCS.filter(n => n.role === 'artisan');
   ok(artisans.length >= 8, '百工数量充足', String(artisans.length));
