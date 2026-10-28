@@ -34,30 +34,25 @@ const RULER_TITLE = {
 };
 
 export function audienceRuler(st, stateId) {
-  const owner = (cityId) => st.world.owner[cityId] ?? CITY_MAP[cityId]?.state;
-  const here = Object.values(st.npc).filter(x => x.alive && x.city && owner(x.city) === stateId);
   const year = st.time.year;
-  // 只认「当前在位」的国君：公子与前国君不能代君应对
-  const ruler = here.find(x => {
-    const d = NPC_MAP[x.id];
-    return d?.role === 'ruler' && rulerStageOf(d, year) === 'ruler';
-  });
-  if (ruler) return NPC_MAP[ruler.id];
-  // 该国没有在位的国君条目时，不可让卿相或名士冒充国君：
-  // 心性会因此判错，玩家也见不到「国君」。改用一个合成国君对象。
-  if (!here.some(x => {
-    const d = NPC_MAP[x.id];
-    return d?.role === 'ruler' && rulerStageOf(d, year) === 'ruler';
-  })) {
-    return {
-      id: null,
-      name: RULER_TITLE[stateId] ?? '国君',
-      title: '国君',
-      bias: STATE_HEART[stateId] ?? 'li',
-      synthetic: true,
-    };
-  }
-  return NPC_MAP[here[0].id] ?? null;
+  // 国君按「国」而非「所在城」查找：君主可能驻于陪都，但只要在该国境内即在位
+  const owners = st.world.owner;
+  const ruler = Object.values(st.npc)
+    .filter(x => x.alive && x.city && (owners[x.city] ?? CITY_MAP[x.city]?.state) === stateId)
+    .map(x => NPC_MAP[x.id])
+    .find(d => d?.role === 'ruler' && rulerStageOf(d, year) === 'ruler');
+  if (ruler) return ruler;
+
+  // 史料缺载的年份：以「国名 + 爵位」为名，明确标注史料缺失
+  const label = RULER_TITLE[stateId] ?? '国君';
+  return {
+    id: null,
+    name: label,
+    title: label,
+    bias: STATE_HEART[stateId] ?? 'li',
+    synthetic: true,
+    desc: `${label}。此君之名史籍失载，仅存国号与爵位。`,
+  };
 }
 
 export function audienceHeart(st, stateId) {

@@ -199,5 +199,51 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
 }
 
 
+
+// ---------------- 史料缺载时用「国名 + 爵位」兜底 ----------------
+{
+  const { audienceRuler, startAudience } = await import('../js/systems/audience.js');
+
+  // 逐国逐年扫，找出确实没有在位国君的年份
+  const missing = [];
+  for (const sid of Object.keys(STATES)) {
+    for (let y = -722; y <= -473; y += 1) {
+      if (!rulerAt(sid, y)) { missing.push({ sid, y }); break; }
+    }
+  }
+  ok(missing.length >= 0, '统计史料缺载的国-年（可能有）', missing.map(m => `${m.sid}@${m.y}`).slice(0, 6).join(','));
+
+  if (missing.length) {
+    const st = newGame({ name: 'x', profession: 'youxia', era: 'early', seed: 21 });
+    const { sid, y } = missing[0];
+    st.time.year = y;
+    st.time.month = 1;
+    st.time.day = 1;
+    const r = audienceRuler(st, sid);
+    ok(!!r, `${sid}@${y} 有可应对的国君`);
+    ok(r.synthetic === true, '缺载时为合成国君', String(r.synthetic));
+    ok(!!r.name && !!r.title, '合成国君有名号与爵位', `${r.name}/${r.title}`);
+    ok(/史籍失载|史料/.test(r.desc ?? ''), '说明中标注史料缺失', (r.desc ?? '').slice(0, 30));
+    ok(!!r.bias, '合成国君有心性', r.bias);
+
+    // 合成国君仍能正常廷对
+    const a = startAudience(st, sid);
+    ok(a.ok !== false, '合成国君可开始廷对', a.msg ?? '');
+    ok(a.questions?.length === 3, '仍是三问');
+  }
+}
+
+// ---------------- 国君按「国」查找，不要求人在同城 ----------------
+{
+  const { audienceRuler } = await import('../js/systems/audience.js');
+  const st = newGame({ name: 'x', profession: 'youxia', era: 'huan', seed: 22 });
+  st.time.year = -680;
+  // 玩家在别国，也应能问到齐国国君
+  st.player.cityId = 'luoyi';
+  const r = audienceRuler(st, 'qi');
+  ok(r?.name === '齐桓公', '跨城也能取到在位国君', r?.name ?? '无');
+  ok(!r.synthetic, '不是合成对象');
+}
+
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\n国君世系通过 ✓');
 process.exit(fails ? 1 : 0);
