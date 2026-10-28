@@ -404,6 +404,23 @@ export function migrateState(st) {
   }
   // 旧档无法重建全部足迹，至少保留故乡与目前所在城市。
   p.visitedCities = [...new Set([...p.visitedCities, p.homeCity, p.cityId])];
+  // 非负整数计数：类型正确但可能被改档写成负数，统一钳到合法范围
+  const nonNegInt = (v, fb = 0) =>
+    (Number.isFinite(v) ? Math.max(0, Math.round(v)) : fb);
+  // 运力下限取该职业默认值，不接受 0（否则读档后无法运任何货）
+  p.caravan = Math.max(defaults.player.caravan, nonNegInt(p.caravan, defaults.player.caravan));
+  p.peerageFails = nonNegInt(p.peerageFails);
+  p.merit = nonNegInt(p.merit);
+  p.fame = nonNegInt(p.fame);
+  p.alliances = nonNegInt(p.alliances);
+  p.missions = nonNegInt(p.missions);
+  p.disciples = nonNegInt(p.disciples);
+  p.hired = nonNegInt(p.hired);
+  p.ageDays = nonNegInt(p.ageDays);
+  // 试炼状态只接受 null 或对象，畸形值一律丢弃（避免后续按对象读取时出错）
+  if (p.peerageTrial !== null && !object(p.peerageTrial)) p.peerageTrial = null;
+  if (!Array.isArray(p.peerageHistory)) p.peerageHistory = [];
+  else p.peerageHistory = p.peerageHistory.filter(object);
   p.givenAway = Number.isFinite(p.givenAway) ? Math.max(0, p.givenAway) : 0;
   p.peakMoney = Number.isFinite(p.peakMoney) ? Math.max(0, p.peakMoney) : p.money;
   p.pacts = Array.isArray(p.pacts) ? p.pacts.filter(x => object(x) && own(STATES, x.state)) : [];
@@ -483,6 +500,10 @@ export function migrateState(st) {
       .filter((w, i, arr) => arr.findIndex(x => (x.a === w.a && x.b === w.b) || (x.a === w.b && x.b === w.a)) === i)
     : [];
   numericMap(st.world.power, STATES);
+  // 国势范围 5~100（改档写入负数会让从军/物价判定异常）
+  for (const sid of Object.keys(STATES)) {
+    st.world.power[sid] = Math.max(5, Math.min(100, Math.round(st.world.power[sid] ?? 30)));
+  }
   for (const [id, owner] of Object.entries(st.world.owner)) {
     ensure(own(CITY_MAP, id) && own(STATES, owner));
   }
@@ -516,7 +537,13 @@ export function migrateState(st) {
     { quest: true, shop: true, haul: true, event: true, war: true, territory: true, stateLabel: true, road: true },
     st.flags.mapMarks && typeof st.flags.mapMarks === 'object' ? st.flags.mapMarks : {},
   );
-  st.world.policy ||= null;
+  // 国策只接受 null 或 { id: 合法国策, untilDay: 数值 }
+  if (st.world.policy !== null) {
+    const pol = st.world.policy;
+    if (!object(pol) || typeof pol.id !== 'string' || !Number.isFinite(pol.untilDay)) {
+      st.world.policy = null;
+    }
+  }
   // 珍宝：旧存档的 world.jade 迁移为 world.treasures.yu
   const legacyJade = st.world.jade;
   st.world.treasures ||= {};

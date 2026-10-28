@@ -321,6 +321,48 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
     ok(a.player.rank === b.player.rank, '廷对与 seekOffice 授予阶次一致', `${a.player.rank}/${b.player.rank}`);
   }
 
+  // 4b) 存档字段范围校验：类型对但语义非法（负数/畸形结构）必须被规整
+  {
+    const { migrateState } = await import('../js/state.js');
+    const base = newGame({ name: '试', profession: 'shangren', seed: 15 });
+    const probe = (mut) => {
+      const raw = JSON.parse(JSON.stringify(base));
+      mut(raw);
+      try { return migrateState(raw); } catch { return null; }
+    };
+
+    // 非负计数：负数钳到 0
+    for (const k of ['merit', 'fame', 'peerageFails', 'alliances', 'missions', 'disciples', 'hired', 'ageDays']) {
+      const st = probe(r => { r.player[k] = -7; });
+      ok(st && st.player[k] === 0, `${k} 负数被钳为 0`, st ? String(st.player[k]) : '拒绝整档');
+    }
+
+    // 运力：低于职业默认值则还原为默认值
+    const lowCaravan = probe(r => { r.player.caravan = -3; });
+    ok(lowCaravan && lowCaravan.player.caravan === 24, 'caravan 负数还原为职业默认',
+      lowCaravan ? String(lowCaravan.player.caravan) : '拒绝整档');
+    const bigCaravan = probe(r => { r.player.caravan = 99; });
+    ok(bigCaravan && bigCaravan.player.caravan === 99, 'caravan 合法大值保留',
+      bigCaravan ? String(bigCaravan.player.caravan) : '拒绝整档');
+
+    // 试炼状态：非对象一律丢弃
+    const badTrial = probe(r => { r.player.peerageTrial = 42; });
+    ok(badTrial && badTrial.player.peerageTrial === null, '畸形 peerageTrial 被丢弃');
+    const hist = probe(r => { r.player.peerageHistory = [1, 'a', { x: 1 }]; });
+    ok(hist && hist.player.peerageHistory.length === 1, 'peerageHistory 只留对象项',
+      hist ? String(hist.player.peerageHistory.length) : '拒绝整档');
+
+    // 国势范围 5~100
+    const pow = probe(r => { r.world.power.qi = -99; });
+    ok(pow && pow.world.power.qi === 5, '国势负数钳到下限 5', pow ? String(pow.world.power.qi) : '拒绝整档');
+
+    // 国策结构
+    ok(probe(r => { r.world.policy = 42; }).world.policy === null, '畸形国策被丢弃');
+    ok(probe(r => { r.world.policy = { id: 'farm' }; }).world.policy === null, '缺 untilDay 的国策被丢弃');
+    const goodPolicy = probe(r => { r.world.policy = { id: 'farm', untilDay: 99 }; });
+    ok(goodPolicy && goodPolicy.world.policy?.id === 'farm', '完整国策保留');
+  }
+
   // 5) 事件 kind 注册表：reign 事件入队 → 存 → 读全程不丢
   {
     const { queueEvent, pendingEvents, isEventKind, eventDefOf } = await import('../js/systems/events.js');
