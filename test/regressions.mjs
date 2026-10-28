@@ -22,15 +22,12 @@ test('月初自动档恢复未处理的历史选择，基础效果只应用一�
   st.time = { year: -722, month: 4, day: 30 };
   const before = st.world.power.zheng;
   advanceDays(st, 1);
-  // 郑国本年为「空位年立君」（前君已卒、庄公初立），先 +3；
-  // 郑伯克段事件再 +4。合计 +7。
-  const expected = before + 7;
   const restored = JSON.parse(localStorage.getItem('chunqiu_lieguozhi_auto'));
-  assert.equal(restored.world.power.zheng, expected, '存档应包含郑伯克段的国势效果');
+  assert.equal(restored.world.power.zheng, before + 4, '存档应包含郑伯克段的国势效果');
   app.startGame(restored);
   await wait();
   assert.equal(document.querySelector('.modal h3')?.textContent, '郑伯克段于鄢');
-  assert.equal(app.st.world.power.zheng, expected, '展示弹窗不可重复应用效果');
+  assert.equal(app.st.world.power.zheng, before + 4, '展示弹窗不可重复应用效果');
   // 弹窗尚未作答时再次读档，仍能继续同一事件。
   saveGame(app.st);
   app.startGame(loadGame());
@@ -41,7 +38,7 @@ test('月初自动档恢复未处理的历史选择，基础效果只应用一�
   app.startGame(loadGame());
   await wait();
   assert.notEqual(document.querySelector('.modal h3')?.textContent, '郑伯克段于鄢');
-  assert.equal(app.st.world.power.zheng, expected);
+  assert.equal(app.st.world.power.zheng, before + 4);
 });
 
 test('桓公开局正月事件立即展示且不会在后续月份重发', async () => {

@@ -505,37 +505,60 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
       st.time.year = y;
       for (const c of reignChanges(st)) seen.add(c.to.id);
     }
-    // 开局年（-722）及空档年无前任可考者不计（属数据缺载，非检测逻辑问题）
+    // 只统计「确有其前任」的即位；该国首位国君（数据起点）不算更替
+    const firstOf = {};
+    for (const n of RULERS) {
+      if (n.role !== 'ruler' || !n.reign) continue;
+      if (firstOf[n.state] == null || n.reign[0] < firstOf[n.state]) firstOf[n.state] = n.reign[0];
+    }
     const should = RULERS.filter(n => n.role === 'ruler' && n.reign
-      && n.reign[0] > -722 && n.reign[0] <= -400);
+      && n.reign[0] > -722 && n.reign[0] <= -400
+      && n.reign[0] !== firstOf[n.state]);
     const missed = should.filter(n => !seen.has(n.id));
     ok(missed.length === 0, '区间内每次即位都被检出',
       missed.length ? missed.slice(0, 3).map(n => n.name).join(',') : `${should.length} 次`);
   }
 
-  // 6b) 空位年（前任已卒、新君未立）也要产生更替事件，且文案不出现 undefined
+  // 6b) 数据起点（该国此前无任何国君记录）不算更替，不弹窗也不改国势
   {
     const { reignChanges, makeReignEvent, applyReignEffect } = await import('../js/systems/reign.js');
     const st = newGame({ name: '试', profession: 'youxia', seed: 14, era: 'early' });
     st.flags.noAutosave = true;
 
-    let total = 0, gap = 0, badText = 0, threw = 0;
+    let total = 0, nullFrom = 0, badText = 0, threw = 0;
     for (let y = -722; y < -400; y++) {
       st.time.year = y;
       for (const c of reignChanges(st)) {
         total++;
-        if (!c.from) gap++;
+        if (!c.from) nullFrom++;
         try {
           const ev = makeReignEvent(st, c);
-          if (!ev.title || !ev.body || /undefined/.test(ev.title + ev.body)) badText++;
+          if (!ev.from?.name || !ev.title || !ev.body || /undefined/.test(ev.title + ev.body)) badText++;
           applyReignEffect(st, c);
         } catch { threw++; }
       }
     }
     ok(total > 100, '全区间更替事件数量', String(total));
-    ok(gap > 0, '存在空位年更替（史籍缺载）', String(gap));
+    ok(nullFrom === 0, '不含「数据起点」伪更替', String(nullFrom));
     ok(badText === 0, '更替事件文案无 undefined', String(badText));
-    ok(threw === 0, '空位年更替结算不抛错', String(threw));
+    ok(threw === 0, '更替结算不抛错', String(threw));
+
+    // 开局年 -722 的郑庄公等属数据起点，不得入队
+    st.time.year = -722;
+    const atStart = reignChanges(st).map(c => c.state);
+    ok(!atStart.includes('zheng'), '开局年郑国不算更替', atStart.join(','));
+  }
+
+  // 6b2) 数据起点不影响国势（郑伯克段事件本身 +4 是唯一来源）
+  {
+    const { advanceDays } = await import('../js/systems/calendar.js');
+    const st = newGame({ name: '试', profession: 'youxia', seed: 1 });
+    st.flags.noAutosave = true;
+    st.time = { year: -722, month: 4, day: 30 };
+    const before = st.world.power.zheng;
+    advanceDays(st, 1);
+    ok(st.world.power.zheng === before + 4, '郑国国势仅由事件加 4',
+      `${before} → ${st.world.power.zheng}`);
   }
 
   // 6c) 端到端：reign 事件真的经月结入队、能结算、能存档往返
