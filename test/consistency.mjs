@@ -246,6 +246,16 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   const states = new Set(nobles.map(n => n.state));
   ok(states.size >= 6, '女性角色分布多国', String(states.size));
 
+  // 百工
+  const artisans = NPCS.filter(n => n.role === 'artisan');
+  ok(artisans.length >= 8, '百工数量充足', String(artisans.length));
+  ok(ROLE_NAMES.artisan === '百工', 'artisan 类别名为「百工」', ROLE_NAMES.artisan);
+  const badArtisan = artisans.filter(n => !n.name || !n.title || !n.bias || !n.desc);
+  ok(badArtisan.length === 0, '百工字段完整', badArtisan.map(n => n.id).join(','));
+  // 医者存在且可诊
+  const healers = artisans.filter(n => ['yi_he', 'yi_huan'].includes(n.id));
+  ok(healers.length === 2, '两位秦国良医', healers.map(n => n.name).join(','));
+
   // 所有 role 都在 ROLE_NAMES 里
   const unknown = [...new Set(NPCS.map(n => n.role))].filter(r => !ROLE_NAMES[r]);
   ok(unknown.length === 0, '所有角色类别都有名称', unknown.join(','));

@@ -1184,6 +1184,57 @@ export const NPCS = [
     quote: '吾子牙，当立。',
     desc: '鲁女，齐灵公夫人。生子牙，谋立之，废太子光。后光复位为庄公。' },
 
+  // ================= 百工：乐师、医者、工匠、优人 =================
+  { id: 'shi_kuang', name: '师旷', title: '晋之乐师', state: 'jin', city: 'jiang', birth: -600, death: -532, role: 'artisan',
+    stats: { wu: 30, zhi: 92, zheng: 80, mei: 74 }, skills: { xuewen: 10, biancai: 7, quanmou: 7 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'biancai'],
+    quote: '君，民之望也。',
+    desc: '晋之乐师，目盲而善听。闻钟声而知楚师之衰，以琴音察人心之邪正，屡以乐谏平公。' },
+
+  { id: 'yi_he', name: '医和', title: '秦之良医', state: 'qin', city: 'yong', birth: -580, death: -520, role: 'artisan',
+    stats: { wu: 36, zhi: 90, zheng: 60, mei: 68 }, skills: { xuewen: 9, quanmou: 4 }, bias: 'yi', pref: 'qi', teach: ['xuewen'],
+    quote: '疾不可为也。是谓近女室，疾如蛊。',
+    desc: '秦之良医。晋平公疾，求医于秦，医和视之，曰「疾不可为也，是谓近女室」，遂以「蛊」喻其政。' },
+
+  { id: 'yi_huan', name: '医缓', title: '秦之良医', state: 'qin', city: 'yong', birth: -610, death: -550, role: 'artisan',
+    stats: { wu: 34, zhi: 88, zheng: 58, mei: 66 }, skills: { xuewen: 9 }, bias: 'yi', pref: 'su', teach: ['xuewen'],
+    quote: '疾在肓之上、膏之下，攻之不可，达之不及，药不至焉。',
+    desc: '秦之良医。晋景公病，求医于秦，医缓至，曰「在肓之上、膏之下」，不可为也。「病入膏肓」出于此。' },
+
+  { id: 'gongshu_ban', name: '公输般', title: '鲁之巧匠', state: 'lu', city: 'qufu', birth: -507, death: -444, role: 'artisan',
+    stats: { wu: 62, zhi: 88, zheng: 50, mei: 62 }, skills: { bingfa: 6, quanmou: 6, sheshu: 5 }, bias: 'li', pref: 'tie', teach: ['bingfa', 'quanmou'],
+    quote: '吾知所以距子矣，吾不言。',
+    desc: '鲁之巧匠，即鲁班。为楚造云梯钩拒以攻宋，墨子九距之，遂罢。' },
+
+  { id: 'bo_ya', name: '伯牙', title: '善琴者', state: 'jin', city: 'handan', birth: -600, death: -540, role: 'artisan',
+    stats: { wu: 32, zhi: 84, zheng: 54, mei: 88 }, skills: { xuewen: 9, biancai: 6 }, bias: 'ming', pref: 'yu', teach: ['xuewen'],
+    quote: '巍巍乎志在高山，汤汤乎志在流水。',
+    desc: '善鼓琴者。钟子期听其琴，知其志在高山流水。子期死，伯牙破琴绝弦，终身不复鼓。' },
+
+  { id: 'you_meng', name: '优孟', title: '楚之优人', state: 'chu', city: 'ying', birth: -620, death: -560, role: 'artisan',
+    stats: { wu: 28, zhi: 86, zheng: 62, mei: 84 }, skills: { biancai: 9, quanmou: 7 }, bias: 'ming', pref: 'yu', teach: ['biancai', 'quanmou'],
+    quote: '请为大王言孙叔敖。',
+    desc: '楚之优人，善谑谏。孙叔敖死后其子穷困，优孟着其衣冠见庄王，王以为叔敖复生，遂封其子。' },
+
+  { id: 'zi_qing', name: '梓庆', title: '鲁之木工', state: 'lu', city: 'qufu', birth: -560, death: -500, role: 'artisan',
+    stats: { wu: 52, zhi: 82, zheng: 48, mei: 60 }, skills: { quanmou: 6, xuewen: 5 }, bias: 'yi', pref: 'tie', teach: ['quanmou'],
+    quote: '臣将为鐻，未尝敢以耗气也，必齐以静心。',
+    desc: '鲁之木工，削木为鐻，见者惊犹鬼神。自言「斋三日而不敢怀庆赏爵禄」，故能合天。' },
+
+  { id: 'lun_bian', name: '轮扁', title: '齐之斫轮者', state: 'qi', city: 'linzi', birth: -590, death: -530, role: 'artisan',
+    stats: { wu: 48, zhi: 84, zheng: 46, mei: 58 }, skills: { xuewen: 6, quanmou: 6 }, bias: 'yi', pref: 'tie', teach: ['xuewen'],
+    quote: '君之所读者，古人之糟魄已夫。',
+    desc: '齐之斫轮匠。见桓公读书于堂上，曰「君之所读者，古人之糟魄已夫」，以斫轮之技不可言传为喻。' },
+
+  { id: 'bo_zi_qi', name: '钟子期', title: '知音者', state: 'chu', city: 'ying', birth: -600, death: -540, role: 'artisan',
+    stats: { wu: 30, zhi: 82, zheng: 52, mei: 80 }, skills: { xuewen: 8, biancai: 5 }, bias: 'yi', pref: 'yu', teach: ['xuewen'],
+    quote: '善哉！峨峨兮若泰山。',
+    desc: '伯牙之知音。听琴而知高山流水之志，死而伯牙绝弦。' },
+
+  { id: 'qi_mu', name: '匠石', title: '楚之巧匠', state: 'chu', city: 'ying', birth: -550, death: -490, role: 'artisan',
+    stats: { wu: 56, zhi: 80, zheng: 46, mei: 56 }, skills: { quanmou: 6, jianshu: 4 }, bias: 'shi', pref: 'tie', teach: ['quanmou'],
+    quote: '匠石运斤成风，听而斫之。',
+    desc: '楚之巧匠。有郢人以白垩涂鼻端如蝇翼，匠石运斤成风而斫之，尽垩而鼻不伤。' },
+
 ];
 
 export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
@@ -1192,7 +1243,7 @@ export const NPC_MAP = Object.fromEntries(NPCS.map(n => [n.id, n]));
 export const WANDERER_NAMES = ['无名剑客', '游士', '负剑之徒', '落魄士人', '山野隐者', '行脚商人', '游方医者', '江湖客'];
 export const BANDIT_NAMES = ['山贼', '草寇', '劫道者', '野盗', '亡命之徒'];
 
-export const ROLE_NAMES = { ruler: '国君', prince: '公子', retired: '前国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客', noble: '夫人' };
+export const ROLE_NAMES = { ruler: '国君', prince: '公子', retired: '前国君', minister: '卿相', general: '将帅', scholar: '名士', merchant: '富商', retainer: '门客', noble: '夫人', artisan: '百工' };
 
 // 某人在某年的显示用身份名（国君随年份变化）
 export function stageTitleOf(npc, year) {

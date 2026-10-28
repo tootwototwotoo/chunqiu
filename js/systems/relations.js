@@ -4,7 +4,7 @@ import { GOODS } from '../data/goods.js';
 import { STATES } from '../data/world.js';
 import { SKILL_DEFS } from '../data/defs.js';
 import {
-  player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addLog, addSkillExp, skillLevel, R
+  player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addHealth, addLog, addSkillExp, skillLevel, R
 } from '../state.js';
 import { ri, GIFT_TIER_NAMES, absDay } from '../util.js';
 
@@ -189,3 +189,34 @@ export function giftCandidates(st, npcId) {
     blocked,
   }));
 }
+
+
+// 求医：医者、百工可疗伤。医和、医缓为名家，效果更好。
+export function healBy(st, npcId) {
+  const def = NPC_MAP[npcId];
+  const p = player(st);
+  if (!def) return { ok: false, msg: '并无此人。' };
+  const r = rel(st, npcId);
+  if (r.aff < 15) return { ok: false, msg: `${def.name}与你素不相识，不肯施治。` };
+  const famous = ['yi_he', 'yi_huan'].includes(npcId);
+  const cost = famous ? 200 : 80;
+  if (p.money < cost) return { ok: false, msg: `诊金需${cost}金，囊中不足。` };
+  if (p.health >= 100 && p.stamina >= p.staminaMax) {
+    return { ok: false, msg: `${def.name}诊过脉：「君无疾，不必服药。」` };
+  }
+  addMoney(st, -cost, true);
+  const heal = famous ? 25 + ri(st, 0, 10) : 14 + ri(st, 0, 8);
+  const before = p.health;
+  addHealth(st, heal);
+  addStamina(st, 10);
+  addRel(st, npcId, 2);
+  addLog(st, `请${def.name}诊治，健康${p.health - before >= 0 ? '+' : ''}${p.health - before}。`, 'gain');
+  return {
+    ok: true, cost, heal: p.health - before,
+    msg: `${def.name}诊脉、施针、处汤药，你的气色好了些（健康 +${p.health - before}）。`,
+  };
+}
+
+// 谁能看病
+export const HEALERS = ['yi_he', 'yi_huan'];
+export const CAN_HEAL = (npcId) => HEALERS.includes(npcId) || NPC_MAP[npcId]?.role === 'artisan';

@@ -56,8 +56,8 @@ const closeModal = async () => {
     await wait(50);
   }
 };
-const boot = async (profession, seed = 9) => {
-  const st = state.newGame({ name: '试', profession, seed });
+const boot = async (profession, seed = 9, era = undefined) => {
+  const st = state.newGame({ name: '试', profession, seed, era });
   app.startGame(st);
   await wait(60);
   app.nav('city');
@@ -354,6 +354,42 @@ const boot = async (profession, seed = 9) => {
     }
   }
   ok(errors.length === 0, '女性角色交互无运行时错误', errors[0]?.slice(0, 100) ?? '');
+}
+
+
+// ---------------- 百工：求医可用 ----------------
+{
+  // 百工（师旷、医和等）多在 -560 之后在世，故用「弭兵之世」年代
+  const st = await boot('youxia', 34, 'mibing');
+  const p = st.player;
+  const healer = Object.values(st.npc).find(n => {
+    const d = NPC_MAP[n.id];
+    return d?.role === 'artisan' && n.alive;
+  });
+  ok(!!healer, '存在在世的百工', healer ? NPC_MAP[healer.id].name : '无');
+  if (healer) {
+    const def = NPC_MAP[healer.id];
+    p.cityId = healer.city;
+    p.money = 5000;
+    p.health = 50;
+    rel(st, healer.id).met = true;
+    rel(st, healer.id).aff = 30;
+    const { openNpc } = await import('../js/ui/npc.js');
+    openNpc(app, st, healer.id);
+    await wait(70);
+    ok(!!$('.modal'), '百工弹窗打开');
+    const healBtn = $('[data-act="heal"]');
+    ok(!!healBtn, '百工有「求医」按钮', def.name);
+    if (healBtn && !healBtn.disabled) {
+      const before = p.health;
+      tap(healBtn);
+      await wait(100);
+      ok(p.health > before, '求医提升健康', `${before} → ${p.health}`);
+      ok(p.money < 5000, '收取诊金', String(p.money));
+    }
+    await closeModal();
+  }
+  ok(errors.length === 0, '百工交互无运行时错误', errors[0]?.slice(0, 100) ?? '');
 }
 
 // ---------------- 全职业开局不崩 ----------------
