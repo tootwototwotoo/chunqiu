@@ -1,5 +1,6 @@
 // 三回合论辩：认同度、三选一、证据与三档结局
 import { DEBATES, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
+import { isCareerProfession } from '../data/defs.js';
 
 import { player, addFame, addRel, addMoney, addMerit, addLog, hasEvidence, R } from '../state.js';
 import { clamp, absDay } from '../util.js';
@@ -113,7 +114,7 @@ export function settleDebate(st, d, npcId, _opts = {}) {
   const effects = { ...DEFAULT_EFFECTS[d.result], ...(d.scenario.effects?.[d.result] ?? {}) };
   if (effects.fame) addFame(st, effects.fame, true);
   if (effects.money) addMoney(st, effects.money, true);
-  if (effects.merit && ['youxia', 'shuike', 'xuezhe'].includes(player(st).profession)) addMerit(st, effects.merit, true);
+  if (effects.merit && isCareerProfession(player(st).profession)) addMerit(st, effects.merit, true);
   if (effects.rel) {
     const id = npcId ?? d.npcId;
     if (id) addRel(st, id, effects.rel);

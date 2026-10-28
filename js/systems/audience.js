@@ -11,6 +11,8 @@ const BASE = { hit: 15, reason: 7, evade: -5 };
 const SUCCESS = 70;
 
 // 没有对应 NPC 的小国，也有固定心性，避免一律好利
+// 各国心性的兜底值：仅在「该国当年无史载国君」时使用（此时由合成国君充当国君）。
+// 有国君时一律取该君 npc.bias 为准，此处不参与判定。
 const STATE_HEART = {
   zhou: 'ming', qi: 'li', jin: 'shi', qin: 'yi', chu: 'shi', lu: 'yi',
   song: 'ming', wei: 'yi', zheng: 'shi', yan: 'yi', wu: 'shi', yue: 'shi',

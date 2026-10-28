@@ -135,6 +135,24 @@ npm run race    # 爵位竞速平衡模拟
   （舒、城濮、诸暨、临易、桃林 5 城，共 9 条）
 - 传闻可「听」（半日 5 力），按技艺判定，通过则记入论辩证据
 
+## 代码约定：清单只保留一份正本
+
+同一份枚举/清单不得在多处重写，否则会「改了定义、行为不改」。
+以下为全库唯一正本，别处一律引用：
+
+| 清单 | 正本 | 辅助函数 |
+|---|---|---|
+| 可出仕职业 | `defs.CAREER_PROFESSIONS` | `isCareerProfession()` |
+| 官阶名 | `defs.RANKS[].name` | `state.rankName()` |
+| 技艺→属性 | `defs.SKILL_STAT` | `statOfSkill()` |
+| 技艺门类（武/文/市） | `defs.SKILL_DEFS[].cat` | — |
+| 事件效果类型 | `events.EFFECT_TYPES` | `isEffectType()` |
+| 事件类别 | `events.EVENT_KINDS` | `isEventKind()` / `eventKindLabel()` |
+| 心性四值 | `debates.TAGS` / `OPPOSITE` | — |
+| 城池标签 | `world.CITIES[].tags` 取值表 | — |
+
+`test/consistency.mjs` 会静态扫描源码，一旦有人重新手抄这些清单即失败。
+
 ### 地图标记
 
 舆图上可显示三类标记，并可在右上角「⚙ 标记」下拉中逐项开关：

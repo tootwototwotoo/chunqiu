@@ -135,7 +135,7 @@ ok(ng.success, '居心性出牌可成功', `进度${ng.progress} 戒心${ng.susp
 const v2 = variantsOfRank(2)[0];
 const gg = startGovernance(st, v2);
 guard = 0;
-while (!gg.done && guard++ < 10) govern(st, gg, 'farm');
+while (!gg.done && guard++ < 10) govern(st, gg, 'gov_farm');
 ok(gg.done, '治邑小游戏可结束');
 ok(typeof evaluateGame(gg).performance === 'number', '治邑评价计算');
 

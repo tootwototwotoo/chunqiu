@@ -85,11 +85,13 @@ const GOV_EVENTS = {
     { t: '犒师之费不可省。', fisc: -5, def: 4 },
   ],
 };
+// 治邑试炼的施政选项。注意与 systems/policy.js 的全局国策（重农/通商/修武…）
+// 语义无关，id 加 gov_ 前缀以免混淆。
 const GOV_POLICIES = [
-  { id: 'farm', name: '劝农', hint: '民生+12 府库-4', min: 12, fisc: -4 },
-  { id: 'wall', name: '修防', hint: '城防+12 民生-5', def: 12, min: -5 },
-  { id: 'trade', name: '通商', hint: '府库+12 民生-3', fisc: 12, min: -3 },
-  { id: 'relief', name: '赈济', hint: '民生+9 府库-9', min: 9, fisc: -9 },
+  { id: 'gov_farm', name: '劝农', hint: '民生+12 府库-4', min: 12, fisc: -4 },
+  { id: 'gov_wall', name: '修防', hint: '城防+12 民生-5', def: 12, min: -5 },
+  { id: 'gov_trade', name: '通商', hint: '府库+12 民生-3', fisc: 12, min: -3 },
+  { id: 'gov_relief', name: '赈济', hint: '民生+9 府库-9', min: 9, fisc: -9 },
 ];
 export const GOV_POLICY_LIST = GOV_POLICIES;
 

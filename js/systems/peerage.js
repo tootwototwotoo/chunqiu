@@ -1,5 +1,5 @@
 // 册命之试与五等爵：任务生成、评价、请封概率、失败循环
-import { PEERAGES } from '../data/defs.js';
+import { PEERAGES, isCareerProfession } from '../data/defs.js';
 import { TRIAL_RANKS, TRIAL_BY_ID, variantsOfRank } from '../data/trials.js';
 import { CITY_MAP } from '../data/world.js';
 import { player, addLog, addMoney, addFame, addGoods, R } from '../state.js';
@@ -8,7 +8,7 @@ import { clamp, absDay } from '../util.js';
 import { evaluateGame } from './trialGames.js';
 import { biPetitionBonus } from './treasures.js';
 
-const careerProf = (p) => ['youxia', 'shuike', 'xuezhe'].includes(p.profession);
+const careerProf = (p) => isCareerProfession(p.profession);
 
 export function peerageNext(st) {
   const p = player(st);

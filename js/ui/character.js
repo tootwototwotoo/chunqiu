@@ -1,6 +1,6 @@
 // 人物面板
 import { skillRowHtml, onClick, statLine, stateName, cityName, relTierName } from './common.js';
-import { SKILL_DEFS, STAT_DEFS, RANKS, PEERAGES, peerageName } from '../data/defs.js';
+import { SKILL_DEFS, STAT_DEFS, RANKS, PEERAGES, peerageName, isCareerProfession } from '../data/defs.js';
 import { GOODS } from '../data/goods.js';
 import { player, age, fullTitle } from '../state.js';
 import { STATES, CITY_MAP } from '../data/world.js';
@@ -41,7 +41,7 @@ export function mount(root, st, app) {
           <dt>体力</dt><dd>${Math.round(p.stamina)} / ${p.staminaMax}</dd>
           <dt>健康</dt><dd>${p.health}</dd>
           <dt>行囊</dt><dd>${Object.values(p.inventory).reduce((a, b) => a + b, 0)} / ${p.caravan}</dd>
-          ${['youxia', 'shuike', 'xuezhe'].includes(p.profession) ? `<dt>功勋</dt><dd>${p.merit}${p.stateId ? '' : ' <small style="color:#6d6052">（未出仕，先累积）</small>'}</dd><dt>爵位</dt><dd>${p.stateId ? (RANKS[p.rank]?.name ?? '士') : '布衣'}</dd>` : ''}
+          ${isCareerProfession(p.profession) ? `<dt>功勋</dt><dd>${p.merit}${p.stateId ? '' : ' <small style="color:#6d6052">（未出仕，先累积）</small>'}</dd><dt>爵位</dt><dd>${p.stateId ? (RANKS[p.rank]?.name ?? '士') : '布衣'}</dd>` : ''}
           ${p.profession === 'shangren' ? `<dt>商队</dt><dd>${p.caravan}</dd><dt>商号</dt><dd>${p.shops.length}</dd>` : ''}
           ${p.profession === 'xuezhe' ? `<dt>弟子</dt><dd>${p.disciples}</dd><dt>宗旨</dt><dd>${esc(p.doctrine ?? '未立')}</dd><dt>著述</dt><dd>${p.works.length}</dd>` : ''}
         </div>
@@ -92,7 +92,7 @@ export function mount(root, st, app) {
 
 function careerPanelHtml(st) {
   const p = player(st);
-  const canServe = ['youxia', 'shuike', 'xuezhe'].includes(p.profession);
+  const canServe = isCareerProfession(p.profession);
   if (!canServe) {
     return `<div class="panel">
       <div class="section-title">仕途</div>

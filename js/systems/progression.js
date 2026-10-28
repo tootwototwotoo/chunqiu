@@ -1,5 +1,5 @@
 // 仕途、晋升、结局
-import { RANKS, SCHOLAR_TIERS, peerageName } from '../data/defs.js';
+import { RANKS, SCHOLAR_TIERS, peerageName, CAREER_PROFESSIONS, isCareerProfession } from '../data/defs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMerit, addMoney, addRel, addStamina, skillLevel, rankName, age, careerTitle, R } from '../state.js';
 import { clamp, absDay } from '../util.js';
@@ -11,7 +11,7 @@ import { MERCHANT_RANKS } from '../data/merchant.js';
 export function checkPromotion(st) {
   const p = player(st);
   if (!p.stateId) return null;
-  if (!['youxia', 'shuike', 'xuezhe'].includes(p.profession)) return null;
+  if (!isCareerProfession(p.profession)) return null;
   const next = RANKS[p.rank + 1];
   if (next && p.merit >= next.merit) {
     p.rank += 1;
@@ -38,11 +38,12 @@ export const OFFICE_QUEST_COUNT = 3;
 
 // 仕途唯一闸门：商人无仕途，其余三途方可入仕。
 // UI（朝堂谒见 / NPC 举荐）与系统（seekOffice / 廷对）都必须先过这一关。
-export const CAREER_PROFESSIONS = ['youxia', 'shuike', 'xuezhe'];
+// 正本在 data/defs.js；此处再导出以兼容既有 import
+export { CAREER_PROFESSIONS };
 
 export function canTakeOffice(st) {
   const p = player(st);
-  if (!CAREER_PROFESSIONS.includes(p.profession)) {
+  if (!isCareerProfession(p.profession)) {
     return { ok: false, msg: '商贾不入仕途，唯以货殖立身。' };
   }
   return { ok: true };

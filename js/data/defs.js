@@ -8,15 +8,20 @@ export const STAT_DEFS = {
 };
 
 export const SKILL_DEFS = {
-  jianshu:  { name: '剑术', cat: '武', where: '校场', desc: '持剑相搏，决胜于三招之间' },
-  sheshu:   { name: '射术', cat: '武', where: '校场', desc: '百步穿杨，战阵之技' },
-  bingfa:   { name: '兵法', cat: '武', where: '校场', desc: '知彼知己，将帅之学' },
-  biancai:  { name: '辩才', cat: '文', where: '学宫', desc: '口若悬河，动人心志' },
-  quanmou:  { name: '权谋', cat: '文', where: '学宫', desc: '纵横捭阖，离间合纵' },
-  shanggu:  { name: '商贾', cat: '市', where: '市肆', desc: '识货知价，贱买贵卖' },
-  suanshu:  { name: '算术', cat: '市', where: '市肆', desc: '心计精明，分毫必较' },
-  xuewen:   { name: '学问', cat: '文', where: '学宫', desc: '博古通今，成一家之言' },
+  jianshu:  { name: '剑术', cat: '武', stat: 'wu',   where: '校场', desc: '持剑相搏，决胜于三招之间' },
+  sheshu:   { name: '射术', cat: '武', stat: 'wu',   where: '校场', desc: '百步穿杨，战阵之技' },
+  bingfa:   { name: '兵法', cat: '武', stat: 'wu',   where: '校场', desc: '知彼知己，将帅之学' },
+  biancai:  { name: '辩才', cat: '文', stat: 'zhi',  where: '学宫', desc: '口若悬河，动人心志' },
+  quanmou:  { name: '权谋', cat: '文', stat: 'zhi',  where: '学宫', desc: '纵横捭阖，离间合纵' },
+  shanggu:  { name: '商贾', cat: '市', stat: 'zheng', where: '市肆', desc: '识货知价，贱买贵卖' },
+  suanshu:  { name: '算术', cat: '市', stat: 'zheng', where: '市肆', desc: '心计精明，分毫必较' },
+  xuewen:   { name: '学问', cat: '文', stat: 'zhi',  where: '学宫', desc: '博古通今，成一家之言' },
 };
+
+// 技艺所属属性（武 / 智 / 政）。全库唯一正本。
+export const SKILL_STAT = Object.fromEntries(
+  Object.entries(SKILL_DEFS).map(([k, d]) => [k, d.stat ?? 'zhi']));
+export const statOfSkill = (k) => SKILL_STAT[k] ?? null;
 
 export const SKILL_LEVEL_NAMES = ['未习', '初窥', '略通', '渐熟', '精熟', '擅长', '大家', '宗师'];
 export const skillTier = (lv) => SKILL_LEVEL_NAMES[Math.min(SKILL_LEVEL_NAMES.length - 1, Math.floor(lv))] || '宗师';
@@ -51,6 +56,10 @@ export const PROFESSIONS = {
 };
 
 // 仕途爵位（武士/说客/学者皆可用于本国）
+// 可出仕的职业（商人无仕途，另有商事路径）。全库唯一正本，勿在别处重写此数组。
+export const CAREER_PROFESSIONS = ['youxia', 'shuike', 'xuezhe'];
+export const isCareerProfession = (prof) => CAREER_PROFESSIONS.includes(prof);
+
 export const RANKS = [
   { name: '布衣', merit: 0,   pay: 0 },
   { name: '士',   merit: 30,  pay: 12 },

@@ -1,7 +1,7 @@
 // 城中：诸般行动
 import { CITY_MAP, STATES } from '../data/world.js';
 import { GOODS, PLAIN_GOODS } from '../data/goods.js';
-import { SKILL_DEFS, peerageName } from '../data/defs.js';
+import { SKILL_DEFS, peerageName, RANKS, isCareerProfession } from '../data/defs.js';
 import {
   player, npcsHere, rel, addMoney, addFame, addStamina, addLog, skillLevel, R, isMerchant, isWarrior, isDiplomat, isScholar
 } from '../state.js';
@@ -497,7 +497,7 @@ function buildActions(st, app, c, owner) {
 function trialActions(st, app, c) {
   const p = player(st);
   const out = [];
-  if (!['youxia', 'shuike', 'xuezhe'].includes(p.profession)) return out;
+  if (!isCareerProfession(p.profession)) return out;
   const sum = peerageSummary(st);
   const atLuoyi = c.id === 'luoyi';
 
@@ -588,10 +588,12 @@ function openPetition(app, st) {
 
 function openTrain(app, st, c) {
   const p = player(st);
+  // 地利：校场习武艺、学宫习文、市肆习市。按 SKILL_DEFS.cat 判定，不再手抄技艺名
   const bonusFor = (k) => {
-    if (c.tags.includes('barracks') && ['jianshu', 'sheshu', 'bingfa'].includes(k)) return 6;
-    if (c.tags.includes('academy') && ['biancai', 'quanmou', 'xuewen'].includes(k)) return 6;
-    if (c.tags.includes('market') && ['shanggu', 'suanshu'].includes(k)) return 6;
+    const cat = SKILL_DEFS[k]?.cat;
+    if (c.tags.includes('barracks') && cat === '武') return 6;
+    if (c.tags.includes('academy') && cat === '文') return 6;
+    if (c.tags.includes('market') && cat === '市') return 6;
     return 0;
   };
   const h = app.modal({
@@ -757,7 +759,7 @@ function profPanelHtml(st) {
     <div class="section-title">${p.profession === 'shuike' ? '纵横' : '仕途'}</div>
     <div class="kv">
       <dt>所仕</dt><dd>${p.stateId ? STATES[p.stateId].name : '未仕'}</dd>
-      <dt>官阶</dt><dd>${p.stateId ? ['布衣','士','中士','上士','大夫','中大夫','上大夫','卿','执政'][p.rank] : '—'}</dd>
+      <dt>官阶</dt><dd>${p.stateId ? (RANKS[p.rank]?.name ?? '布衣') : '—'}</dd>
       <dt>爵位</dt><dd>${p.peerage ? `${peerageName(p.peerage.rank)}·食邑${CITY_MAP[p.peerage.fief]?.name ?? ''}` : '未受封'}</dd>
       <dt>功勋</dt><dd>${p.merit}</dd>
       <dt>${p.profession === 'shuike' ? '盟约' : '胜绩'}</dt><dd>${p.profession === 'shuike' ? p.missions : st.stats.duelWins}</dd>

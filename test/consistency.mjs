@@ -270,11 +270,63 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   ok(unknown.length === 0, '所有角色类别都有名称', unknown.join(','));
 }
 
+// ---------------- 枚举清单不得在多处重写（防「定义改了、行为不改」） ----------------
+{
+  const fs = await import('node:fs');
+  const files = [];
+  (function walk(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const p = d + '/' + e.name;
+      if (e.isDirectory()) walk(p);
+      else if (p.endsWith('.js')) files.push(p);
+    }
+  })('js');
+  const srcs = files.map(f => [f, fs.readFileSync(f, 'utf8')]);
+
+  // 可出仕职业：除 defs.js 正本外，任何文件都不应再写这个数组
+  const career = srcs.filter(([f, src]) =>
+    !f.endsWith('data/defs.js') && /\['youxia',\s*'shuike',\s*'xuezhe'\]/.test(src));
+  ok(career.length === 0, '可出仕职业清单只在 defs.js 定义',
+    career.map(([f]) => f).join(','));
+
+  // 官阶名数组不应被手抄
+  const rankNames = srcs.filter(([f, src]) => /\['布衣',\s*'士',\s*'中士'/.test(src));
+  ok(rankNames.length === 0, '官阶名不再手抄（改用 RANKS[].name）',
+    rankNames.map(([f]) => f).join(','));
+
+  // 技艺→属性映射不应被手抄
+  const skillStat = srcs.filter(([f, src]) =>
+    !f.endsWith('data/defs.js') && /\['jianshu',\s*'sheshu',\s*'bingfa'\]/.test(src));
+  ok(skillStat.length === 0, '技艺→属性映射只在 defs.js 定义',
+    skillStat.map(([f]) => f).join(','));
+
+  // 效果类型：测试须引用 events.js 的正本
+  const { EFFECT_TYPES } = await import('../js/systems/events.js');
+  const evSrc = fs.readFileSync('js/systems/events.js', 'utf8');
+  const cases = [...new Set([...evSrc.matchAll(/case '([a-z]+)'/g)].map(m => m[1]))];
+  const missing = cases.filter(c => !EFFECT_TYPES.includes(c));
+  const extra = EFFECT_TYPES.filter(t => !cases.includes(t));
+  ok(missing.length === 0, 'EFFECT_TYPES 覆盖全部 switch 分支', missing.join(','));
+  ok(extra.length === 0, 'EFFECT_TYPES 无多余项', extra.join(','));
+
+  // 心性四值只在 TAGS 定义
+  const heartList = srcs.filter(([f, src]) => !f.endsWith('data/debates/index.js')
+    && /\['li',\s*'yi',\s*'ming',\s*'shi'\]/.test(src));
+  ok(heartList.length === 0, '心性四值只在 TAGS 定义', heartList.map(([f]) => f).join(','));
+
+  // 技艺 → 属性映射与 SKILL_DEFS 一致
+  const { SKILL_DEFS, SKILL_STAT, statOfSkill } = await import('../js/data/defs.js');
+  const badStat = Object.keys(SKILL_DEFS).filter(k => !['wu', 'zhi', 'zheng'].includes(statOfSkill(k)));
+  ok(badStat.length === 0, '每项技艺都有合法属性', badStat.join(','));
+  ok(Object.keys(SKILL_STAT).length === Object.keys(SKILL_DEFS).length, '技艺属性表无遗漏');
+}
+
 // ---------------- 事件效果类型必须被系统支持 ----------------
 {
   const { TIMELINE, RANDOM_EVENTS } = await import('../js/data/events.js');
-  const SUPPORTED = new Set(['money', 'fame', 'merit', 'stat', 'skill', 'skillxp', 'rel',
-    'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel', 'war', 'peace']);
+  // 引用 events.js 的正本，不再手抄一份
+  const { EFFECT_TYPES } = await import('../js/systems/events.js');
+  const SUPPORTED = new Set(EFFECT_TYPES);
   const bad = [];
   const scan = (list, tag) => {
     for (const ev of list) {

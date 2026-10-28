@@ -7,6 +7,7 @@ import {
   player, addMoney, addFame, addMerit, addStat, addSkillExp, addRel, addStamina, addHealth, meetNpc, addLog, skillLevel
 } from '../state.js';
 import { ri, clamp, weightedPick } from '../util.js';
+import { statOfSkill } from '../data/defs.js';
 import { absDay } from './calendar.js';
 
 function currentWhere(st) {
@@ -29,6 +30,14 @@ export function choiceAvailable(st, choice) {
 /**
  * 应用一组效果，返回 {notes:[], pendingDuel:object|null}
  */
+// 支持的效果类型。全库唯一正本：applyEffects 的 switch 与测试均引用此表。
+// 新增效果类型时只改这里 + switch 分支。
+export const EFFECT_TYPES = [
+  'money', 'fame', 'merit', 'stat', 'skill', 'skillxp', 'rel',
+  'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel', 'war', 'peace',
+];
+export const isEffectType = (t) => EFFECT_TYPES.includes(t);
+
 export function applyEffects(st, effects = []) {
   const out = { notes: [], pendingDuel: null };
   for (const e of effects) {
@@ -234,7 +243,8 @@ export function resolveChoice(st, ev, choice, kind = null) {
     const c = choice.check;
     const isSkill = Object.keys(player(st).skills).includes(c.k);
     const lv = isSkill ? skillLevel(st, c.k) : 0;
-    const stat = isSkill ? (['jianshu', 'sheshu', 'bingfa'].includes(c.k) ? player(st).stats.wu : ['xuewen', 'biancai', 'quanmou'].includes(c.k) ? player(st).stats.zhi : player(st).stats.zheng) : player(st).stats[c.k] ?? 50;
+    const statKey = isSkill ? statOfSkill(c.k) : c.k;
+    const stat = player(st).stats[statKey] ?? 50;
     const roll = stat * 0.5 + lv * 6 + ri(st, 0, 30) + player(st).fame * 0.2;
     success = roll >= (c.dc ?? 50);
     effects = success ? (choice.success ?? []) : (choice.fail ?? []);

@@ -1,6 +1,8 @@
 // 差事：官府委托、行商契约、游说使命、讲学之请
 import { CITY_MAP, CITIES, STATES, cityState } from '../data/world.js';
 import { GOODS, PLAIN_GOODS } from '../data/goods.js';
+import { isCareerProfession } from '../data/defs.js';
+import { TAGS } from '../data/debates/index.js';
 
 import {
   R, player, addMoney, addFame, addMerit, addRel, addLog, addGoods, skillLevel, npcsHere
@@ -113,7 +115,7 @@ const TEMPLATES = {
       giverName: g.name, npcId: g.npcId, originCity: city.id,
       npcId2: target?.id ?? null,
       targetName: target?.name ?? null,
-      targetBias: target?.bias ?? R.pick(st, ['li', 'yi', 'ming', 'shi']),
+      targetBias: target?.bias ?? R.pick(st, Object.keys(TAGS)),
       targetState: other,
       days: 15, exp: absDay(st.time) + 15,
       difficulty: 38 + Math.round(player(st).fame * 0.2),
@@ -153,7 +155,7 @@ const KIND_BY_PROF = {
   xuezhe: ['lecture', 'lecture', 'persuade', 'escort'],
 };
 
-const canEarnMerit = (st) => ['youxia', 'shuike', 'xuezhe'].includes(player(st).profession);
+const canEarnMerit = (st) => isCareerProfession(player(st).profession);
 
 export function refreshBoard(st, force = false) {
   const now = absDay(st.time);
