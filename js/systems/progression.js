@@ -245,6 +245,7 @@ export function computeEnding(st) {
       ['珍宝', `${collectedTreasureKinds(st).length}/6`],
       ['知己', Object.values(p.relations).filter(r => r.aff >= 52).length],
       ['决斗胜', `${s.duelWins}/${s.duels}`],
+      ['遍历', `${new Set(p.visitedCities).size}城`],
     ],
     date: st.time,
     title: `${p.name}·${careerTitle(st) || rank}`,

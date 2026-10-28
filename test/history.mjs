@@ -16,7 +16,7 @@ for (let i = 0; i < 3100; i++) {
       fired.add(w.ev.id);
       const avail = (w.ev.choices ?? []).filter(c => choiceAvailable(st, c));
       for (const c of avail.slice(0, 1)) {
-        try { resolveChoice(st, w.ev, c); choicesTaken++; }
+        try { resolveChoice(st, w.ev, c, w.kind); choicesTaken++; }
         catch (e) { errors.push(w.ev.id + ': ' + e.message); }
       }
     }

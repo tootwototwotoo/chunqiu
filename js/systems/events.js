@@ -161,10 +161,31 @@ export function rollRandomEvent(st) {
 
 // 事件 kind 注册表：新增一种事件类型只需在此登记一处。
 // find(st, id) 反查事件定义；snapshot(ev) 取可序列化的定义快照。
+// 快照必须是纯数据（会被 JSON.stringify 进存档）：
+// 丢弃函数、DOM、循环引用等不可序列化值，避免 saveGame 抛错。
 const snapshotOf = (ev) => {
-  const o = {};
-  for (const k of Object.keys(ev)) if (typeof ev[k] !== 'function') o[k] = ev[k];
-  return o;
+  const seen = new WeakSet();
+  const plain = (v, depth = 0) => {
+    if (depth > 8) return undefined;
+    if (v === null || typeof v !== 'object') {
+      return typeof v === 'function' || typeof v === 'symbol' ? undefined : v;
+    }
+    if (seen.has(v)) return undefined;          // 循环引用
+    seen.add(v);
+    if (Array.isArray(v)) {
+      return v.map(x => plain(x, depth + 1)).filter(x => x !== undefined);
+    }
+    // 只保留朴素对象（排除 Date/Map/DOM 等）
+    const proto = Object.getPrototypeOf(v);
+    if (proto !== Object.prototype && proto !== null) return undefined;
+    const o = {};
+    for (const k of Object.keys(v)) {
+      const val = plain(v[k], depth + 1);
+      if (val !== undefined) o[k] = val;
+    }
+    return o;
+  };
+  return plain(ev) ?? {};
 };
 
 export const EVENT_KINDS = {
@@ -234,7 +255,11 @@ export function prepareEvent(st, wrapped) {
   return { kind: wrapped.kind, ev, effects: wrapped.effects, notes: wrapped.effects.notes };
 }
 
-export function resolveChoice(st, ev, choice, kind = null) {
+// kind 必填：动态事件（reign）无法由静态表反推，缺失会导致条目无法出队
+export function resolveChoice(st, ev, choice, kind) {
+  if (!isEventKind(kind)) {
+    throw new Error(`resolveChoice 需要合法的事件 kind（收到 ${JSON.stringify(kind)}）`);
+  }
   if (!choiceAvailable(st, choice)) return { ok: false, msg: '条件不足。' };
   let effects = choice.effects ?? [];
   let success = true;
@@ -251,9 +276,7 @@ export function resolveChoice(st, ev, choice, kind = null) {
     checkInfo = { roll: Math.round(roll), dc: c.dc ?? 50, success };
   }
   const res = applyEffects(st, effects);
-  // 优先用调用方给出的 kind（reign 等动态事件无法由静态表反推）
-  const k = kind ?? (TIMELINE.includes(ev) ? 'timeline' : 'random');
-  finishEvent(st, k, ev.id);
+  finishEvent(st, kind, ev.id);
   const text = choice.text ?? (success ? '事成了。' : '事未成。');
   return { ok: true, success, text, notes: res.notes, pendingDuel: res.pendingDuel, checkInfo };
 }

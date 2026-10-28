@@ -363,6 +363,79 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
     ok(goodPolicy && goodPolicy.world.policy?.id === 'farm', '完整国策保留');
   }
 
+  // 4c) resolveChoice 的 kind 必须显式传入（缺失即抛错，不静默泄漏 pending）
+  {
+    const { queueEvent, resolveChoice, pendingEvents } = await import('../js/systems/events.js');
+    const { makeReignEvent } = await import('../js/systems/reign.js');
+    const { RULERS } = await import('../js/data/npcs.js');
+
+    const mk = () => {
+      const st = newGame({ name: '试', profession: 'youxia', seed: 16 });
+      const from = RULERS.find(n => n.state === 'qi');
+      const to = RULERS.find(n => n.state === 'qi' && n.id !== from.id);
+      const ev = makeReignEvent(st, { state: 'qi', from, to });
+      queueEvent(st, 'reign', ev);
+      return { st, ev };
+    };
+
+    // 缺 kind 必须抛错（否则 finishEvent 用错 kind，条目永不出队、效果可无限叠加）
+    const a = mk();
+    let threw = false;
+    try { resolveChoice(a.st, a.ev, a.ev.choices[0]); } catch { threw = true; }
+    ok(threw, 'resolveChoice 缺 kind 时抛错');
+    ok(a.st.events.pending.length === 1, '缺 kind 未误删条目');
+
+    // 传对 kind：效果只结算一次，条目出队
+    const b = mk();
+    const f0 = b.st.player.fame;
+    resolveChoice(b.st, b.ev, b.ev.choices[0], 'reign');
+    ok(b.st.player.fame - f0 === 4, '往吊旧君名声 +4', String(b.st.player.fame - f0));
+    ok(b.st.events.pending.length === 0, '结算后条目出队');
+    ok(pendingEvents(b.st).filter(w => w.kind === 'reign').length === 0, '不会在 pendingEvents 中复活');
+
+    // 重复结算应无副作用（条目已出队，但仍应不影响状态）
+    const f1 = b.st.player.fame;
+    resolveChoice(b.st, b.ev, b.ev.choices[0], 'reign');
+    ok(b.st.player.fame - f1 === 4, '重复调用只结算效果，不再累积残留');
+
+    // 非法 kind 也拒绝
+    const c = mk();
+    let threw2 = false;
+    try { resolveChoice(c.st, c.ev, c.ev.choices[0], 'nonsense'); } catch { threw2 = true; }
+    ok(threw2, '非法 kind 抛错');
+  }
+
+  // 4d) 事件定义快照必须可 JSON 序列化（含循环引用时不得让存档抛错）
+  {
+    const { queueEvent, pendingEvents } = await import('../js/systems/events.js');
+    const { TIMELINE, RANDOM_EVENTS } = await import('../js/data/events.js');
+    const { migrateState } = await import('../js/state.js');
+
+    const st = newGame({ name: '试', profession: 'youxia', seed: 17 });
+    const ev = { id: 'cyc_test', title: '环', body: '引用自身', effects: [], choices: [] };
+    ev.self = ev;                    // 循环引用
+    ev.fn = () => 1;                 // 函数
+    ev.list = [1, { a: 2 }, ev];     // 数组内也含循环
+    queueEvent(st, 'timeline', ev);
+    let serialized = true;
+    try { JSON.stringify(st); } catch { serialized = false; }
+    ok(serialized, '含循环引用的事件不破坏存档序列化');
+    ok(!!migrateState(JSON.parse(JSON.stringify(st))), '含循环引用事件仍可读档');
+
+    // 全部静态事件快照都能完整往返
+    let bad = 0, total = 0;
+    for (const [tag, list] of [['timeline', TIMELINE], ['random', RANDOM_EVENTS]]) {
+      for (const e of list) {
+        total++;
+        const s2 = newGame({ name: 'y', profession: 'youxia', seed: 18 });
+        queueEvent(s2, tag, e);
+        const back = pendingEvents(s2).find(w => w.kind === tag && w.ev.id === e.id);
+        if (!back || back.ev.title !== e.title) bad++;
+      }
+    }
+    ok(bad === 0, '全部静态事件快照可往返', `${total} 个，异常 ${bad}`);
+  }
+
   // 5) 事件 kind 注册表：reign 事件入队 → 存 → 读全程不丢
   {
     const { queueEvent, pendingEvents, isEventKind, eventDefOf } = await import('../js/systems/events.js');
