@@ -4,7 +4,7 @@ import { GOODS } from '../data/goods.js';
 import { STATES } from '../data/world.js';
 import { SKILL_DEFS } from '../data/defs.js';
 import {
-  player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addHealth, addLog, addSkillExp, skillLevel, R
+  player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addHealth, addLog, addSkillExp, skillLevel, npcsHere, R
 } from '../state.js';
 import { ri, GIFT_TIER_NAMES, absDay } from '../util.js';
 
@@ -220,3 +220,103 @@ export function healBy(st, npcId) {
 // 谁能看病
 export const HEALERS = ['yi_he', 'yi_huan'];
 export const CAN_HEAL = (npcId) => HEALERS.includes(npcId) || NPC_MAP[npcId]?.role === 'artisan';
+
+// ---------------- 问政：向有见识的女性请教时局 ----------------
+// 史书里的这些女性多以「判断力」著称（邓曼谏武王、敬姜论劳逸、
+// 许穆夫人赋《载驰》、怀嬴「秦晋匹也」），故她们的专长是看局势，而非技艺。
+
+export const INSIGHT_TYPES = {
+  court: '内政',
+  diplo: '邦交',
+  army: '军略',
+  people: '人心',
+};
+
+// 能否问政
+export const CAN_ADVISE = (npcId) => !!NPC_MAP[npcId]?.insight;
+
+// 一位女性的问政资格与冷却
+export function adviseStatus(st, npcId) {
+  const def = NPC_MAP[npcId];
+  const p = player(st);
+  if (!def?.insight) return { ok: false, msg: '此人不足与论时局。' };
+  const r = rel(st, npcId);
+  if (r.aff < 20) return { ok: false, msg: `${def.name}与你交情尚浅，不便深谈。` };
+  if (p.stamina < 6) return { ok: false, msg: '精神不济，听不进话。' };
+  const last = st.flags?.advised?.[npcId];
+  const cd = last == null ? 0 : Math.max(0, 20 - (absDay(st.time) - last));
+  if (cd > 0) return { ok: false, msg: `${def.name}前番已详言，${cd}日后再问。` };
+  return { ok: true, insight: def.insight, topic: INSIGHT_TYPES[def.insight] };
+}
+
+// 按专长产出一条情报
+function insightFor(st, kind, selfId) {
+  const p = player(st);
+  const R = { int: (a, b) => a + Math.floor(Math.abs(Math.sin(st.rng++ * 12.9898)) * (b - a + 1)) };
+
+  if (kind === 'court') {
+    // 内政：优先报所仕之国，未出仕则报所在城所属之国
+    const sid = p.stateId ?? CITY_STATE(p.cityId);
+    const power = st.world.power[sid] ?? 30;
+    const grade = power >= 70 ? '方兴未艾' : power >= 50 ? '尚可支撑' : power >= 30 ? '渐见疲态' : '危如累卵';
+    return { text: `${STATES[sid].name}国势实为 ${power}（${grade}）。`, note: '内政' };
+  }
+  if (kind === 'diplo') {
+    // 邦交：近期的战和
+    const wars = st.world.wars ?? [];
+    if (wars.length) {
+      const w = wars[R.int(0, wars.length - 1)];
+      return { text: `${STATES[w.a].name}与${STATES[w.b].name}方交兵，暂难调停。`, note: '邦交' };
+    }
+    return { text: '四境无事，正是结盟通商之时。', note: '邦交' };
+  }
+  if (kind === 'army') {
+    // 军略：最弱与最强之国
+    const sorted = Object.entries(st.world.power ?? {}).sort((a, b) => b[1] - a[1]);
+    if (sorted.length >= 2) {
+      const [strong, weak] = [sorted[0], sorted[sorted.length - 1]];
+      return {
+        text: `${STATES[strong[0]].name}势盛（${strong[1]}），${STATES[weak[0]].name}最弱（${weak[1]}），兵锋所向可知。`,
+        note: '军略',
+      };
+    }
+    return { text: '天下之势，尚难预料。', note: '军略' };
+  }
+  // people：人心——本地可结交之人（排除说话者本人）
+  const here = npcsHere(st).filter(n => n.def.role !== 'ruler' && n.id !== selfId).slice(0, 2);
+  if (here.length) {
+    return { text: `此地${here.map(n => n.def.name).join('、')}皆可往来，宜先结好。`, note: '人心' };
+  }
+  // 本地无人可荐，改荐一位别国在世的贤者
+  const afar = Object.values(st.npc)
+    .filter(n => n.alive && n.id !== selfId && n.city !== player(st).cityId
+      && ['scholar', 'minister', 'general'].includes(NPC_MAP[n.id]?.role))
+    .sort((a, b) => (NPC_MAP[b.id].stats?.zhi ?? 0) - (NPC_MAP[a.id].stats?.zhi ?? 0));
+  if (afar.length) {
+    const t = afar[0];
+    return {
+      text: `${CITY_MAP[t.city]?.name ?? '他邑'}有${NPC_MAP[t.id].name}，其言可听，君宜一往。`,
+      note: '人心',
+    };
+  }
+  return { text: '天下寥寥，无可与语者。', note: '人心' };
+}
+
+export function askAdvice(st, npcId) {
+  const def = NPC_MAP[npcId];
+  const chk = adviseStatus(st, npcId);
+  if (!chk.ok) return chk;
+
+  addStamina(st, -6);
+  addRel(st, npcId, 2);
+  (st.flags.advised ||= {})[npcId] = absDay(st.time);
+
+  const ins = insightFor(st, chk.insight, npcId);
+  addFame(st, 1, true);
+  addLog(st, `与${def.name}论${ins.note}。`, 'gain');
+  return {
+    ok: true, ...ins, speaker: def.name,
+    quote: def.quote ?? '',
+    msg: `${def.name}道：「${ins.text}」`,
+  };
+}

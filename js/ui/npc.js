@@ -3,11 +3,12 @@ import { NPC_MAP } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { canTakeOffice, grantOffice } from '../systems/progression.js';
 import { player, rel, addRel, addFame, addMerit } from '../state.js';
-import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo, healBy } from '../systems/relations.js';
+import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo, healBy, askAdvice, CAN_ADVISE } from '../systems/relations.js';
 import { biasName, BIAS_TIP } from '../systems/debate.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
 import { skillName, onClick, avatar, relTierName, stageLabel } from './common.js';
+import { esc } from '../util.js';
 
 import { npcEvidence, askNpc } from '../systems/evidence.js';
 import { advanceDays } from '../systems/calendar.js';
@@ -51,6 +52,7 @@ export function openNpc(app, st, npcId) {
         <button class="btn" data-act="duel" ${atHome ? '' : 'disabled'}>切磋</button>
         <button class="btn" data-act="debate" ${atHome ? '' : 'disabled'}>论辩</button>
         ${def.role === 'artisan' ? `<button class="btn" data-act="heal" ${atHome ? '' : 'disabled'}>求医</button>` : ''}
+        ${CAN_ADVISE(npcId) ? `<button class="btn" data-act="advise" ${atHome ? '' : 'disabled'}>问政</button>` : ''}
         ${evs.length ? `<button class="btn" data-act="ask" ${atHome && rr.aff > 20 ? '' : 'disabled'}>打听消息</button>` : ''}
         ${rr.aff >= 75 && player(st).fame >= 20 && canTakeOffice(st).ok ? '<button class="btn" data-act="recommend">举荐</button>' : ''}
       </div>
@@ -138,6 +140,17 @@ export function openNpc(app, st, npcId) {
       app.log(res.msg, 'gain');
       app.refreshHud();
       render(`<div class="footnote" style="color:#4d6f56">${res.msg}</div>`);
+    });
+
+    onClick(h.bodyEl, '[data-act="advise"]', () => {
+      if (!atHome) { render('<div class="footnote">此人不在你所在之城。</div>'); return; }
+      const res = askAdvice(st, npcId);
+      if (!res.ok) { render(`<div class="footnote">${res.msg}</div>`); return; }
+      app.log(res.msg, 'gain');
+      app.refreshHud();
+      const adv = advanceDays(st, 1);
+      app.after({ notes: [res.msg, ...adv.notes], events: adv.events, died: adv.died });
+      render(`<div class="footnote" style="color:#4d6f56">${esc(res.msg)}</div>`);
     });
 
     onClick(h.bodyEl, '[data-act="ask"]', () => {

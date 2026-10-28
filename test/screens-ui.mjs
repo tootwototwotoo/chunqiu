@@ -392,6 +392,47 @@ const boot = async (profession, seed = 9, era = undefined) => {
   ok(errors.length === 0, '百工交互无运行时错误', errors[0]?.slice(0, 100) ?? '');
 }
 
+// ---------------- 女性：问政可用 ----------------
+{
+  // 前 685 桓公之世四种专长的女性都在世
+  const st = await boot('youxia', 34, 'huan');
+  const p = st.player;
+  const { openNpc } = await import('../js/ui/npc.js');
+  const target = Object.values(st.npc)
+    .find(n => NPC_MAP[n.id]?.role === 'noble' && n.alive);
+  ok(!!target, '存在在世的女性角色', target ? NPC_MAP[target.id].name : '无');
+
+  // 交情不足时按钮仍在，但给出提示
+  p.cityId = target.city;
+  const rel0 = rel(st, target.id);
+  const aff0 = rel0.aff;
+  rel0.met = true;
+  rel0.aff = 5;
+  openNpc(app, st, target.id);
+  await wait(70);
+  const btn0 = document.querySelector('[data-act="advise"]');
+  ok(!!btn0, '女性人物有「问政」按钮', NPC_MAP[target.id].name);
+  tap(btn0);
+  await wait();
+  ok(/交情尚浅/.test(document.body.textContent ?? ''), '交情不足时拒绝问政');
+  await closeModal();
+
+  // 交情足够：可问政并消耗体力
+  rel0.aff = 40;
+  p.stamina = 100;
+  const stamina0 = p.stamina;
+  openNpc(app, st, target.id);
+  await wait(70);
+  const btn = document.querySelector('[data-act="advise"]');
+  tap(btn);
+  await wait();
+  const text = document.body.textContent ?? '';
+  ok(/道：「/.test(text), '问政给出时局见解', text.match(/道：「[^」]{0,20}/)?.[0] ?? '');
+  ok(p.stamina < stamina0, '问政消耗体力', `${stamina0} → ${p.stamina}`);
+  await closeModal();
+  void aff0;
+}
+
 // ---------------- 全职业开局不崩 ----------------
 {
   const errs = [];

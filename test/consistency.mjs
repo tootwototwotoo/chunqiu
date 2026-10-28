@@ -255,6 +255,24 @@ const PROF_IDS = Object.keys(PROFESSIONS);
   ok(NPCS.filter(n => n.role === 'general').length >= 25, '将帅数量充足',
     String(NPCS.filter(n => n.role === 'general').length));
 
+  // 名士与女性
+  {
+    const scholars = NPCS.filter(n => n.role === 'scholar');
+    ok(scholars.length >= 30, '名士数量充足', String(scholars.length));
+    ok(scholars.every(n => n.quote && n.desc && n.stats && n.bias), '名士字段完整');
+    ok(scholars.filter(n => n.teach?.length).length >= 25, '多数名士可授艺',
+      String(scholars.filter(n => n.teach?.length).length));
+
+    const nobles = NPCS.filter(n => n.role === 'noble');
+    ok(nobles.length >= 30, '女性数量充足', String(nobles.length));
+    ok(nobles.every(n => n.insight), '每位女性都有问政专长',
+      nobles.filter(n => !n.insight).map(n => n.name).join(','));
+    const kinds = new Set(nobles.map(n => n.insight));
+    ok([...kinds].every(k => ['court', 'diplo', 'army', 'people'].includes(k)),
+      '问政专长取值合法', [...kinds].join(','));
+    ok(kinds.size === 4, '四种专长齐备', [...kinds].join(','));
+  }
+
   // 百工
   const artisans = NPCS.filter(n => n.role === 'artisan');
   ok(artisans.length >= 8, '百工数量充足', String(artisans.length));
