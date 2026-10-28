@@ -15,6 +15,15 @@ export const categoryForRole = (role) => ({
 
 export function debateModal(app, st, npc, opts = {}) {
   const d = startDebate(st, npc, opts);
+  // 体力不足等前置条件不满足时，startDebate 返回 { ok: false, msg }
+  if (d.ok === false) {
+    app.modal({
+      title: '论辩', narrow: true,
+      body: `<p>${esc(d.msg ?? '此时不宜论辩。')}</p>`,
+      foot: [{ label: '知道了', close: true }],
+    });
+    return null;
+  }
   let settled = null;
   const h = app.modal({
     title: `论辩 · ${d.opponent.name}`,

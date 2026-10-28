@@ -1,8 +1,9 @@
 // 三回合论辩：认同度、三选一、证据与三档结局
 import { DEBATES, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
+import { VOICES } from '../data/debates/voices.js';
 import { isCareerProfession } from '../data/defs.js';
 
-import { player, addFame, addRel, addMoney, addMerit, addLog, hasEvidence, R } from '../state.js';
+import { player, addFame, addRel, addMoney, addMerit, addLog, addStamina, hasEvidence, R } from '../state.js';
 import { clamp, absDay } from '../util.js';
 
 const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
@@ -18,6 +19,24 @@ export { TAGS };
 const BASE_SCORE = { hit: 15, reason: 5, evade: -10 };
 const HEART_BONUS = 5;
 const EVIDENCE_BONUS = 10;
+// 论辩消耗：半日 · 8 体力。此前完全无消耗，可无限刷名声与交情。
+export const DEBATE_COST = { stamina: 8, days: 0.5 };
+
+// 熟练：同一人同一场景再辩，起始认同 +5，累计上限 +15
+export const FAMILIAR_BONUS = 5;
+export const FAMILIAR_CAP = 15;
+export function familiarKey(npcId, scenarioId) { return `${npcId}#${scenarioId}`; }
+export function familiarityOf(st, npcId, scenarioId) {
+  const table = st.flags?.debateFamiliar ?? {};
+  return Math.min(FAMILIAR_CAP, (table[familiarKey(npcId, scenarioId)] ?? 0) * FAMILIAR_BONUS);
+}
+export function bumpFamiliarity(st, npcId, scenarioId) {
+  if (!npcId || !scenarioId) return;
+  const table = (st.flags.debateFamiliar ||= {});
+  const k = familiarKey(npcId, scenarioId);
+  table[k] = Math.min(FAMILIAR_CAP / FAMILIAR_BONUS, (table[k] ?? 0) + 1);
+}
+
 const DEFAULT_EFFECTS = {
   success: { fame: 4, rel: 6 },
   compromise: { fame: 1, rel: 3 },
@@ -25,7 +44,23 @@ const DEFAULT_EFFECTS = {
 };
 
 
-export function pickDebateScenario(st, { category = null, heart = null, exclude = null } = {}) {
+// 有专属题库时，抽到专属场景的概率（其余抽通用题库）
+export const VOICE_RATIO = 0.6;
+
+export const voiceOf = (npcId) => (npcId ? VOICES[npcId] ?? null : null);
+
+// 该人物的专属场景集合（同局内排除已抽过的）
+export function voiceScenarios(npcId, { exclude = null } = {}) {
+  const v = voiceOf(npcId);
+  if (!v) return [];
+  return v.debates.filter(d => d.id !== exclude);
+}
+
+export function pickDebateScenario(st, { category = null, heart = null, exclude = null, npcId = null } = {}) {
+  // 有专属题库的人物：按比例抽专属场景，其余仍走通用题库
+  const specific = voiceScenarios(npcId, { exclude });
+  if (specific.length && R.chance(st, VOICE_RATIO)) return R.pick(st, specific);
+
   let pool = DEBATES.filter(d => (!category || d.category === category) && (!heart || d.heart === heart));
   if (!pool.length) pool = DEBATES.filter(d => !heart || d.heart === heart);
   if (!pool.length) pool = DEBATES;
@@ -33,9 +68,20 @@ export function pickDebateScenario(st, { category = null, heart = null, exclude 
   return R.pick(st, pool);
 }
 
+export function canDebate(st) {
+  const p = player(st);
+  if (p.stamina < DEBATE_COST.stamina) {
+    return { ok: false, msg: `精神不济（需 ${DEBATE_COST.stamina} 力）。` };
+  }
+  return { ok: true };
+}
+
 export function startDebate(st, npc, opts = {}) {
+  const gate = canDebate(st);
+  if (!gate.ok) return gate;
+  addStamina(st, -DEBATE_COST.stamina);
   const scenario = opts.scenario ?? pickDebateScenario(st, {
-    category: opts.category, heart: npc?.bias, exclude: opts.exclude,
+    category: opts.category, heart: npc?.bias, exclude: opts.exclude, npcId: npc?.id,
   });
   const heart = scenario.heart;
   return {
@@ -45,7 +91,9 @@ export function startDebate(st, npc, opts = {}) {
       title: npc?.title ?? scenario.opponent.title,
       authority: scenario.authority,
     },
-    round: 1, maxRounds: 3, agreement: 50,
+    round: 1, maxRounds: 3,
+    agreement: 50 + familiarityOf(st, npc?.id, scenario.id),
+    familiar: familiarityOf(st, npc?.id, scenario.id),
     evidenceUsed: false, evidenceApplied: false,
     history: [], log: [scenario.desc, `${npc?.name ?? scenario.opponent.name}：「${scenario.concerns[0].q}」`],
     over: false, result: null,
@@ -110,6 +158,7 @@ export function debateResult(d) {
 
 export function settleDebate(st, d, npcId, _opts = {}) {
   st.stats.debates++;
+  bumpFamiliarity(st, npcId ?? d.npcId, d.scenario.id);
   if (d.result === 'success') st.stats.debateWins++;
   const effects = { ...DEFAULT_EFFECTS[d.result], ...(d.scenario.effects?.[d.result] ?? {}) };
   if (effects.fame) addFame(st, effects.fame, true);
