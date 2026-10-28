@@ -150,17 +150,66 @@ export function rollRandomEvent(st) {
   return queueEvent(st, 'random', picked);
 }
 
+// 事件 kind 注册表：新增一种事件类型只需在此登记一处。
+// find(st, id) 反查事件定义；snapshot(ev) 取可序列化的定义快照。
+const snapshotOf = (ev) => {
+  const o = {};
+  for (const k of Object.keys(ev)) if (typeof ev[k] !== 'function') o[k] = ev[k];
+  return o;
+};
+
+export const EVENT_KINDS = {
+  timeline: {
+    label: '天下大势',
+    find: (st, id) => TIMELINE.find(ev => ev.id === id) ?? null,
+    snapshot: snapshotOf,
+  },
+  random: {
+    label: '际遇',
+    find: (st, id) => RANDOM_EVENTS.find(ev => ev.id === id) ?? null,
+    snapshot: snapshotOf,
+  },
+  reign: {
+    label: '君位更迭',
+    // 更替事件按「更替」动态生成，不入静态表，故从快照还原
+    find: (st, id, def) => def ?? { id },
+    snapshot: snapshotOf,
+  },
+};
+
+export function isEventKind(kind) {
+  return Object.hasOwn(EVENT_KINDS, kind);
+}
+
+// 事件类别在界面上的副标题
+export function eventKindLabel(kind) {
+  return EVENT_KINDS[kind]?.label ?? '际遇';
+}
+
 // 先结算天下变化，再存入可序列化的待处理选择；弹窗只负责展示。
+// def 为可选的定义快照，供无法从静态表反查的类型（如 reign）使用。
 export function queueEvent(st, kind, ev) {
   const effects = applyEffects(st, ev.effects);
-  (st.events.pending ||= []).push({ kind, id: ev.id, effects });
+  const reg = EVENT_KINDS[kind];
+  (st.events.pending ||= []).push({
+    kind, id: ev.id, effects,
+    def: reg?.snapshot ? reg.snapshot(ev) : null,
+  });
   return { kind, ev, effects };
+}
+
+// 反查一条待处理事件的定义：静态表查不到则退回快照
+export function eventDefOf(kind, id, def) {
+  const reg = EVENT_KINDS[kind];
+  if (!reg) return null;
+  return reg.find(null, id, def) ?? null;
 }
 
 export function pendingEvents(st) {
   return (st.events.pending ?? []).flatMap(p => {
-    const defs = p.kind === 'timeline' ? TIMELINE : RANDOM_EVENTS;
-    const ev = defs.find(ev => ev.id === p.id);
+    const reg = EVENT_KINDS[p.kind];
+    if (!reg) return [];           // 未知 kind 静默跳过，不拖垮整档
+    const ev = reg.find(st, p.id, p.def);
     return ev ? [{ kind: p.kind, ev, effects: p.effects }] : [];
   });
 }
@@ -176,7 +225,7 @@ export function prepareEvent(st, wrapped) {
   return { kind: wrapped.kind, ev, effects: wrapped.effects, notes: wrapped.effects.notes };
 }
 
-export function resolveChoice(st, ev, choice) {
+export function resolveChoice(st, ev, choice, kind = null) {
   if (!choiceAvailable(st, choice)) return { ok: false, msg: '条件不足。' };
   let effects = choice.effects ?? [];
   let success = true;
@@ -192,8 +241,9 @@ export function resolveChoice(st, ev, choice) {
     checkInfo = { roll: Math.round(roll), dc: c.dc ?? 50, success };
   }
   const res = applyEffects(st, effects);
-  const kind = TIMELINE.includes(ev) ? 'timeline' : 'random';
-  finishEvent(st, kind, ev.id);
+  // 优先用调用方给出的 kind（reign 等动态事件无法由静态表反推）
+  const k = kind ?? (TIMELINE.includes(ev) ? 'timeline' : 'random');
+  finishEvent(st, k, ev.id);
   const text = choice.text ?? (success ? '事成了。' : '事未成。');
   return { ok: true, success, text, notes: res.notes, pendingDuel: res.pendingDuel, checkInfo };
 }

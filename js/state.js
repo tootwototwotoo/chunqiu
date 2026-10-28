@@ -5,7 +5,8 @@ import { NPCS, npcAlive, NPC_MAP, rulerStageOf } from './data/npcs.js';
 import { GOODS, demandOf, LOCAL_SPECIALTY } from './data/goods.js';
 import { TREASURES, TREASURE_IDS } from './data/treasures.js';
 import { merchantRank } from './systems/merchant.js';
-import { TIMELINE, RANDOM_EVENTS } from './data/events.js';
+import { TIMELINE } from './data/events.js';
+import { isEventKind, eventDefOf } from './systems/events.js';
 import { hashSeed, ri, rnd, yearLabel, monthLabel } from './util.js';
 
 export const SAVE_KEY = 'chunqiu_lieguozhi_save_v1';
@@ -357,6 +358,8 @@ export function migrateState(st) {
   ensure(st.version == null || st.version === 1);
   ensure(st.savedAt === undefined || (Number.isSafeInteger(st.savedAt) && st.savedAt > 0));
   const defaults = newGame({ name: p.name, profession: p.profession, seed: 1, era: st.era });
+  // 交战国对先归一化：畸形值（含非数组）不应导致整档被拒
+  if (!Array.isArray(st.world?.wars)) st.world.wars = [];
   defaults.player.visitedCities = [p.homeCity ?? defaults.player.homeCity, p.cityId];
   // 可选字段缺失时补齐；字段存在但类型损坏时拒绝，不能替换当前游戏。
   const fill = (value, fallback) => {
@@ -460,19 +463,25 @@ export function migrateState(st) {
     }
   }
   ensure(st.events.fired.every(id => typeof id === 'string'));
-  for (const entry of st.events.pending) {
-    ensure(object(entry) && ['timeline', 'random'].includes(entry.kind));
-    const defs = entry.kind === 'timeline' ? TIMELINE : RANDOM_EVENTS;
-    ensure(defs.some(ev => ev.id === entry.id));
-    ensure(object(entry.effects) && Array.isArray(entry.effects.notes)
-      && entry.effects.notes.every(note => typeof note === 'string'));
-  }
+  // 未知 kind 或查不到定义的事件降级丢弃，不拖垮整档（kind 白名单与 events.js 同源）
+  st.events.pending = st.events.pending.filter(entry => {
+    if (!object(entry) || !isEventKind(entry.kind)) return false;
+    if (!eventDefOf(entry.kind, entry.id, entry.def)) return false;
+    return object(entry.effects) && Array.isArray(entry.effects.notes)
+      && entry.effects.notes.every(note => typeof note === 'string');
+  });
   st.world.owner ||= {};
   st.world.prices ||= {};
   st.world.power ||= {};
   for (const s of Object.values(STATES)) {
     if (st.world.power[s.id] == null) st.world.power[s.id] = s.power;
   }
+  // 交战国对：两端须为合法国 id，且不与自己交战；顺带去重与补 since
+  st.world.wars = Array.isArray(st.world.wars)
+    ? st.world.wars.filter(w => object(w) && own(STATES, w.a) && own(STATES, w.b) && w.a !== w.b)
+      .map(w => ({ a: w.a, b: w.b, since: Number.isFinite(w.since) ? w.since : 0 }))
+      .filter((w, i, arr) => arr.findIndex(x => (x.a === w.a && x.b === w.b) || (x.a === w.b && x.b === w.a)) === i)
+    : [];
   numericMap(st.world.power, STATES);
   for (const [id, owner] of Object.entries(st.world.owner)) {
     ensure(own(CITY_MAP, id) && own(STATES, owner));

@@ -63,7 +63,6 @@ export const PERMIT = {
   minFame: 10,         // 名声门槛
   trialFame: 10,       // 凭名望说动的门槛（与名声门槛一致，不留死区）
   trialFee: 300,       // 名望路线另纳贽礼
-  trialBonus: 0.15,    // 名声越高越易说动（每点名望加成）
   officialRate: 2,     // 城中无可托之人时，赴市亭立籍的费率倍数
 };
 

@@ -154,7 +154,8 @@ export function getPermit(st, cityId = player(st).cityId) {
 
   let granted = true;
   if (chk.mode === 'trial') {
-    // 名声越高越易说动；名声 10 时约三成，60 时近乎必成
+    // 名声越高越易说动：线性加权 fame*0.9 + 美*0.25 + 政*0.2 + 0~25 随机，门槛 34
+    // （名声 10 时约三成，60 时近乎必成）
     const roll = p.fame * 0.9 + p.stats.mei * 0.25 + p.stats.zheng * 0.2 + R.int(st, 0, 25);
     granted = roll >= 34;
   }

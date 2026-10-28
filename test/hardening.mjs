@@ -321,6 +321,203 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
     ok(a.player.rank === b.player.rank, '廷对与 seekOffice 授予阶次一致', `${a.player.rank}/${b.player.rank}`);
   }
 
+  // 5) 事件 kind 注册表：reign 事件入队 → 存 → 读全程不丢
+  {
+    const { queueEvent, pendingEvents, isEventKind, eventDefOf } = await import('../js/systems/events.js');
+    const { makeReignEvent } = await import('../js/systems/reign.js');
+    const { migrateState } = await import('../js/state.js');
+    const { RULERS } = await import('../js/data/npcs.js');
+
+    ok(isEventKind('reign'), 'reign 已登记为合法事件 kind');
+    ok(!isEventKind('nonsense'), '未登记的 kind 不被接受');
+
+    const st = newGame({ name: '试', profession: 'youxia', seed: 11 });
+    st.flags.noAutosave = true;
+    const from = RULERS.find(n => n.state === 'qi');
+    const to = RULERS.find(n => n.state === 'qi' && n.id !== from.id);
+    const ev = makeReignEvent(st, { state: 'qi', from, to });
+    queueEvent(st, 'reign', ev);
+    ok(st.events.pending.some(p => p.kind === 'reign'), 'reign 事件入队');
+
+    const shown = pendingEvents(st).filter(w => w.kind === 'reign');
+    ok(shown.length === 1, 'reign 事件能被 pendingEvents 取回', String(shown.length));
+    ok(shown[0]?.ev?.title === ev.title, '取回的定义与原事件一致');
+
+    const raw = JSON.parse(JSON.stringify(st));
+    let migrated = null;
+    try { migrated = migrateState(raw); } catch (e) { migrated = { err: e.message }; }
+    ok(!migrated?.err, '含 reign 事件的存档可迁移', migrated?.err ?? '');
+    ok(migrated?.events?.pending?.some(p => p.kind === 'reign'), '迁移后 reign 事件保留');
+
+    // 未知 kind 降级丢弃，而非拒绝整档
+    const raw2 = JSON.parse(JSON.stringify(st));
+    raw2.events.pending.push({ kind: 'disaster', id: 'x', effects: { notes: [] } });
+    let m2 = null;
+    try { m2 = migrateState(raw2); } catch (e) { m2 = { err: e.message }; }
+    ok(!m2?.err, '未知 kind 不使整档失败', m2?.err ?? '');
+    ok(!m2?.events?.pending?.some(p => p.kind === 'disaster'), '未知 kind 被丢弃');
+    ok(m2?.events?.pending?.some(p => p.kind === 'reign'), '丢弃未知项后 reign 仍在');
+    ok(eventDefOf('reign', ev.id, null) !== null, 'reign 可由快照反查');
+  }
+
+  // 5b) 开局无君之国：audienceRuler 必须以合成国君兜底，不能返回空
+  {
+    const { audienceRuler } = await import('../js/systems/audience.js');
+    const { rulerAt } = await import('../js/systems/reign.js');
+    const { STATES } = await import('../js/data/world.js');
+    const { ERAS } = await import('../js/data/defs.js');
+    let holes = 0, noFallback = 0;
+    for (const era of ERAS) {
+      for (const sid of Object.keys(STATES)) {
+        const st = newGame({ name: '试', profession: 'youxia', seed: 1, era: era.id });
+        if (rulerAt(sid, st.time.year)) continue;
+        holes++;
+        if (!audienceRuler(st, sid)) noFallback++;
+      }
+    }
+    ok(noFallback === 0, '开局无君之国由合成国君兜底', `${holes} 处空位`);
+  }
+
+  // 6) 国君更替检测：每次即位都应被检出（含空档年）
+  {
+    const { reignChanges } = await import('../js/systems/reign.js');
+    const { RULERS } = await import('../js/data/npcs.js');
+    const st = newGame({ name: '试', profession: 'youxia', seed: 12, era: 'early' });
+    st.flags.noAutosave = true;
+
+    const seen = new Set();
+    for (let y = -722; y < -400; y++) {
+      st.time.year = y;
+      for (const c of reignChanges(st)) seen.add(c.to.id);
+    }
+    // 开局年（-722）及空档年无前任可考者不计（属数据缺载，非检测逻辑问题）
+    const should = RULERS.filter(n => n.role === 'ruler' && n.reign
+      && n.reign[0] > -722 && n.reign[0] <= -400);
+    const missed = should.filter(n => !seen.has(n.id));
+    ok(missed.length === 0, '区间内每次即位都被检出',
+      missed.length ? missed.slice(0, 3).map(n => n.name).join(',') : `${should.length} 次`);
+  }
+
+  // 6b) 空位年（前任已卒、新君未立）也要产生更替事件，且文案不出现 undefined
+  {
+    const { reignChanges, makeReignEvent, applyReignEffect } = await import('../js/systems/reign.js');
+    const st = newGame({ name: '试', profession: 'youxia', seed: 14, era: 'early' });
+    st.flags.noAutosave = true;
+
+    let total = 0, gap = 0, badText = 0, threw = 0;
+    for (let y = -722; y < -400; y++) {
+      st.time.year = y;
+      for (const c of reignChanges(st)) {
+        total++;
+        if (!c.from) gap++;
+        try {
+          const ev = makeReignEvent(st, c);
+          if (!ev.title || !ev.body || /undefined/.test(ev.title + ev.body)) badText++;
+          applyReignEffect(st, c);
+        } catch { threw++; }
+      }
+    }
+    ok(total > 100, '全区间更替事件数量', String(total));
+    ok(gap > 0, '存在空位年更替（史籍缺载）', String(gap));
+    ok(badText === 0, '更替事件文案无 undefined', String(badText));
+    ok(threw === 0, '空位年更替结算不抛错', String(threw));
+  }
+
+  // 6c) 端到端：reign 事件真的经月结入队、能结算、能存档往返
+  {
+    const { advanceDays } = await import('../js/systems/calendar.js');
+    const { pendingEvents, prepareEvent, resolveChoice } = await import('../js/systems/events.js');
+    const { migrateState } = await import('../js/state.js');
+
+    const st = newGame({ name: '试', profession: 'youxia', seed: 1, era: 'early' });
+    st.flags.noAutosave = true;
+    st.player.stateId = 'qi';              // 所仕之国更替必弹窗
+    st.time.year = -698; st.time.month = 1; st.time.day = 1;
+
+    let found = null;
+    for (let i = 0; i < 800 && !found; i++) {
+      advanceDays(st, 1);
+      found = pendingEvents(st).find(w => w.kind === 'reign') ?? null;
+    }
+    ok(!!found, '月结能把 reign 事件推入待处理队列', found?.ev?.title ?? '');
+    if (found) {
+      const prep = prepareEvent(st, found);
+      ok(/薨|立/.test(prep.ev.title), '更替事件标题正确', prep.ev.title);
+      const r = resolveChoice(st, prep.ev, prep.ev.choices[0], 'reign');
+      ok(r.ok, '更替事件可结算');
+      ok(!st.events.pending.some(p => p.id === found.ev.id), '结算后从队列移除');
+      let m = null;
+      try { m = migrateState(JSON.parse(JSON.stringify(st))); } catch { m = null; }
+      ok(!!m, '更替结算后仍可存档往返');
+    }
+  }
+
+  // 7) world.wars 迁移校验
+  {
+    const { migrateState } = await import('../js/state.js');
+    const st = newGame({ name: '试', profession: 'youxia', seed: 13 });
+    const raw = JSON.parse(JSON.stringify(st));
+    raw.world.wars = [
+      { a: 'qi', b: 'jin', since: 100 },
+      { a: 'nope', b: 'jin' },      // 非法国 id
+      { a: 'qi', b: 'qi' },         // 与自己交战
+      null,
+      '坏数据',
+      { a: 'jin', b: 'qi', since: 5 }, // 与 #1 重复（国对无序）
+    ];
+    const m = migrateState(raw);
+    ok(m.world.wars.length === 1, 'wars 只保留合法项', String(m.world.wars.length));
+    ok(m.world.wars[0].a === 'qi' && m.world.wars[0].b === 'jin', '保留的是首个合法国对');
+    ok(Number.isFinite(m.world.wars[0].since), 'since 为数值');
+
+    // 非数组也安全
+    const raw2 = JSON.parse(JSON.stringify(st));
+    raw2.world.wars = 'not-an-array';
+    ok(migrateState(raw2).world.wars.length === 0, '非数组 wars 归零');
+  }
+
+  // 8) 分庭抗礼的心性判定已接线
+  {
+    const { startParley, parleyAnswer } = await import('../js/systems/parley.js');
+    const { CITIES, STATES } = await import('../js/data/world.js');
+    let checked = 0, bad = 0;
+    for (const sid of Object.keys(STATES)) {
+      const st = newGame({ name: '试', profession: 'shangren', seed: 21, era: 'mibing' });
+      const court = CITIES.find(c => c.tags.includes('court') && st.world.owner[c.id] === sid);
+      if (!court) continue;
+      st.player.cityId = court.id;
+      st.player.money = 200000;
+      st.player.peakMoney = 200000;
+      st.player.fame = 200;
+      st.player.merchantRank = 5;
+      st.player.givenAway = 20000;
+      const pl = startParley(st, sid, 'price');
+      if (!pl.ok) continue;
+      ok(pl.heart && pl.heart !== undefined, `${sid} 交涉有心性`, pl.heart);
+
+      // 该题若有合心性选项，delta 必须含 +5
+      const q = pl.questions[0];
+      const hi = q.options.findIndex(o => o.tag === pl.heart);
+      const li = q.options.findIndex(o => o.tag && o.tag !== pl.heart);
+      if (hi >= 0) {
+        const before = pl.agreement;
+        parleyAnswer(st, pl, hi);
+        checked++;
+        if (pl.history[0].heartMod !== 5) bad++;
+        if (pl.agreement - before !== pl.history[0].delta) bad++;
+      } else if (li >= 0) {
+        const before = pl.agreement;
+        parleyAnswer(st, pl, li);
+        checked++;
+        if (pl.history[0].heartMod === 5) bad++;
+        if (pl.agreement - before !== pl.history[0].delta) bad++;
+      }
+      if (checked >= 6) break;
+    }
+    ok(checked >= 1, '至少验证到一场交涉的心性', String(checked));
+    ok(bad === 0, '合心性 +5 且 delta 与认同变化一致', String(bad));
+  }
+
   // 4) 修习弹窗关闭时清理 RAF 与键盘监听
   const trainSrc = fs.readFileSync(path.join(process.cwd(), 'js/ui/training.js'), 'utf8');
   ok(/onClose:\s*\(\)\s*=>/.test(trainSrc), '修习弹窗注册了 onClose 兜底清理');

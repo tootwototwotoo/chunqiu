@@ -4,6 +4,8 @@ import { PARLEY, PARLEY_QUESTIONS, PARLEY_THRESHOLD, PARLEY_TOPICS, MERCHANT_RAN
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, addLog, addFame, addMoney, skillLevel } from '../state.js';
 import { rankIndexOf } from './merchant.js';
+import { audienceHeart } from './audience.js';
+import { OPPOSITE } from '../data/debates/index.js';
 import { absDay, clamp, shuffle } from '../util.js';
 
 const isMerchant = (st) => player(st).profession === 'shangren';
@@ -50,7 +52,7 @@ export function startParley(st, stateId, topic = 'price') {
   return {
     ok: true,
     stateId, topic, heard,
-    heart: st.world.owner ? 'li' : 'li',
+    heart: audienceHeart(st, stateId),
     questions: picked, round: 1, maxRounds: 3,
     agreement: start, start, history: [], log: [],
     over: false, success: false,
@@ -67,9 +69,11 @@ export function parleyAnswer(st, pl, index) {
   const opt = q?.options?.[index];
   if (!opt) return pl;
   const base = BASE[opt.level] ?? 0;
-  const delta = base;
+  // 合心性 +5，被心性 -5，与廷对同一套表
+  const heartMod = opt.tag === pl.heart ? 5 : OPPOSITE[pl.heart] === opt.tag ? -5 : 0;
+  const delta = base + heartMod;
   pl.agreement = clamp(pl.agreement + delta, 0, 100);
-  pl.history.push({ round: pl.round, text: opt.text, level: opt.level, base, delta, agreement: pl.agreement });
+  pl.history.push({ round: pl.round, text: opt.text, level: opt.level, tag: opt.tag, base, heartMod, delta, agreement: pl.agreement });
   pl.log.push({ who: 'you', text: opt.text });
   pl.log.push({ who: 'ruler', text: opt.reply });
   pl.round++;

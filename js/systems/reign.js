@@ -29,8 +29,14 @@ export function reignChanges(st) {
   const out = [];
   for (const stateId of Object.keys(STATES)) {
     const curent = rulerAt(stateId, year);
-    const prev = rulerAt(stateId, year - 1);
-    if (!curent || !prev || curent.id === prev.id) continue;
+    if (!curent) continue;
+    // 以「本年即位」为准，不依赖去年是否有人在位。
+    // 前任卒年与新君即位年之间常有空档年（如晋侯缗 -678 卒、献公 -676 立），
+    // 用 rulerAt(year-1) 判定会漏掉这批更替。
+    if (reignOf(curent)[0] !== year) continue;
+    const prev = rulerAt(stateId, year - 1) ?? previousRuler(stateId, year);
+    if (prev?.id === curent.id) continue;
+    // prev 为空 = 前人已卒、新君未立的空位年（史籍多有缺载），仍算作「新君即位」
     out.push({ state: stateId, from: prev, to: curent });
   }
   return out;
@@ -40,15 +46,20 @@ export function reignChanges(st) {
 export function makeReignEvent(st, change) {
   const { state, from, to } = change;
   const stateName = STATES[state]?.name ?? state;
-  const fromSpan = reignOf(from);
-  const years = fromSpan[1] != null && fromSpan[0] != null ? fromSpan[1] - fromSpan[0] + 1 : null;
+  const fromSpan = from ? reignOf(from) : null;
+  const years = fromSpan && fromSpan[1] != null && fromSpan[0] != null
+    ? fromSpan[1] - fromSpan[0] + 1 : null;
+  // 无前任（空位年）时改写出「国人立之」的说法
+  const title = from ? `${from.name}薨，${to.name}即位` : `${to.name}立为${stateName}君`;
+  const body = from
+    ? `${from.name}${years ? `在位${years}年，` : ''}于本年薨。${to.name}继立。${to.desc ?? ''}`
+    : `${stateName}君位空悬已久。本年${to.name}立。${to.desc ?? ''}`;
   return {
     id: `reign_${state}_${to.id}`,
     state, from, to,
     effects: [],
-    title: `${from.name}薨，${to.name}即位`,
-    body: `${from.name}${years ? `在位${years}年，` : ''}于本年薨。`
-      + `${to.name}继立。${to.desc ?? ''}`,
+    title,
+    body,
     choices: [
       {
         label: '往吊旧君', hint: '重义',
@@ -82,12 +93,18 @@ export function applyReignEffect(st, change) {
   const { state, from, to } = change;
   const p = player(st);
 
-  // 旧君薨：国势下跌
-  st.world.power[state] = clamp((st.world.power[state] ?? 30) - 8, 5, 100);
-  // 新君即位：稍稍回升
-  st.world.power[state] = clamp((st.world.power[state] ?? 30) + 3, 5, 100);
-
-  const notes = [`${STATES[state]?.name ?? state}君位更迭，国势稍损。`];
+  const stateName = STATES[state]?.name ?? state;
+  const notes = [];
+  if (from) {
+    // 旧君薨：国势下跌；新君即位：稍稍回升
+    st.world.power[state] = clamp((st.world.power[state] ?? 30) - 8, 5, 100);
+    st.world.power[state] = clamp((st.world.power[state] ?? 30) + 3, 5, 100);
+    notes.push(`${stateName}君位更迭，国势稍损。`);
+  } else {
+    // 空位年立君：只是补位，不算旧君新丧，国势小幅回升
+    st.world.power[state] = clamp((st.world.power[state] ?? 30) + 3, 5, 100);
+    notes.push(`${stateName}久无君，本年立${to.name}，国人稍安。`);
+  }
 
   // 玩家若与该国有旧交：新君若是老朋友则保留，否则按初识处理
   const newRulerRel = p.relations?.[to.id];
@@ -102,14 +119,16 @@ export function applyReignEffect(st, change) {
     notes.push(`新君${to.name}与你素未谋面。`);
   }
 
-  // 旧君曾为知己：名声受损
-  const oldRel = p.relations?.[from.id];
+  // 旧君曾为知己：名声受损（无前任的空位年不适用）
+  const oldRel = from ? p.relations?.[from.id] : null;
   if (oldRel?.met && oldRel.aff >= 75) {
     addFame(st, -3, true);
     notes.push(`旧君${from.name}曾与你为知己，闻其薨，名声稍损。`);
   }
 
-  addLog(st, `${STATES[state]?.name ?? state}${from.name}薨，${to.name}即位。`, 'war');
+  addLog(st, from
+    ? `${STATES[state]?.name ?? state}${from.name}薨，${to.name}即位。`
+    : `${to.name}立为${STATES[state]?.name ?? state}君。`, 'war');
   return notes;
 }
 

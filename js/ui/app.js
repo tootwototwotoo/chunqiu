@@ -1,7 +1,7 @@
 // 应用外壳：HUD、路由、弹窗、事件队列
 import { addLog, saveGame, fullTitle, player, migrateState, AUTO_SAVE_ERROR, saveAuto } from '../state.js';
 import { dateLabel, seasonOf } from '../systems/calendar.js';
-import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent } from '../systems/events.js';
+import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent, eventKindLabel } from '../systems/events.js';
 import { esc } from '../util.js';
 import { computeEnding } from '../systems/progression.js';
 
@@ -284,7 +284,7 @@ class App {
     const wrapped = this.queue.shift();
     const prep = prepareEvent(st, wrapped);
     const ev = prep.ev;
-    const isTimeline = wrapped.kind === 'timeline';
+    const subLabel = eventKindLabel(wrapped.kind);
     const notesHtml = prep.notes?.length ? `<div class="footnote">${prep.notes.map(esc).join(' ')}</div>` : '';
     const baseBody = `<p style="line-height:1.95">${ev.body}</p>${notesHtml}`;
 
@@ -293,7 +293,7 @@ class App {
 
     const h = this.modal({
       title: ev.title,
-      sub: isTimeline ? `${dateLabel(st.time)} · 天下大势` : `${dateLabel(st.time)} · 际遇`,
+      sub: `${dateLabel(st.time)} · ${subLabel}`,
       wide: true,
       body: baseBody,
       event: { kind: wrapped.kind, id: ev.id },
@@ -310,7 +310,7 @@ class App {
       h.setFoot([]);
       onClick(h.bodyEl, '.choice-btn', (el) => {
         const choice = avail[+el.dataset.i];
-        const r = resolveChoice(st, ev, choice);
+        const r = resolveChoice(st, ev, choice, wrapped.kind);
         const resHtml = `<p style="line-height:1.95">${r.text}</p>` +
           (r.notes?.length ? `<div class="footnote">${r.notes.join(' ')}</div>` : '') +
           (r.checkInfo ? `<div class="footnote">判定：${r.checkInfo.success ? '成' : '不成'}（${r.checkInfo.roll} / ${r.checkInfo.dc}）</div>` : '');

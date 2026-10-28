@@ -1573,6 +1573,8 @@ export function lifeSpanOf(npc) {
   return { birth, death };
 }
 
+// 注意：算法与 util.hashSeed（FNV-1a）不同，刻意不合并——
+// 此值决定 82 位无卒年国君的推算卒年，一旦改动会使既有存档的世系漂移。
 function stableHash(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
