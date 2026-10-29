@@ -5,7 +5,7 @@ import { LINES } from '../data/debates/lines.js';
 import { isCareerProfession } from '../data/defs.js';
 
 import { player, addFame, addRel, addMoney, addMerit, addLog, addStamina, hasEvidence, R } from '../state.js';
-import { clamp, absDay } from '../util.js';
+import { clamp, absDay, shuffle } from '../util.js';
 
 const BIAS_NAME = { li: '好利', yi: '重义', ming: '好名', shi: '慕强' };
 export const biasName = (b) => BIAS_NAME[b] ?? '难测';
@@ -85,8 +85,13 @@ export function startDebate(st, npc, opts = {}) {
     category: opts.category, heart: npc?.bias, exclude: opts.exclude, npcId: npc?.id,
   });
   const heart = scenario.heart;
+  // 选项洗牌：数据里最优项（hit）几乎总写在第一位（实测 716/717），
+  // 不洗牌就等于「闭眼选第一项必胜」。用存档种子做确定性打乱，
+  // 同一存档同一场景的顺序稳定，便于测试与读档。
+  const shuffled = scenario.concerns.map(c => ({ ...c, options: shuffle(st, c.options) }));
+  const playScenario = { ...scenario, concerns: shuffled };
   return {
-    scenario, heart,
+    scenario: playScenario, heart,
     opponent: {
       name: npc?.name ?? scenario.opponent.name,
       title: npc?.title ?? scenario.opponent.title,

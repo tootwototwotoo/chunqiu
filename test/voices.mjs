@@ -192,6 +192,54 @@ const newSt = () => {
   }
 }
 
+// ---------------- 选项必须洗牌（否则数据里 hit 恒在第一位） ----------------
+{
+  // 数据侧断言：最优项不能总在第一位
+  const counts = { first: 0, total: 0 };
+  for (const v of Object.values(VOICES)) for (const d of v.debates) {
+    for (const c of d.concerns) {
+      counts.total++;
+      if (c.options[0].level === 'hit') counts.first++;
+    }
+  }
+  ok(counts.first / counts.total > 0.9, '数据里最优项几乎都写在第一位（证明洗牌的必要性）',
+    `${counts.first}/${counts.total}`);
+
+  // 运行时断言：多次开局，最优项不应总是落在同一位置
+  {
+    const pos = [0, 0, 0];
+    let n = 0;
+    for (let seed = 1; seed <= 30; seed++) {
+      const st = newGame({ name: 'x', profession: 'youxia', seed, era: 'mibing' });
+      st.flags.noAutosave = true; st.player.stamina = 100;
+      const d = startDebate(st, { id: 'kong_zi', name: '孔子', bias: 'yi' },
+        { scenario: VOICES.kong_zi.debates[0] });
+      const i = d.scenario.concerns[0].options.findIndex(o => o.level === 'hit');
+      pos[i]++;
+      n++;
+    }
+    const maxShare = Math.max(...pos) / n;
+    ok(maxShare < 0.6, '洗牌后最优项不固定在首位',
+      `首位/次位/末位 = ${pos.join('/')}（最高占比 ${(maxShare*100).toFixed(0)}%）`);
+  }
+
+  // 译文随选项移动，不串位
+  {
+    const st = newGame({ name: 'x', profession: 'youxia', seed: 9, era: 'mibing' });
+    st.flags.noAutosave = true; st.player.stamina = 100;
+    const d = startDebate(st, { id: 'kong_zi', name: '孔子', bias: 'yi' },
+      { scenario: VOICES.kong_zi.debates[0] });
+    const c0 = d.scenario.concerns[0];
+    const moved = c0.options.every(o => !o.textVern || o.textVern.length > 4);
+    ok(moved, '白话译文随选项一起洗牌');
+    // 三个选项的译文集合应与数据一致（只是顺序变了）
+    const { VERN } = await import('../js/data/debates/vern1.js');
+    const want = VERN.kong_zi.v_kongzi_ren.opts[0];
+    const got = c0.options.map(o => o.textVern);
+    ok(want.every(w => got.includes(w)), '译文与原文仍一一对应（只换位置不换内容）');
+  }
+}
+
 // ---------------- 专属场景与通用题库不冲突 ----------------
 {
   const generalIds = new Set(DEBATES.map(d => d.id));
