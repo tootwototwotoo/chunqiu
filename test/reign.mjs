@@ -298,7 +298,10 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   st.player.cityId = 'jiang';
   const here = npcsHere(st);
   const rulers = here.filter(n => n.def.role === 'ruler');
-  ok(rulers.length >= 1, '绛城有国君条目', String(rulers.length));
+  // 非在位国君（公子/前君）可全图游历（movement），因此都城不一定有国君条目；
+  // 至多一人在位的不变式仍须成立
+  ok(rulers.filter(n => n.stage === 'ruler').length <= 1, '绛城至多一位在位国君',
+    rulers.map(n => n.def.name + '/' + n.stage).join('/'));
 
   // 同一时刻至多一位 effectiveRole === 'ruler'
   const onThrone = here.filter(n => (n.effectiveRole ?? n.def.role) === 'ruler');
