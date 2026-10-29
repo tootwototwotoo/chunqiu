@@ -33,7 +33,7 @@ function makeTrial(st, rank, variant, extra = {}) {
   const target = variant.targetCity ?? 'luoyi';
   const route = target !== 'luoyi' ? (shortestPath('luoyi', target, st)?.days ?? 10) : 0;
   return {
-    rank, variantId: variant.id, targetCity: target,
+    rank, theme: meta.theme, variantId: variant.id, targetCity: target,
     status: extra.status ?? 'active',
     availableDay: extra.availableDay ?? now,
     startedDay: now,

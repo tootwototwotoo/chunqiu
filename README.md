@@ -226,6 +226,21 @@ npm run race    # 爵位竞速平衡模拟
 
 `test/consistency.mjs` 会静态扫描源码，一旦有人重新手抄这些清单即失败。
 
+## 代码约定：数据字段必须有消费方
+
+项目已四次出现「数据写了但没人读」的问题（`LOCAL_NOTABLES`、
+`PERMIT.trialBonus`、`voices.intro`、季隗的开场白）——数据齐全、运行不报错，
+只是永远不生效。
+
+`test/field-usage.mjs` 会从各数据模块抽出实际存在的字段名，再到非 data
+源码里找有没有读取痕迹（`.field` / `?.field` / `'field'`），找不到即失败。
+
+已知豁免写在 `ALLOW` 里，每条须注明理由：
+- 存档字段（由 `state.js` 的 `fill` / `defaults` 统一补齐校验）
+- NPC 静态描述字段（界面统一渲染）
+- 技艺 id（通过 `SKILL_DEFS` 遍历）
+- 字典项内与键同名的 `id`（字典由 `Object.values()` 消费）
+
 ### 地图标记
 
 舆图上可显示三类标记，并可在右上角「⚙ 标记」下拉中逐项开关：

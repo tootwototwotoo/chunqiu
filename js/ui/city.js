@@ -514,7 +514,7 @@ function trialActions(st, app, c) {
           const target = res.variant.targetCity ? CITY_MAP[res.variant.targetCity].name : '洛邑';
           app.modal({
             title: '领受册命之试',
-            sub: res.variant.title,
+            sub: res.trial.theme ? `${res.trial.theme} · ${res.variant.title}` : res.variant.title,
             body: `<p>${esc(res.variant.desc)}</p>
               <div class="kv"><dt>地点</dt><dd>${target}</dd><dt>限期</dt><dd>${res.trial.exp != null ? Math.max(0, res.trial.exp - (st.time.year + 722) * 360 - (st.time.month - 1) * 30 - st.time.day) : '—'} 日</dd></div>
               <div class="footnote">至${target}后即可开始；逾期则试炼失败，周室另命新试。</div>`,

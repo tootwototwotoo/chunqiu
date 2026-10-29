@@ -109,6 +109,8 @@ export function startDebate(st, npc, opts = {}) {
     // 开场白仅供界面展示，不参与判定：
     // B 级取 LINES，A 级取人物自己的 intro
     line: (npc?.id && LINES[npc.id]) || voiceOf(npc?.id)?.intro || null,
+    // 该人物的论辩主题（A 级才有），显示在弹窗副标题
+    theme: voiceOf(npc?.id)?.theme ?? null,
     over: false, result: null,
     npcId: npc?.id ?? null,
     opts,

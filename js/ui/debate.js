@@ -27,7 +27,11 @@ export function debateModal(app, st, npc, opts = {}) {
   let settled = null;
   const h = app.modal({
     title: `论辩 · ${d.opponent.name}`,
-    sub: `${d.scenario.title} · 心性：${biasName(d.heart)}`,
+    sub: [
+      d.theme ? `论题：${d.theme}` : null,
+      d.scenario.title,
+      `心性：${biasName(d.heart)}`,
+    ].filter(Boolean).join(' · '),
     wide: true,
     closable: false,
     body: '',
