@@ -15,6 +15,7 @@ import { O, Q, EV, S } from './_helper.js';
 import { VOICES2 } from './voices2.js';
 import { VOICES3 } from './voices3.js';
 import { VOICES_RULERS } from './voices-rulers.js';
+import { VOICES_GENERALS } from './voices-generals.js';
 
 // ---------------------------------------------------------------- 孔子
 const KONGZI = {
@@ -2194,4 +2195,5 @@ export const VOICES = {
   ...VOICES2,
   ...VOICES3,
   ...VOICES_RULERS,
+  ...VOICES_GENERALS,
 };
