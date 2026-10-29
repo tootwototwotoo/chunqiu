@@ -91,11 +91,11 @@ function bodyHtml(st, d) {
       <span>认同度 <b style="color:#3a2a1c">${Math.round(d.agreement)}</b> / 100</span>
     </div>
     ${barHtml(d)}
-    <div class="debate-speech">${esc(concern.q)}</div>
+    <div class="debate-speech">${esc(concern.q)}${concern.qVern ? `<div class="vern">${esc(concern.qVern)}</div>` : ''}</div>
     <div class="debate-opts">
       ${concern.options.map((o, i) => `
         <button class="debate-opt" data-opt="${i}">
-          <span class="opt-text">${esc(o.text)}</span>
+          <span class="opt-text">${esc(o.text)}${o.textVern ? `<div class="vern">${esc(o.textVern)}</div>` : ''}</span>
         </button>`).join('')}
     </div>
     ${evidenceHtml(st, d, concern)}

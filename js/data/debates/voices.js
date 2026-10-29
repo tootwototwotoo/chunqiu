@@ -17,6 +17,16 @@ import { VOICES2 } from './voices2.js';
 import { VOICES3 } from './voices3.js';
 import { VOICES_RULERS } from './voices-rulers.js';
 import { VOICES_GENERALS } from './voices-generals.js';
+import { VERN as VERN1 } from './vern1.js';
+import { VERN as VERN2 } from './vern2.js';
+import { VERN as VERN3 } from './vern3.js';
+import { VERN as VERN4 } from './vern4.js';
+import { VERN as VERN5 } from './vern5.js';
+import { VERN as VERN6 } from './vern6.js';
+import { VERN as VERN7 } from './vern7.js';
+import { VERN as VERN8 } from './vern8.js';
+import { VERN as VERN9 } from './vern9.js';
+import { VERN as VERN10 } from './vern10.js';
 
 // ---------------------------------------------------------------- 孔子
 const KONGZI = {
@@ -2233,6 +2243,8 @@ const RAW_VOICES = {
 };
 
 // 统一后处理：补 evidence.id / evidence.topic / scenario.topic
+// 白话翻译（vern*）：只覆盖问句与选项。人物回复与结局保留文言。
+
 export const VOICES = Object.fromEntries(
   Object.entries(RAW_VOICES).map(([npcId, v]) => [npcId, {
     ...v,
@@ -2254,7 +2266,14 @@ export const VOICES = Object.fromEntries(
             homeCity: d.evidence.homeCity ?? NPC_MAP[npcId]?.city ?? 'luoyi',
           }
         : null;
-      return { ...d, topic, evidence: ev };
+      const vern = [VERN1, VERN2, VERN3, VERN4, VERN5, VERN6, VERN7, VERN8, VERN9, VERN10]
+        .map(t => t[npcId]?.[d.id]).find(Boolean);
+      const concerns = d.concerns.map((c, i) => ({
+        ...c,
+        qVern: vern?.qs?.[i],
+        options: c.options.map((o, j) => ({ ...o, textVern: vern?.opts?.[i]?.[j] })),
+      }));
+      return { ...d, topic, evidence: ev, concerns };
     }),
   }]),
 );
