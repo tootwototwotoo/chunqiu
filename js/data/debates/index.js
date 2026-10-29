@@ -5,6 +5,7 @@ import military from './military.js';
 import court from './court.js';
 import trade from './trade.js';
 import { NPC_MAP } from '../npcs.js';
+import { VOICE_EVIDENCE } from './voices.js';
 
 const RAW = [...domestic, ...diplomacy, ...military, ...court, ...trade];
 
@@ -101,6 +102,14 @@ export const EVIDENCE_BY_ID = Object.fromEntries(DEBATES.map(d => [
   d.evidence.id,
   { ...d.evidence, scenarioId: d.id, category: d.category },
 ]));
+
+// 人物专属场景的证据同样要能查到——原先只由通用 DEBATES 构建，
+// 导致 48 场专属场景的 evidence 全为「并无此证据」。
+// voices.js 只依赖 _helper / npcs，不依赖本文件，故可直接静态导入
+//（曾用顶层 await 动态导入，会导致 esbuild 构建失败）。
+for (const [id, ev] of Object.entries(VOICE_EVIDENCE)) {
+  if (!EVIDENCE_BY_ID[id]) EVIDENCE_BY_ID[id] = ev;
+}
 
 export function validateDebates(list = DEBATES) {
   const errors = [];

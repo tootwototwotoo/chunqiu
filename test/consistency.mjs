@@ -123,7 +123,13 @@ const PROF_IDS = Object.keys(PROFESSIONS);
 {
   ok(DEBATES.length === 50, '50 个论辩场景', String(DEBATES.length));
   const evIds = Object.keys(EVIDENCE_BY_ID);
-  ok(evIds.length === 50, '50 件证据', String(evIds.length));
+  // 通用 50 件 + 人物专属场景附带 48 件
+  ok(evIds.length >= 50, '证据不少于通用场景数', String(evIds.length));
+  const { VOICE_EVIDENCE } = await import('../js/data/debates/voices.js');
+  const missing = Object.keys(VOICE_EVIDENCE).filter(id => !EVIDENCE_BY_ID[id]);
+  ok(missing.length === 0, '专属场景证据全部并入查找表', missing.join(','));
+  const noSource = Object.values(VOICE_EVIDENCE).filter(ev => !ev.source?.type);
+  ok(noSource.length === 0, '专属证据都有获取途径', noSource.map(e => e.id).join(','));
   const badBook = DEBATES.filter(d => d.evidence?.source?.type === 'market' && !BOOKSHOPS.includes(d.evidence.homeCity));
   ok(badBook.length === 0, '书肆证据都落在有书肆的城');
   const cheap = DEBATES.filter(d => d.evidence?.source?.type === 'market' && !(d.evidence.source.price >= 500));

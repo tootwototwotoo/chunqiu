@@ -1,6 +1,7 @@
 // 证据获取：查访 / 打听 / 购买（日常在城中完成）
 import { DEBATES, EVIDENCE_BY_ID, BOOKSHOPS } from '../data/debates/index.js';
 import { NPC_MAP } from '../data/npcs.js';
+import { VOICE_EVIDENCE } from '../data/debates/voices.js';
 import { player, addEvidence, hasEvidence, addStamina, addMoney, addLog, skillLevel, rel, R } from '../state.js';
 
 const DAY = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
@@ -11,9 +12,14 @@ export function unowned(st, list) {
 }
 
 export function investigateHere(st, cityId = player(st).cityId) {
-  return unowned(st, DEBATES
-    .filter(d => d.evidence.source.type === 'investigate' && d.evidence.homeCity === cityId)
-    .map(d => d.evidence));
+  // 通用场景证据 + 人物专属场景证据（后者原先不在查找范围内）
+  const all = [
+    ...DEBATES.map(d => d.evidence),
+    ...Object.values(VOICE_EVIDENCE),
+  ];
+  return unowned(st, all.filter(
+    ev => ev?.source?.type === 'investigate' && (ev.homeCity ?? ev.source.city) === cityId,
+  ));
 }
 
 export function marketHere(st, cityId = player(st).cityId) {

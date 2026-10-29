@@ -86,8 +86,35 @@ export function sourceIndexOf(root = 'js') {
   return { files, code: files.map(f => fs.readFileSync(f, 'utf8')).join('\n') };
 }
 
-const isRead = (code, key) =>
-  new RegExp(`\\.${key}(?![A-Za-z0-9_])`).test(code) || code.includes(`'${key}'`) || code.includes(`"${key}"`);
+// 判「被读取」的痕迹，都需带标识符边界。
+//
+// 原实现用 code.includes(`'concern'`) 这类子串匹配，导致字段名是另一个
+// 标识符的子串时静默放行：evidence.concern 全库无 .concern 访问，
+// 却因为源码里有 currentConcern 而被判为已读。
+//
+// 只认三种「真正读了它」的形态，不把任意同名标识符当证据：
+//   1) .key / ?.key          —— 属性访问
+//   2) 'key' / "key" / `key`  —— 字符串键（查表、白名单）
+//   3) { key } / { key:       —— 对象解构
+// 注意：正则里的点号必须用 String.raw 拼接。
+// 普通模板字符串里 `\.` 会在某些转义链上退化成 `.`，从而匹配任意字符——
+// 这正是 evidence.concern 长期漏报的原因：`const concern = ...` 里的
+// 空格被 `.` 匹配，误判为「有 .concern 属性访问」。
+const DOT = String.raw`\.`;
+// 引号字符类：单引号、双引号、反引号
+const QUOTES = "['\"`]";
+const identBoundary = (key) => `(?<![A-Za-z0-9_$])${key}(?![A-Za-z0-9_$])`;
+
+const isRead = (code, key) => {
+  const b = identBoundary(key);
+  // 1) 属性访问 .key / ?.key
+  if (new RegExp(DOT + key + String.raw`(?![A-Za-z0-9_])`).test(code)) return true;
+  // 2) 字符串键 'key' / "key" / `key`
+  if (new RegExp(QUOTES + b + QUOTES).test(code)) return true;
+  // 3) 对象解构 { key } 或 { key:
+  if (new RegExp(String.raw`\{[^}]{0,200}` + b + String.raw`\s*[,}:]`).test(code)) return true;
+  return false;
+};
 
 // 返回 [{ module, field }]，只报真正没人读的
 export function findUnconsumed(mods, { allow = ALLOW } = {}) {

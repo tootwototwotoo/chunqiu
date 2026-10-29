@@ -118,6 +118,80 @@ const newSt = () => {
   ok(seen[3] === seen[4], '封顶后不再加');
 }
 
+// ---------------- 专属场景的证据链路必须走通 ----------------
+{
+  const { EVIDENCE_BY_ID } = await import('../js/data/debates/index.js');
+  const { investigateHere } = await import('../js/systems/evidence.js');
+  const { useEvidence } = await import('../js/systems/debate.js');
+  const { addEvidence } = await import('../js/state.js');
+
+  const withEv = Object.entries(VOICES).flatMap(([id, v]) =>
+    v.debates.filter(d => d.evidence).map(d => ({ id, d })));
+  ok(withEv.length > 0, '存在带证据的专属场景', String(withEv.length));
+
+  // 1) 场景有 topic
+  const noTopic = withEv.filter(({ d }) => !d.topic);
+  ok(noTopic.length === 0, '专属场景都有 topic', noTopic.map(x => x.d.id).join(','));
+
+  // 2) evidence 有 id / topic / source
+  const badEv = withEv.filter(({ d }) =>
+    !d.evidence.id || !d.evidence.topic || !d.evidence.source?.type || !d.evidence.homeCity);
+  ok(badEv.length === 0, '专属证据字段完整（id/topic/source/homeCity）',
+    badEv.map(x => x.d.id).join(','));
+
+  // 3) 证据已并入全局查找表
+  const unindexed = withEv.filter(({ d }) => !EVIDENCE_BY_ID[d.evidence.id]);
+  ok(unindexed.length === 0, '专属证据已并入 EVIDENCE_BY_ID',
+    unindexed.map(x => x.d.id).join(','));
+
+  // 4) evidence.topic 与场景 topic 一致（否则出示必被拒）
+  const mismatch = withEv.filter(({ d }) => d.evidence.topic !== d.topic);
+  ok(mismatch.length === 0, '证据 topic 与场景 topic 一致',
+    mismatch.map(x => `${x.d.id}:${x.d.evidence.topic}≠${x.d.topic}`).join(','));
+
+  // 5) 该证据可在人物所在城查访到
+  const unreachable = [];
+  for (const { id, d } of withEv) {
+    const st2 = newSt();
+    st2.player.cityId = d.evidence.homeCity;
+    if (!investigateHere(st2, d.evidence.homeCity).some(ev => ev.id === d.evidence.id)) {
+      unreachable.push(`${id}/${d.id}`);
+    }
+  }
+  ok(unreachable.length === 0, '专属证据可在对应城池查访到',
+    unreachable.slice(0, 3).join(','));
+
+  // 6) 端到端：拿到 → 出示 → 认同度上升
+  {
+    const st3 = newSt();
+    const { id, d } = withEv.find(x => x.id === 'kong_zi') ?? withEv[0];
+    addEvidence(st3, d.evidence.id);
+    st3.player.stamina = 100;
+    const deb = startDebate(st3, { id, name: NPC_MAP[id].name, bias: NPC_MAP[id].bias }, { scenario: d });
+    const before = deb.agreement;
+    const r = useEvidence(st3, deb, d.evidence.id);
+    ok(r.ok, '专属证据可出示', r.msg ?? '');
+    ok(deb.agreement > before, '出示后认同度上升', `${before} → ${deb.agreement}`);
+    ok(deb.evidenceUsed, '出示后标记已用');
+  }
+
+  // 7) 通用证据在专属场景中按 topic 判定（不匹配则拒）
+  {
+    const st4 = newSt();
+    const { d } = withEv[0];
+    const other = Object.values(EVIDENCE_BY_ID).find(ev => ev.topic && ev.topic !== d.topic);
+    if (other) {
+      addEvidence(st4, other.id);
+      st4.player.stamina = 100;
+      const deb = startDebate(st4, { id: 'kong_zi', name: '孔子', bias: 'yi' }, { scenario: d });
+      const r = useEvidence(st4, deb, other.id);
+      ok(!r.ok, 'topic 不符的通用证据被拒', r.msg ?? '');
+    } else {
+      ok(true, 'topic 不符的通用证据被拒（无可用样本，跳过）');
+    }
+  }
+}
+
 // ---------------- 专属场景与通用题库不冲突 ----------------
 {
   const generalIds = new Set(DEBATES.map(d => d.id));

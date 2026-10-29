@@ -305,6 +305,11 @@ npm run race    # 爵位竞速平衡模拟
 
 两个检查互补：前者防「数据没人读」，后者防「函数没人调」。
 
+`field-usage` 自身也曾有盲区：判定「被读取」原先用子串匹配
+（`code.includes('concern')`），而正则里的点号在多层转义后会退化成
+任意字符，导致 `evidence.concern` 长期漏报。现收紧为三种带标识符
+边界的形态：`.key` / `'key'` / `{ key }`，且点号一律用 `String.raw` 拼接。
+
 `test/data-integrity.mjs` 查数据之间的引用关系，分三组：
 
 | 组 | 内容 | 是否阻断 |

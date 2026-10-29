@@ -12,6 +12,7 @@
 // 累计上限 +15（见 systems/debate.js 的 familiarity）。
 
 import { O, Q, EV, S } from './_helper.js';
+import { NPC_MAP } from '../npcs.js';
 import { VOICES2 } from './voices2.js';
 import { VOICES3 } from './voices3.js';
 import { VOICES_RULERS } from './voices-rulers.js';
@@ -2163,7 +2164,40 @@ const CHANG_HONG = {
   ],
 };
 
-export const VOICES = {
+// 场景主题：专属场景的 evidence 需要 topic 才能与玩家持有的通用证据匹配。
+// 原先这批场景没有 topic，导致证据链路整体失效（useEvidence 恒判「无关」）。
+// 用显式映射而非关键词推断——推断在「仓廪实而知礼节」这类标题上会错。
+const SCENE_TOPIC = {
+  // 兵事
+  v_mozi_feigong: 'army', v_sunwu_guidao: 'army', v_gongshu_yunti: 'army',
+  v_zilu_yong: 'army', v_wenzhong_qishu: 'army', v_jianshu_yao: 'army',
+  v_jinwen_san: 'army', v_qinmu_yao: 'army', v_songxiang_hong: 'army',
+  v_helu_wu: 'army', v_caogui_gu: 'army', v_xianzhen_gui: 'army',
+  v_rangju_jia: 'army', v_youji_she: 'army', v_shuliang_men: 'army',
+  v_weishu_che: 'army', v_xibo_an: 'army',
+  // 邦交
+  v_yanying_ju: 'diplomacy', v_zhuzhiwu_pei: 'diplomacy', v_zigong_cunlu: 'diplomacy',
+  v_shenbaoxu_kuting: 'diplomacy', v_qihuan_bo: 'diplomacy', v_chucheng_qi: 'diplomacy',
+  v_jindao_fu: 'diplomacy', v_caomo_jie: 'diplomacy',
+  // 法刑
+  v_zichan_xing: 'law', v_hanfei_fa: 'law', v_shique_mieqin: 'law',
+  v_shuxiang_xingshu: 'law',
+  // 礼乐
+  v_jizha_yue: 'ritual', v_xunzi_xing_e: 'ritual', v_zengshen_sanxing: 'ritual',
+  v_wangsunman_ding: 'ritual',
+  // 货殖
+  v_guanzhong_canglin: 'trade',
+  // 民情
+  v_mozi_jianai: 'people', v_yihe_gu: 'people',
+  // 朝政（其余）
+  v_kongzi_ren: 'court', v_laozi_wuwei: 'court', v_fanli_gongcheng: 'court',
+  v_zixu_chou: 'court', v_zhuangzi_xiaoyao: 'court', v_mengzi_yili: 'court',
+  v_yanhui_le: 'court', v_jizha_rang: 'court', v_bailixi_wuyang: 'court',
+  v_chuzhuang_ming: 'court', v_zhengzhuang_duan: 'court', v_goujian_huiji: 'court',
+};
+const topicFor = (d) => d.topic ?? SCENE_TOPIC[d.id] ?? 'court';
+
+const RAW_VOICES = {
   kong_zi: KONGZI,
   lao_zi: LAOZI,
   mo_zi: MOZI,
@@ -2197,3 +2231,38 @@ export const VOICES = {
   ...VOICES_RULERS,
   ...VOICES_GENERALS,
 };
+
+// 统一后处理：补 evidence.id / evidence.topic / scenario.topic
+export const VOICES = Object.fromEntries(
+  Object.entries(RAW_VOICES).map(([npcId, v]) => [npcId, {
+    ...v,
+    debates: v.debates.map((d) => {
+      const topic = topicFor(d);
+      const ev = d.evidence
+        ? {
+            ...d.evidence,
+            id: d.evidence.id ?? `${d.id}_ev`,
+            topic: d.evidence.topic ?? topic,
+            // 专属证据的获取途径：到该人物所在城查访（尚未持有者可在城中查到）。
+            // 原先这批证据只写了文案，没有任何 source，玩家永远拿不到。
+            source: d.evidence.source ?? {
+              type: 'investigate',
+              skill: 'quanmou',
+              dc: 46,
+              city: NPC_MAP[npcId]?.city ?? 'luoyi',
+            },
+            homeCity: d.evidence.homeCity ?? NPC_MAP[npcId]?.city ?? 'luoyi',
+          }
+        : null;
+      return { ...d, topic, evidence: ev };
+    }),
+  }]),
+);
+
+// 专属场景的证据并入查找表（原先只由通用 DEBATES 构建，这些证据查不到）
+export const VOICE_EVIDENCE = Object.fromEntries(
+  Object.entries(VOICES).flatMap(([npcId, v]) =>
+    v.debates.filter(d => d.evidence).map(d => [
+      d.evidence.id,
+      { ...d.evidence, scenarioId: d.id, npcId, category: d.category },
+    ])));
