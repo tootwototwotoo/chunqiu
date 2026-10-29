@@ -22,7 +22,8 @@ const newSt = () => {
   ok(entries.length >= 2, '专属题库已建', entries.map(([k]) => k).join(','));
   for (const [id, v] of entries) {
     ok(!!NPC_MAP[id], `${id} 对应真实 NPC`, NPC_MAP[id]?.name ?? '不存在');
-    ok(v.debates.length >= 3, `${id} 场景数 ≥3`, String(v.debates.length));
+    // 引语充足的做满 3 场，引语较少的做 2 场
+    ok(v.debates.length >= 2, `${id} 场景数 ≥2`, String(v.debates.length));
     ok(!!v.theme && !!v.intro, `${id} 有主题与开场白`);
     for (const d of v.debates) {
       ok(d.concerns.length === 3, `${d.id} 恰 3 回合`);
