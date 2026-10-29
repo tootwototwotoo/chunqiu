@@ -8,6 +8,7 @@ import { GOODS } from '../data/goods.js';
 import { NPC_MAP, npcAlive, rulerStageOf } from '../data/npcs.js';
 import { HISTORY_MOVES, cityAt, MOVE_PROFILE, WANDER, RULER_WANDER } from './movement.js';
 import { collectTimeline, rollRandomEvent } from './events.js';
+import { collectArrivals } from './arrivals.js';
 import { expireQuests } from './quests.js';
 import { checkPromotion } from './progression.js';
 import { checkTrialExpiry } from './peerage.js';
@@ -101,6 +102,8 @@ function onMonth(st, out) {
 
   // 历史事件
   for (const ev of collectTimeline(st)) out.events.push(ev);
+  // 人物流动事件（抵达新城市）
+  for (const ev of collectArrivals(st)) out.events.push(ev);
   // 随机事件
   if (R.chance(st, 0.4)) {
     const ev = rollRandomEvent(st);

@@ -204,6 +204,12 @@ export const EVENT_KINDS = {
     find: (st, id, def) => def ?? { id },
     snapshot: snapshotOf,
   },
+  arrival: {
+    label: '人物流动',
+    // 到达事件在触发时即已构建完整定义，从快照还原
+    find: (st, id, def) => def ?? { id },
+    snapshot: snapshotOf,
+  },
 };
 
 export function isEventKind(kind) {

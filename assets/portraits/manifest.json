@@ -16,19 +16,10 @@
     },
     "guan_zhong": {
       "name": "管仲",
-      "src": "assets/portraits/guan_zhong-v2-512.png",
+      "src": "assets/portraits/guan_zhong-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 494540,
-      "previous_versions": [
-        {
-          "name": "管仲",
-          "src": "assets/portraits/guan_zhong-512.png",
-          "width": 512,
-          "height": 512,
-          "bytes": 462353
-        }
-      ]
+      "bytes": 485717
     },
     "fan_li": {
       "name": "范蠡",
@@ -46,10 +37,19 @@
     },
     "xi_shi": {
       "name": "西施",
-      "src": "assets/portraits/xi_shi-512.png",
+      "src": "assets/portraits/xi_shi-v2-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 483837
+      "bytes": 485372,
+      "previous_versions": [
+        {
+          "name": "西施",
+          "src": "assets/portraits/xi_shi-512.png",
+          "width": 512,
+          "height": 512,
+          "bytes": 483837
+        }
+      ]
     }
   }
 }
