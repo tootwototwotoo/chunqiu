@@ -304,10 +304,16 @@ const ok = (c, m, x = '') => { console.log(`${c ? '✓' : '✗'} ${m}${x ? ' —
   const onThrone = here.filter(n => (n.effectiveRole ?? n.def.role) === 'ruler');
   ok(onThrone.length <= 1, '同城至多一位在位国君', onThrone.map(n => n.def.name).join('/'));
 
-  // 非在位的国君条目应显示为公子/前国君
+  // 非在位的国君条目应显示为公子/前国君 + 本名（有本名者）
   for (const n of rulers) {
-    if (n.stage === 'prince') ok(stageLabel(n) === '公子', `${n.def.name} 显示为公子`, stageLabel(n));
-    if (n.stage === 'retired') ok(stageLabel(n) === '前国君', `${n.def.name} 显示为前国君`, stageLabel(n));
+    if (n.stage === 'prince') {
+      const want = n.def.given ? `公子${n.def.given}` : '公子';
+      ok(stageLabel(n) === want, `${n.def.name} 公子阶段显示`, stageLabel(n));
+    }
+    if (n.stage === 'retired') {
+      const want = n.def.given ? `前君${n.def.given}` : '前国君';
+      ok(stageLabel(n) === want, `${n.def.name} 退位阶段显示`, stageLabel(n));
+    }
   }
 }
 

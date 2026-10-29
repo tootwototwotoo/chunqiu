@@ -68,12 +68,23 @@ export function skillRowHtml(st, k, canTrain) {
 
 
 // 国君随年份在「公子 / 国君 / 前国君」之间变化，称号随之改变
-export function stageLabel(npcLike) {
-  const { def, effectiveRole } = npcLike ?? {};
+// 国君的显示名：在位用谥号（史书惯例），非在位且有本名则用本名。
+// 谥号是死后才有的——公子阶段叫「宋襄公」是穿越，该叫「公子兹父」。
+export function displayNameOf(npcLike, stage) {
+  const { def } = npcLike ?? {};
   if (!def) return '';
-  const role = effectiveRole ?? def.role;
-  if (role === 'prince') return '公子';
-  if (role === 'retired') return '前国君';
+  const st = stage ?? npcLike?.stage ?? npcLike?.effectiveRole;
+  if (def.role !== 'ruler' || st === 'ruler') return def.name;
+  if (def.given) return def.given;
+  return def.name;   // 无本名者暂用谥号（宁可将就，不造名）
+}
+
+export function stageLabel(npcLike) {
+  const { def, effectiveRole, stage } = npcLike ?? {};
+  if (!def) return '';
+  const role = effectiveRole ?? stage ?? def.role;
+  if (role === 'prince') return def.given ? `公子${def.given}` : '公子';
+  if (role === 'retired') return def.given ? `前君${def.given}` : '前国君';
   if (role === 'ruler') return def.title ?? '国君';
   return def.title ?? '';
 }

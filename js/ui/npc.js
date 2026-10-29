@@ -7,7 +7,7 @@ import { talk, giveGift, learnFrom, teachInfo, giftCandidates, npcDuelInfo, heal
 import { biasName, BIAS_TIP } from '../systems/debate.js';
 import { duelModal } from './minigames.js';
 import { debateModal, categoryForRole } from './debate.js';
-import { skillName, onClick, avatar, relTierName, stageLabel } from './common.js';
+import { skillName, onClick, avatar, relTierName, stageLabel, displayNameOf } from './common.js';
 import { esc } from '../util.js';
 
 import { npcEvidence, askNpc } from '../systems/evidence.js';
@@ -17,8 +17,9 @@ export function openNpc(app, st, npcId) {
   const def = NPC_MAP[npcId];
   const atHome = st.npc[npcId]?.city === st.player.cityId;
 
+  const shownName = displayNameOf({ def, stage: st.npc[npcId]?.stage }, st.npc[npcId]?.stage);
   const handle = app.modal({
-    title: def.name,
+    title: shownName,
     sub: `${stageLabel({ def, stage: st.npc[npcId]?.stage })} · ${STATES[def.state].name}国 · ${CITY_MAP[def.city].name}`,
     wide: true,
     body: '',
@@ -32,7 +33,7 @@ export function openNpc(app, st, npcId) {
       <div class="dialog-line">
         ${avatar(def.name, STATES[def.state].color)}
         <div class="dl-body">
-          <div class="dl-name">${def.name} · ${def.title}</div>
+          <div class="dl-name">${shownName} · ${stageLabel({ def, stage: st.npc[npcId]?.stage })}</div>
           <div class="dl-text">「${def.quote}」</div>
         </div>
       </div>
