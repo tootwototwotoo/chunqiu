@@ -5,13 +5,15 @@ import {
 import { RANKS, PEERAGES } from '../data/defs.js';
 import { CITIES, CITY_MAP, STATES } from '../data/world.js';
 import { GOODS } from '../data/goods.js';
-import { NPC_MAP, npcAlive } from '../data/npcs.js';
+import { NPC_MAP, npcAlive, rulerStageOf } from '../data/npcs.js';
+import { HISTORY_MOVES, cityAt, MOVE_PROFILE, WANDER, RULER_WANDER } from './movement.js';
 import { collectTimeline, rollRandomEvent } from './events.js';
 import { expireQuests } from './quests.js';
 import { checkPromotion } from './progression.js';
 import { checkTrialExpiry } from './peerage.js';
 import { tickPolicy } from './policy.js';
 import { totalShopIncome, totalWages, trackPeakMoney } from './merchant.js';
+import { shortestPath } from './pathfind.js';
 import { tickPacts } from './pact.js';
 import { collectReignChanges, applyReignEffect } from './reign.js';
 import { yearLabel, monthLabel, clamp } from '../util.js';
@@ -184,10 +186,11 @@ function monthIncome(st, out) {
 }
 
 function syncNpcs(st, out) {
+  const year = st.time.year;
   for (const n of Object.values(st.npc)) {
     const def = NPC_MAP[n.id];
     if (!def) continue;
-    const alive = npcAlive(def, st.time.year);
+    const alive = npcAlive(def, year);
     if (!alive && n.alive) {
       n.alive = false;
       const r = rel(st, n.id);
@@ -198,7 +201,58 @@ function syncNpcs(st, out) {
     } else if (alive && !n.alive) {
       n.alive = true;
     }
+    // 流动：史载轨迹优先，其次规则游历
+    const target = npcCityAt(st, def, n);
+    if (target && target !== n.city) {
+      const from = n.city;
+      n.city = target;
+      // 与玩家相识的人搬走时，提示一句（限相识者，避免刷屏）
+      const r = rel(st, n.id);
+      if (r.met) {
+        const toName = CITY_MAP[target]?.name ?? target;
+        out.notes.push(`${def.name}已前往${toName}。`);
+        addLog(st, `闻${def.name}之${toName}。`);
+      }
+      void from;
+    }
   }
+}
+
+// 某角色当前应在的城：史载轨迹 → 规则游历 → 原城
+function npcCityAt(st, def, entry) {
+  const year = st.time.year;
+  // 1) 史载轨迹
+  if (HISTORY_MOVES[def.id]) return cityAt(def, year);
+
+  // 2) 规则流动
+  const profile = MOVE_PROFILE[def.role] ?? 'none';
+  if (profile === 'none') return entry.city;
+  const stage = def.role === 'ruler' ? rulerStageOf(def, year) : null;
+  if (def.role === 'ruler' && stage === 'ruler') return entry.city;  // 在位不动
+
+  const cfg = profile === 'special' ? RULER_WANDER : WANDER;
+  // 只在「间隔年」的 1 月掷骰，减少月结成本
+  if (year % cfg.intervalYears !== 0 || st.time.month !== 1) return entry.city;
+  const key = 'moved_' + def.id;
+  const lastMoved = st.flags[key] ?? -9999;
+  if (year - lastMoved < cfg.intervalYears) return entry.city;
+  if (!R.chance(st, cfg.chance)) return entry.city;
+
+  // 目标：本国其余城 + 路程可达的邻国城
+  const isRuler = def.role === 'ruler';
+  const pool = Object.values(CITY_MAP).filter(c => {
+    if (c.id === entry.city) return false;
+    // 在位国君的公子仍在国都；非在位者全图可去
+    if (!isRuler && c.state !== def.state) {
+      const d = shortestPath(entry.city, c.id, st)?.days ?? 99;
+      if (d == null || d > cfg.maxRoadDays) return false;
+    }
+    return true;
+  });
+  if (!pool.length) return entry.city;
+  const dest = R.pick(st, pool);
+  st.flags[key] = year;
+  return dest.id;
 }
 
 // 休息：住店恢复
