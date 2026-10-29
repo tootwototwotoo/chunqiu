@@ -38,29 +38,45 @@ const ALLOW = {
   // 字典项内与键同名的 id：字典本身由 Object.values() 遍历消费，
   // 取出的对象再用 .id 引用（如 GIVEAWAYS / PARLEY_TOPICS / VEHICLES）
   __dictId: ['relief', 'passage'],
+  // evidence.concern：标注该证据对应第几轮顾虑（1/2/3）。
+  // 它不参与判定——匹配改由 topic 承担；保留它是为了叙事定位（写到第几问时
+  // 该出示），删掉会丢失作者意图。故登记豁免而非清理。
+  __evidenceMeta: ['concern'],
 };
 
 // 只收集「对象的字段名」，不收集字典的键（如 NPC_MAP 的 id、VOICES 的 npcId）——
 // 那些键是数据标识，代码里以变量索引，不会出现字面量。
 // 判断方式：顶层容器若是「键→对象」的纯字典，则先下沉一层。
-export function collectFields(obj, { depth = 3, sample = 2 } = {}) {
-  // 纯字典：键几乎全是标识符形态（小写下划线），且值的类型单一。
-  // 用比例而非全等判断，避免个别异常键把整张字典误判成对象。
+// depth 与是否有 sample 截断都直接影响覆盖面：
+// 原先 sample=2 只遍历数组前两项，孔子三场论辩的第 3 场独有字段会被跳过，
+// 且 depth=3 到不了 concerns[].options[] 这一层——实测对 VOICES 只收集到
+// 16 个字段（全量为 106 个），等于检查器在这类数据上近乎失效。
+export function collectFields(obj, { depth = 10 } = {}) {
+  // 纯字典（键是数据标识，不参与字段检查）的两个判据：
+  //   a) 键几乎全是标识符形态，且**值全是对象**——NPC_MAP / CITY_MAP / VOICES
+  //   b) 键数很多且值全为标量——LINES 这类「id → 文案」表
+  //
+  // 不能只凭「键是标识符 + 值单一类型」判定：evidence.source 只有
+  // { type, skill, dc, city } 四个字段，也满足那个条件，会被整体跳过。
   const isDict = (v) => {
     if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
     const keys = Object.keys(v);
     if (keys.length < 4) return false;
     const identLike = keys.filter(k => /^[a-z][a-z0-9_]*$/.test(k)).length;
     if (identLike / keys.length < 0.9) return false;
-    const kinds = new Set(keys.map(k => (v[k] && typeof v[k] === 'object' ? 'obj' : 'scalar')));
-    return kinds.size === 1;
+    const allObj = keys.every(k => v[k] && typeof v[k] === 'object');
+    if (allObj) return true;
+    // 值全为标量时，只有键数明显多于「普通对象字段数」才认为是查表
+    const allScalar = keys.every(k => !v[k] || typeof v[k] !== 'object');
+    return allScalar && keys.length >= 20;
   };
 
   const seen = new Set();
   const visit = (v, d, skipKeys) => {
     if (!v || typeof v !== 'object' || d > depth) return;
     if (Array.isArray(v)) {
-      for (const x of v.slice(0, sample)) visit(x, d + 1, false);
+      // 全量遍历：数组元素的独有字段同样要收集
+      for (const x of v) visit(x, d + 1, false);
       return;
     }
     for (const [k, val] of Object.entries(v)) {
@@ -153,5 +169,39 @@ if (process.argv[1]?.endsWith('field-usage.mjs')) {
   const bad = findUnconsumed(mods);
   for (const { module, field } of bad) console.log(`✗ ${module}.${field} 从未被读取`);
   console.log(bad.length ? `\n发现 ${bad.length} 个未消费字段 ✗` : '\n数据字段全部有消费方 ✓');
-  process.exit(bad.length ? 1 : 0);
+
+  // ---------------- 自查：检查器本身必须能被验证 ----------------
+  // 「全绿」不足以证明检查器有效——它可能只是因为收集不到字段而永远不报。
+  // 下面几条负向用例保证：喂入已知死数据时，必须真的报警。
+  let selfFails = 0;
+  const expect = (cond, msg) => { console.log(`${cond ? '✓' : '✗'} ${msg}`); if (!cond) selfFails++; };
+
+  // 1) 最小负例：数组第 3 项独有的字段（曾被 sample=2 截断吞掉）
+  {
+    const probe = { list: [{ a: 1 }, { a: 1 }, { zzzDeepField: 1 }] };
+    const got = collectFields(probe);
+    expect(got.has('zzzDeepField'), '收集器能到达数组末尾元素');
+    expect(findUnconsumed({ probe }).some(h => h.field === 'zzzDeepField'),
+      '数组中深层独有字段会被报出');
+  }
+
+  // 2) 嵌套 object 的字段（曾被 isDict 误判成字典而整体跳过）
+  {
+    const probe = { evidence: { zzzNestedField: 1, b: 2, c: 3, d: 4 } };
+    expect(findUnconsumed({ probe }).some(h => h.field === 'zzzNestedField'),
+      '嵌套小对象的字段会被报出');
+  }
+
+  // 3) 真字典的键不应被报（否则会产生海量噪音）
+  {
+    const probe = { map: { aaa: { x: 1 }, bbb: { x: 1 }, ccc: { x: 1 }, ddd: { x: 1 } } };
+    const hit = findUnconsumed({ probe });
+    expect(!hit.some(h => ['aaa', 'bbb', 'ccc', 'ddd'].includes(h.field)), '字典的键不被误报');
+  }
+
+  // 4) 已被读取的字段不应报
+  expect(!findUnconsumed({ probe: { topic: 1 } }).some(h => h.field === 'topic'),
+    '有消费方的字段不报');
+
+  process.exit(bad.length || selfFails ? 1 : 0);
 }
