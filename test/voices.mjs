@@ -58,9 +58,9 @@ const newSt = () => {
 // ---------------- 无专属题库者仍用通用 ----------------
 {
   const st = newSt();
-  ok(voiceOf('zi_chan') === null || voiceOf('zi_chan') === undefined, '未建库者无专属');
+  ok(voiceOf('ji_liang') === null || voiceOf('ji_liang') === undefined, '未建库者无专属');
   const ids = new Set();
-  for (let i = 0; i < 300; i++) ids.add(pickDebateScenario(st, { npcId: 'zi_chan' }).id);
+  for (let i = 0; i < 300; i++) ids.add(pickDebateScenario(st, { npcId: 'ji_liang' }).id);
   ok([...ids].every(id => !id.startsWith('v_')), '未建库者只抽通用题库');
   ok(ids.size > 1, '通用题库有多个场景', String(ids.size));
 }

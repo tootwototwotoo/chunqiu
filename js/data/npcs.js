@@ -1712,6 +1712,15 @@ export const NPCS = [
   { id: 'hua_fu', name: '华孟子', title: '宋之妇', state: 'song', city: 'shangqiu', birth: -560, death: -500, role: 'noble',
     stats: { wu: 30, zhi: 76, zheng: 70, mei: 76 }, skills: { quanmou: 5 }, bias: 'yi', pref: 'si', teach: ['quanmou'],
     insight: 'people', quote: '华氏之祸，吾与焉。', desc: '宋华氏之女，华向之乱奔陈。《春秋》载宋华合比出奔卫，其族预焉。' },
+  { id: 'meng_zi', name: '孟子', title: '邹之学者', state: 'lu', city: 'qufu', birth: -372, death: -289, role: 'scholar',
+    stats: { wu: 30, zhi: 92, zheng: 86, mei: 82 }, skills: { xuewen: 10, biancai: 10 }, bias: 'yi', pref: 'si', teach: ['xuewen', 'biancai'],
+    quote: '生，亦我所欲也；义，亦我所欲也。二者不可得兼，舍生而取义者也。', desc: '名轲，邹人，受业于子思之门人。历游齐梁，说王道，不用。退而与万章之徒作《孟子》七篇。' },
+  { id: 'xun_zi', name: '荀子', title: '稷下祭酒', state: 'qi', city: 'linzi', birth: -313, death: -238, role: 'scholar',
+    stats: { wu: 32, zhi: 92, zheng: 88, mei: 74 }, skills: { xuewen: 10, quanmou: 8 }, bias: 'li', pref: 'si', teach: ['xuewen', 'quanmou'],
+    quote: '天行有常，不为尧存，不为桀亡。', desc: '名况，赵人。三为稷下祭酒，后为兰陵令。倡性恶、隆礼重法，弟子李斯、韩非。' },
+  { id: 'han_fei', name: '韩非', title: '韩之公子', state: 'zheng', city: 'xinzheng', birth: -280, death: -233, role: 'scholar',
+    stats: { wu: 30, zhi: 94, zheng: 84, mei: 64 }, skills: { quanmou: 10, xuewen: 9, biancai: 6 }, bias: 'li', pref: 'su', teach: ['quanmou', 'xuewen'],
+    quote: '不期修古，不法常可。', desc: '韩之公子，师事荀卿。著《孤愤》《五蠹》，秦王读而叹「嗟乎，寡人得见此人与之游，死不恨矣」。后为李斯所害。' },
 
   ...LOCAL_NOTABLE_LIST,
 ];
