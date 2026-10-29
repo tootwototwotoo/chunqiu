@@ -1,6 +1,7 @@
 // 三回合论辩：认同度、三选一、证据与三档结局
 import { DEBATES, EVIDENCE_BY_ID, TAGS, OPPOSITE, TOPIC_NAMES } from '../data/debates/index.js';
 import { VOICES } from '../data/debates/voices.js';
+import { LINES } from '../data/debates/lines.js';
 import { isCareerProfession } from '../data/defs.js';
 
 import { player, addFame, addRel, addMoney, addMerit, addLog, addStamina, hasEvidence, R } from '../state.js';
@@ -95,7 +96,19 @@ export function startDebate(st, npc, opts = {}) {
     agreement: 50 + familiarityOf(st, npc?.id, scenario.id),
     familiar: familiarityOf(st, npc?.id, scenario.id),
     evidenceUsed: false, evidenceApplied: false,
-    history: [], log: [scenario.desc, `${npc?.name ?? scenario.opponent.name}：「${scenario.concerns[0].q}」`],
+    history: [],
+    log: [
+      scenario.desc,
+      // 先自陈一句，再入题（B 级取 LINES，A 级取人物 intro）
+      ...(() => {
+        const own = (npc?.id && LINES[npc.id]) || voiceOf(npc?.id)?.intro;
+        return own ? [`${npc.name}：「${own}」`] : [];
+      })(),
+      `${npc?.name ?? scenario.opponent.name}：「${scenario.concerns[0].q}」`,
+    ],
+    // 开场白仅供界面展示，不参与判定：
+    // B 级取 LINES，A 级取人物自己的 intro
+    line: (npc?.id && LINES[npc.id]) || voiceOf(npc?.id)?.intro || null,
     over: false, result: null,
     npcId: npc?.id ?? null,
     opts,
