@@ -12,6 +12,8 @@
 // 累计上限 +15（见 systems/debate.js 的 familiarity）。
 
 import { O, Q, EV, S } from './_helper.js';
+import { VOICES2 } from './voices2.js';
+import { VOICES3 } from './voices3.js';
 
 // ---------------------------------------------------------------- 孔子
 const KONGZI = {
@@ -2188,4 +2190,6 @@ export const VOICES = {
   you_meng: YOU_MENG,
   bo_ya: BO_YA,
   chang_hong: CHANG_HONG,
+  ...VOICES2,
+  ...VOICES3,
 };
