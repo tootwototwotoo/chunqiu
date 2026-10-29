@@ -21,7 +21,6 @@ import { DAYS_PER_MONTH, MONTHS_PER_YEAR, DAYS_PER_YEAR, absDay } from '../util.
 export { DAYS_PER_MONTH, MONTHS_PER_YEAR, DAYS_PER_YEAR, absDay };
 export function dateLabel(t) { return `${yearLabel(t.year)} ${monthLabel(t.month)}`; }
 export function seasonOf(t) { return ['春', '夏', '秋', '冬'][Math.floor((t.month - 1) / 3)]; }
-export function dayInYear(t) { return (t.month - 1) * DAYS_PER_MONTH + t.day; }
 
 /**
  * 推进若干天。

@@ -1,13 +1,10 @@
 // 证据获取：查访 / 打听 / 购买（日常在城中完成）
-import { DEBATES, EVIDENCE_BY_ID, BOOKSHOPS, TOPIC_NAMES } from '../data/debates/index.js';
+import { DEBATES, EVIDENCE_BY_ID, BOOKSHOPS } from '../data/debates/index.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { player, addEvidence, hasEvidence, addStamina, addMoney, addLog, skillLevel, rel, R } from '../state.js';
 
 const DAY = (t) => (t.year + 722) * 360 + (t.month - 1) * 30 + t.day;
 
-export function evidenceOfScenario(id) {
-  return DEBATES.find(d => d.id === id)?.evidence ?? null;
-}
 
 export function unowned(st, list) {
   return list.filter(e => e && !hasEvidence(st, e.id));
@@ -87,10 +84,3 @@ export function buyEvidence(st, evidenceId) {
   return { ok: true, evidence: ev, msg: `购得「${ev.name}」。` };
 }
 
-export function sourceLabel(ev) {
-  const s = ev?.source;
-  if (!s) return '';
-  if (s.type === 'investigate') return `查访 · ${TOPIC_NAMES[ev.topic] ?? ev.topic}`;
-  if (s.type === 'npc') return `打听 · ${TOPIC_NAMES[ev.topic] ?? ev.topic}`;
-  return `购买 · ${s.price ?? 500} 金`;
-}

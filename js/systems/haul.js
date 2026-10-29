@@ -83,9 +83,6 @@ export function haulsOf(st) {
   return p.hauls;
 }
 
-export function haulsAt(st) {
-  return haulsOf(st).filter(h => h.to === player(st).cityId);
-}
 
 // 装运天数：按载重 ÷ 装运速度
 export function loadDays(st, totalBulk) {

@@ -21,13 +21,6 @@ export function offerableTreasures(st) {
     .map(id => ({ id, def: TREASURES[id], have: p.inventory[id], ...OFFER_GAIN[id] }));
 }
 
-export function canOfferTreasure(st) {
-  const p = player(st);
-  if (!p.stateId) return { ok: false, msg: '尚未出仕，无从献宝。' };
-  const list = offerableTreasures(st);
-  if (!list.length) return { ok: false, msg: '囊中并无可献之宝。' };
-  return { ok: true, list };
-}
 
 export function offerTreasure(st, gemId) {
   const p = player(st);

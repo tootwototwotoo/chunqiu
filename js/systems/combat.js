@@ -155,6 +155,3 @@ export function makeBanditChief(st, tier = 1) {
   return { id: null, name: '贼首', wu: 42 + tier * 10 + R.int(st, 0, 8), skill: clamp(2 + tier, 1, 9), hp: 90 + tier * 20 };
 }
 
-export function duelRewardText(res) {
-  return res.won ? '你胜了，围观者喝彩，声名稍稍传开。' : '你败了，身上添了几道伤。';
-}

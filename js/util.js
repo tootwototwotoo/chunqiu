@@ -39,7 +39,6 @@ export const esc = (str) => String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '
 export const yearLabel = (y) => (y < 0 ? `前${-y}年` : `公元${y}年`);
 export const monthLabel = (m) => ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'][m - 1] || `${m}月`;
 export const NUM_CN = ['零','一','二','三','四','五','六','七','八','九','十'];
-export const cnNum = (n) => (n <= 10 ? NUM_CN[n] : n < 20 ? '十' + NUM_CN[n - 10] : String(n));
 
 
 export function $(sel) { return document.querySelector(sel); }
@@ -56,20 +55,7 @@ export function weightedPick(s, list) {
   return list[list.length - 1];
 }
 
-export function today(st) {
-  return `${yearLabel(st.time.year)}${monthLabel(st.time.month)}`;
-}
 
-export function diffTier(v) {
-  // 0-100 数值的定性描述
-  if (v >= 95) return '旷世';
-  if (v >= 85) return '卓绝';
-  if (v >= 72) return '出众';
-  if (v >= 58) return '不凡';
-  if (v >= 42) return '寻常';
-  if (v >= 28) return '平平';
-  return '拙劣';
-}
 
 export const GIFT_TIERS = [0, 15, 32, 52, 75, 100];
 export const GIFT_TIER_NAMES = ['陌路', '相识', '友善', '知己', '挚友', '生死之交'];

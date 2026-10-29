@@ -99,24 +99,7 @@ export function bestMarkets(st, goodId, limit = 5) {
   return rows.slice(0, limit);
 }
 
-export function inventoryRows(st) {
-  return Object.entries(player(st).inventory).filter(([, q]) => q > 0).map(([g, q]) => ({
-    good: GOODS[g], id: g, qty: q,
-    price: priceAt(st, player(st).cityId, g),
-  }));
-}
 
-export function tradeSummary(st, goodId) {
-  const cid = player(st).cityId;
-  const price = priceAt(st, cid, goodId);
-  const locals = CITIES.filter(c => c.id !== cid);
-  let best = null;
-  for (const c of locals) {
-    const p = priceAt(st, c.id, goodId);
-    if (!best || p > best.p) best = { c, p };
-  }
-  return { price, best, spread: best ? best.p - price : 0 };
-}
 
 
 // ---------------- 珍宝市 ----------------

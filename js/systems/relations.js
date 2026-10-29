@@ -6,7 +6,7 @@ import { SKILL_DEFS } from '../data/defs.js';
 import {
   player, rel, meetNpc, addRel, addFame, addMoney, addGoods, addStamina, addHealth, addLog, addSkillExp, skillLevel, npcsHere, R
 } from '../state.js';
-import { ri, GIFT_TIER_NAMES, absDay } from '../util.js';
+import { ri, absDay } from '../util.js';
 
 
 const GREET = {
@@ -24,7 +24,6 @@ export function affTier(aff) {
   if (aff >= 15) return 1;
   return 0;
 }
-export const affName = (aff) => GIFT_TIER_NAMES[affTier(aff)];
 
 
 export function talk(st, npcId) {
@@ -119,11 +118,6 @@ export function giveGift(st, npcId, goodId) {
   };
 }
 
-export function canTeach(st, npcId, skill) {
-  const def = NPC_MAP[npcId];
-  if (!def?.teach?.includes(skill)) return false;
-  return (def.skills?.[skill] ?? 0) >= 3;
-}
 
 export function learnFrom(st, npcId, skill) {
   const def = NPC_MAP[npcId];

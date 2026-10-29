@@ -102,9 +102,6 @@ export function hasPermit(st, cityId) {
   return Array.isArray(p.permits) && p.permits.some(x => x.city === cityId);
 }
 
-export function permitOf(st, cityId) {
-  return (player(st).permits ?? []).find(x => x.city === cityId) ?? null;
-}
 
 // 取得许可的条件检查
 export function canGetPermit(st, cityId = player(st).cityId) {

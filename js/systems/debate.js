@@ -167,9 +167,6 @@ function finish(d) {
   d.log.push(d.scenario.outcomes[d.result]);
 }
 
-export function debateResult(d) {
-  return d.result;
-}
 
 export function settleDebate(st, d, npcId, _opts = {}) {
   st.stats.debates++;
@@ -211,7 +208,3 @@ function createFollowupQuest(st, d) {
   return q;
 }
 
-// 兼容旧调用
-export function debatePreview(st, npc) {
-  return { bias: npc?.bias, biasText: biasName(npc?.bias), scenario: pickDebateScenario(st, { heart: npc?.bias }) };
-}

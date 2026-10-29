@@ -109,13 +109,10 @@ export const R = {
 // ---------- 查询 ----------
 export const player = (st) => st.player;
 export const city = (st) => CITY_MAP[st.player.cityId];
-export const cityOf = (id) => CITY_MAP[id];
-export const npcDef = (id) => NPC_MAP[id];
 export const isMerchant = (st) => st.player.profession === 'shangren';
 export const isWarrior = (st) => st.player.profession === 'youxia';
 export const isDiplomat = (st) => st.player.profession === 'shuike';
 export const isScholar = (st) => st.player.profession === 'xuezhe';
-export const profName = (st) => PROFESSIONS[st.player.profession].name;
 export const rankName = (st) => RANKS[st.player.rank]?.name ?? '布衣';
 export const age = (st) => st.player.startAge + Math.floor(st.player.ageDays / 360);
 
@@ -147,9 +144,6 @@ export function fullTitle(st) {
 
 export function skillLevel(st, k) { return st.player.skills[k] ?? 0; }
 export function skillExpNeed(st, k) { return 30 + (st.player.skills[k] ?? 0) * 22; }
-export function skillTotal(st) {
-  return Object.values(st.player.skills).reduce((a, b) => a + b, 0);
-}
 export function rel(st, id) {
   return st.player.relations[id] || (st.player.relations[id] = { aff: 0, met: false, gifts: 0 });
 }
@@ -167,9 +161,6 @@ export function npcsHere(st) {
       return { ...n, def, stage, effectiveRole };
     })
     .filter(n => n.def && npcAlive(n.def, st.time.year));
-}
-export function aliveNpcs(st) {
-  return Object.values(st.npc).filter(n => n.alive && NPC_MAP[n.id] && npcAlive(NPC_MAP[n.id], st.time.year));
 }
 
 // ---------- 变更 ----------
@@ -252,10 +243,6 @@ export function goodsCount(st) {
 }
 export function caravanFree(st) {
   return Math.max(0, st.player.caravan - goodsCount(st));
-}
-export function merchantTier(st) {
-  // 商人阶次受金钱、商号数、商盟数与累计散财共同决定，详见 systems/merchant.js
-  return merchantRank(st);
 }
 // ---------- 价格初始化 ----------
 export function initPrices(st) {

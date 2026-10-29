@@ -1,8 +1,7 @@
 // UI 公共片段
 import { esc, bar } from '../util.js';
 import { STATES, CITY_MAP } from '../data/world.js';
-import { SKILL_DEFS, STAT_DEFS } from '../data/defs.js';
-import { age } from '../state.js';
+import { SKILL_DEFS } from '../data/defs.js';
 
 export const stateColor = (id) => STATES[id]?.color ?? '#8a7f6d';
 export const stateName = (id) => STATES[id]?.name ?? id;
@@ -22,9 +21,7 @@ export function statLine(label, value, max = 100) {
 }
 
 export function skillName(k) { return SKILL_DEFS[k]?.name ?? k; }
-export function statName(k) { return STAT_DEFS[k]?.name ?? k; }
 
-export function emptyBox(text) { return `<div class="empty">${esc(text)}</div>`; }
 
 export function cityTag(st, cityId) {
   const sid = st.world.owner[cityId];
@@ -46,7 +43,6 @@ export function gameDate(t) {
   return `${y} ${m}`;
 }
 
-export function ageText(st) { return `${age(st)}岁`; }
 
 export function cityName(id) { return CITY_MAP[id]?.name ?? id; }
 
@@ -69,9 +65,6 @@ export function skillRowHtml(st, k, canTrain) {
   </tr>`;
 }
 
-export function promotionText(p) {
-  return `以功勋擢为${p.state}国${p.rank}`;
-}
 
 
 // 国君随年份在「公子 / 国君 / 前国君」之间变化，称号随之改变

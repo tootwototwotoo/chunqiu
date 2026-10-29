@@ -36,7 +36,6 @@ export const EFFECT_TYPES = [
   'money', 'fame', 'merit', 'stat', 'skill', 'skillxp', 'rel',
   'power', 'owner', 'flag', 'stamina', 'health', 'card', 'goods', 'duel', 'war', 'peace',
 ];
-export const isEffectType = (t) => EFFECT_TYPES.includes(t);
 
 export function applyEffects(st, effects = []) {
   const out = { notes: [], pendingDuel: null };
