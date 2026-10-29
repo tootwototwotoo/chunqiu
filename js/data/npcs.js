@@ -1059,8 +1059,8 @@ export const NPCS = [
     stats: { wu: 34, zhi: 46, zheng: 42, mei: 46 }, skills: {}, bias: 'yi', pref: 'su', teach: [],
     quote: '', desc: '在位四年。' },
 
-  { id: 'ju_li2', name: '莒黎比公', title: '莒子', state: 'ju', city: 'ju', reign: [-684, -577], role: 'ruler',
-    birth: -715, death: -577,
+  { id: 'ju_li2', name: '莒黎比公', title: '莒子', state: 'ju', city: 'ju', reign: [-684, -647], role: 'ruler',
+    birth: -715, death: -647,
     stats: { wu: 46, zhi: 48, zheng: 44, mei: 46 }, skills: { bingfa: 4 }, bias: 'shi', pref: 'tie', teach: ['bingfa'],
     quote: '莒与鲁争郓，世为仇。', desc: '在位三十八年，莒之强君。' },
   { id: 'ju_zhan', name: '莒展舆', title: '莒子', state: 'ju', city: 'ju', reign: [-576, -554], role: 'ruler',
