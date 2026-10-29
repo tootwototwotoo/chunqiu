@@ -61,6 +61,32 @@ const newSt = () => {
   ok(d1.maxRounds === 3 && d2.maxRounds === 3, '回合数仍为 3');
 }
 
+// ---------------- NPC id 不得冲突 ----------------
+{
+  const ids = new Map();
+  for (const n of Object.values(NPC_MAP)) ids.set(n.id, (ids.get(n.id) ?? 0) + 1);
+  // NPC_MAP 以 id 为键，冲突时会丢人；这里从 NPCS 数组直接查
+  const { NPCS } = await import('../js/data/npcs.js');
+  const counts = new Map();
+  for (const n of NPCS) counts.set(n.id, (counts.get(n.id) ?? 0) + 1);
+  const dup = [...counts].filter(([, c]) => c > 1);
+  ok(dup.length === 0, 'NPC id 不重复', dup.map(([id]) => id).join(','));
+}
+
+// ---------------- 国君开场白 ----------------
+{
+  const { NPCS } = await import('../js/data/npcs.js');
+  const rulers = NPCS.filter(n => n.role === 'ruler' && n.quote && !n.desc?.includes('失载'));
+  const covered = rulers.filter(n => LINES[n.id]);
+  ok(covered.length >= 150, '有史载的国君大多有开场白',
+    `${covered.length}/${rulers.length}`);
+
+  // 合成国君（史料失载）不占开场白
+  const synth = NPCS.filter(n => n.role === 'ruler' && n.desc?.includes('失载'));
+  const wrong = synth.filter(n => LINES[n.id]);
+  ok(wrong.length === 0, '史料失载的合成国君无开场白', wrong.map(n => n.name).join(','));
+}
+
 // ---------------- 覆盖面 ----------------
 {
   const withLine = new Set([...Object.keys(LINES), ...Object.keys(VOICES)]);

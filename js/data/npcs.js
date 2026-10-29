@@ -1557,7 +1557,7 @@ export const NPCS = [
   { id: 'zuo_qiu_ming', name: '左丘明', title: '鲁之史官', state: 'lu', city: 'qufu', birth: -540, death: -452, role: 'scholar',
     stats: { wu: 30, zhi: 92, zheng: 82, mei: 74 }, skills: { xuewen: 10, biancai: 8 }, bias: 'yi', pref: 'yu', teach: ['xuewen', 'biancai'],
     quote: '与其为善，不如为善之察也。', desc: '鲁之太史。孔子称「巧言令色足恭，左丘明耻之」。相传作《左传》，述春秋之微言。' },
-  { id: 'yan_hui', name: '颜回', title: '孔门之首', state: 'lu', city: 'qufu', birth: -521, death: -481, role: 'scholar',
+  { id: 'yan_yuan', name: '颜回', title: '孔门之首', state: 'lu', city: 'qufu', birth: -521, death: -481, role: 'scholar',
     stats: { wu: 28, zhi: 90, zheng: 76, mei: 80 }, skills: { xuewen: 9 }, bias: 'yi', pref: 'si', teach: ['xuewen'],
     quote: '一箪食，一瓢饮，在陋巷，人不堪其忧，回也不改其乐。', desc: '字子渊，孔门德行第一。年二十九发白，四十一岁卒，孔子哭之恸。' },
   { id: 'zi_lu', name: '子路', title: '孔门政事', state: 'lu', city: 'qufu', birth: -542, death: -480, role: 'scholar',

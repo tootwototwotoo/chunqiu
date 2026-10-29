@@ -2177,7 +2177,7 @@ export const VOICES = {
   xun_zi: XUN_ZI,
   han_fei: HAN_FEI,
   zi_gong: ZI_GONG,
-  yan_hui: YAN_HUI,
+  yan_yuan: YAN_HUI,
   wu_ji_zha: JI_ZHA,
   wei_shi_que: SHI_QUE,
   zhou_wang_sun: WANG_SUN_MAN,
