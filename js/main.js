@@ -17,6 +17,7 @@ window.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && e.target === document.body) e.preventDefault();
 });
 
+window.app = app;  // 肖像就绪重渲染等低层模块需要回调入口
 app.showTitle();
 
 if (!hasSave()) {

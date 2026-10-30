@@ -42,7 +42,7 @@ import { trainingModal } from './training.js';
 import { marketModal } from './market.js';
 import { openBoard } from './quests.js';
 import { openNpc } from './npc.js';
-import { onClick, stateColor, stateName, cityTag, relTierName, stageLabel } from './common.js';
+import { onClick, stateColor, stateName, cityTag, relTierName, stageLabel, avatar } from './common.js';
 import { esc, clamp } from '../util.js';
 
 export function mount(root, st, app) {
@@ -99,7 +99,7 @@ export function mount(root, st, app) {
           ${npcsHere(st).map(n => {
             const r = rel(st, n.id);
             return `<div class="npc-row" data-npc="${n.id}">
-              <div class="avatar" style="background:linear-gradient(160deg,${stateColor(n.def.state)},#2a2118)">${n.def.name[0]}</div>
+              ${avatar(n.def.name, stateColor(n.def.state), n.id)}
               <div class="n-main"><div class="n-name">${n.def.name}</div><div class="n-title">${stageLabel(n)} · ${biasName(n.def.bias)}</div></div>
               <div class="n-rel">${r.met ? relTierName(r.aff) : '未识'}</div>
             </div>`;

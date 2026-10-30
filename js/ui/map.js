@@ -6,7 +6,7 @@ import { biasName } from '../systems/debate.js';
 import { player, npcsHere } from '../state.js';
 import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 
-import { onClick, stateColor, stateName, cityTag, stageLabel } from './common.js';
+import { onClick, stateColor, stateName, cityTag, stageLabel, avatar } from './common.js';
 import { drawTerritory } from './territory.js';
 import { esc } from '../util.js';
 import { policySummary } from '../systems/policy.js';
@@ -371,7 +371,7 @@ function npcHereHtml(st, cityId, cur) {
     <div class="npc-list">
       ${list.slice(0, 6).map(n => `
         <div class="npc-row" data-npc="${n.id}">
-          ${`<div class="avatar">${n.def.name[0]}</div>`}
+          ${avatar(n.def.name, null, n.id)}
           <div class="n-main"><div class="n-name">${n.def.name}</div><div class="n-title">${stageLabel(n)} · 心性：${biasName(n.def.bias)}</div></div>
         </div>`).join('')}
     </div>

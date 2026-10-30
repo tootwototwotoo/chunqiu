@@ -3,7 +3,7 @@ import { NPC_MAP } from '../data/npcs.js';
 
 import { player, rel } from '../state.js';
 import { openNpc } from './npc.js';
-import { onClick, relTierName, cityName, stateColor } from './common.js';
+import { onClick, relTierName, cityName, stateColor, avatar } from './common.js';
 
 
 export function mount(root, st, app) {
@@ -21,7 +21,7 @@ export function mount(root, st, app) {
       const r = rel(st, n.id);
       const same = n.city === player(st).cityId;
       return `<div class="rel-row">
-        <div class="avatar" style="background:linear-gradient(160deg,${stateColor(n.def.state)},#2a2118)">${n.def.name[0]}</div>
+        ${avatar(n.def.name, stateColor(n.def.state), n.id)}
         <div class="rel-mid">
           <div class="rel-name">${n.def.name} <span style="font-size:11.5px;color:#6d6052">${n.def.title}</span>
             ${same ? '<span class="tag" style="font-size:10px;padding:0 4px">同城</span>' : `<span style="font-size:11px;color:#6d6052">在${cityName(n.city)}</span>`}

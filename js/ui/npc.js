@@ -20,6 +20,7 @@ export function openNpc(app, st, npcId) {
   const shownName = displayNameOf({ def, stage: st.npc[npcId]?.stage }, st.npc[npcId]?.stage);
   const handle = app.modal({
     title: shownName,
+    npcId,
     sub: `${stageLabel({ def, stage: st.npc[npcId]?.stage })} · ${STATES[def.state].name}国 · ${CITY_MAP[def.city].name}`,
     wide: true,
     body: '',

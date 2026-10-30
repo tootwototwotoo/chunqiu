@@ -11,23 +11,35 @@ export const stateName = (id) => STATES[id]?.name ?? id;
 // 图片文件本身随时可改可换，代码只依赖 manifest；
 // 单文件版 fetch 相对路径失败，静默回退，零体积增长。
 let PORTRAIT_MANIFEST = null;   // 惰性加载缓存
-let PORTRAIT_TRIED = false;
+let PORTRAIT_PROMISE = null;    // 进行中的加载（供竞态守卫）
 
-export async function loadPortraits() {
-  if (PORTRAIT_TRIED) return PORTRAIT_MANIFEST;
-  PORTRAIT_TRIED = true;
-  try {
-    const res = await fetch('assets/portraits/manifest.json', { cache: 'force-cache' });
-    if (res.ok) {
-      const json = await res.json();
-      if (json?.portraits && typeof json.portraits === 'object') PORTRAIT_MANIFEST = json.portraits;
-    }
-  } catch { /* 单文件版或无素材：回退字头像 */ }
-  return PORTRAIT_MANIFEST;
+export function loadPortraits() {
+  // 返回缓存的 promise：重复调用不重复请求
+  PORTRAIT_PROMISE = PORTRAIT_PROMISE ?? (async () => {
+    try {
+      const res = await fetch('assets/portraits/manifest.json', { cache: 'force-cache' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.portraits && typeof json.portraits === 'object') {
+          PORTRAIT_MANIFEST = json.portraits;
+          // manifest 就绪后重渲染一次，消除首屏竞态窗口：
+          // fetch 完成前渲染的头像（字头像）由此补上肖像。
+          // app 从 state.js 不可达（避免循环依赖），经 window 传递；
+          // 测试环境无 app 时静默跳过。
+          // 若当前有 NPC 弹窗开着，先关再重开（modal 层不在 render 覆盖内）
+          window?.app?.refreshPortraits?.();
+        }
+      }
+    } catch { /* 单文件版或无素材：回退字头像 */ }
+    return PORTRAIT_MANIFEST;
+  })();
+  return PORTRAIT_PROMISE;
 }
 
 // 同步查表（需先 loadPortraits）
 export const portraitOf = (npcId) => PORTRAIT_MANIFEST?.[npcId] ?? null;
+// manifest 是否已就绪且至少含一人（供 refreshPortraits 判断是否有必要重画）
+export const portraitOfAny = () => !!PORTRAIT_MANIFEST && Object.keys(PORTRAIT_MANIFEST).length > 0;
 
 export function avatar(name, color, npcId = null) {
   const ch = (name || '？').trim()[0] || '？';

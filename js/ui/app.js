@@ -3,10 +3,11 @@ import { addLog, saveGame, fullTitle, player, migrateState, AUTO_SAVE_ERROR, sav
 import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent, eventKindLabel } from '../systems/events.js';
 import { esc } from '../util.js';
+import { openNpc } from './npc.js';
 import { computeEnding } from '../systems/progression.js';
 
 import { sanitizeQuests, questRewardText } from '../systems/quests.js';
-import { onClick, loadPortraits } from './common.js';
+import { onClick, loadPortraits, portraitOfAny } from './common.js';
 import * as titleScreen from './title.js';
 import * as mapScreen from './map.js';
 import * as cityScreen from './city.js';
@@ -114,6 +115,20 @@ class App {
   }
 
   // ---------- 渲染 ----------
+  // 肖像就绪后的补渲染：重画底层 screen；若 NPC 弹窗开着，重开它
+  refreshPortraits() {
+    if (!this.st || !portraitOfAny()) return;
+    const open = this.modalHandle?.opts?.event;   // 事件弹窗不重开（有状态）
+    if (this.modalHandle && !open) {
+      const id = this.modalHandle.opts?.npcId;
+      this.closeModal(false);
+      this.render();
+      if (id) { try { openNpc(this, this.st, id); } catch { /* 弹窗上下文变化则放弃 */ } }
+      return;
+    }
+    this.render();
+  }
+
   render() {
     if (!this.st) return;
     this.refreshHud();

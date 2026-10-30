@@ -2,7 +2,7 @@
 import { NPCS, NPC_MAP, npcAlive } from '../data/npcs.js';
 import { STATES, CITY_MAP } from '../data/world.js';
 import { player, rel } from '../state.js';
-import { onClick, stateColor, relTierName, statLine } from './common.js';
+import { onClick, stateColor, relTierName, statLine, avatar } from './common.js';
 
 
 import { biasName, BIAS_TIP } from '../systems/debate.js';
@@ -19,13 +19,13 @@ export function mount(root, st, app) {
         const has = p.cards.includes(n.id);
         const alive = npcAlive(n, st.time.year);
         if (!has) return `<div class="npc-card locked" data-locked="1">
-          ${''}<div class="avatar">？</div>
+          ${avatar('？', null)}
           <div class="c-name">未识</div>
           <div class="c-title">${alive ? '尚在人间' : '已归道山'}</div>
         </div>`;
         return `<div class="npc-card" data-card="${n.id}">
           <span class="c-state" style="background:${stateColor(n.state)}">${STATES[n.state].name}</span>
-          <div class="avatar" style="background:linear-gradient(160deg,${stateColor(n.state)},#2a2118)">${n.name[0]}</div>
+          ${avatar(n.name, stateColor(n.state), n.id)}
           <div class="c-name">${n.name}</div>
           <div class="c-title">${n.title}</div>
           <div style="font-size:11px;color:#6d6052">武${n.stats.wu} 智${n.stats.zhi} 政${n.stats.zheng} 魅${n.stats.mei}</div>
