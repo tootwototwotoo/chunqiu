@@ -3,11 +3,13 @@ import { CITIES, CITY_MAP, ROADS, STATES, STATE_LABEL_POS } from '../data/world.
 import { TIMELINE } from '../data/events.js';
 import { GOODS } from '../data/goods.js';
 import { biasName } from '../systems/debate.js';
-import { player, npcsHere } from '../state.js';
+import { player, npcsHere, rel } from '../state.js';
 import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
 
 import { onClick, stateColor, stateName, cityTag, stageLabel, avatar } from './common.js';
 import { drawTerritory } from './territory.js';
+import { positionOf } from '../systems/movement.js';
+import { NPC_MAP } from '../data/npcs.js';
 import { esc } from '../util.js';
 import { policySummary } from '../systems/policy.js';
 import { normShops, shopAt, shopIncomeOf, hasPermit } from '../systems/merchant.js';
@@ -318,10 +320,32 @@ function mapSvg(st, cur, sel, path, marks) {
     ${roads}
     ${haulLines}
     ${cities}
+    ${npcWalkers(st)}
     ${eventRings}
     ${shopGlyphs}
     ${questFlags}
   </svg>`;
+}
+
+// 行走中的 NPC：在两城之间按进度插值画点（相识者带名字）
+function npcWalkers(st) {
+  const dots = [];
+  for (const n of Object.values(st.npc)) {
+    if (!n.alive || !n.route) continue;
+    const pos = positionOf(n);
+    if (!pos.onRoad) continue;
+    const met = rel(st, n.id).met;
+    const def = NPC_MAP[n.id];
+    dots.push(`<g class="map-walker">
+      <circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="3.2"
+        fill="${met ? '#a67c34' : '#8d8478'}" stroke="#f7efdc" stroke-width="1" opacity=".92">
+        <animate attributeName="opacity" values=".92;.5;.92" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      ${met ? `<text x="${(pos.x + 5).toFixed(1)}" y="${(pos.y - 5).toFixed(1)}"
+        font-size="10" fill="#6d6052">${def.name}</text>` : ''}
+    </g>`);
+  }
+  return dots.join('');
 }
 
 function cityCardHtml(st, cityId, plan, cur) {

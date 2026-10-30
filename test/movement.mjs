@@ -79,5 +79,31 @@ const newSt = (era) => {
   ok(before === after, '迁移后的位置随存档完整保留');
 }
 
+// 舆图行走点：在途 NPC 以插值点绘制
+{
+  const { JSDOM } = await import('jsdom');
+  const fs2 = await import('node:fs');
+  const dom = new JSDOM(fs2.readFileSync(new URL('../index.html', import.meta.url), 'utf8'),
+    { url: 'http://localhost:5173/', pretendToBeVisual: true,
+      beforeParse(w) { w.HTMLCanvasElement.prototype.getContext = () => null; } });
+  globalThis.window = dom.window; globalThis.document = dom.window.document;
+  globalThis.localStorage = dom.window.localStorage;
+  const state = await import('../js/state.js');
+  const { app } = await import('../js/ui/app.js');
+  const st = state.newGame({ name: 'x', profession: 'youxia', seed: 5, era: 'jinchu' });
+  st.flags.noAutosave = true;
+  st.player.startAge = 1; st.player.ageDays = 0;
+  app.startGame(st);
+  const adv2 = await import('../js/systems/calendar.js');
+  for (let i = 0; i < 10 * 360; i++) { st.player.health = 100; adv2.advanceDays(st, 1); st.player.alive = true; }
+  app.st = st;
+  app.nav('map');
+  const svg = document.getElementById('map-svg');
+  const onRoad = Object.values(st.npc).filter(n => n.route).length;
+  const dots = svg.querySelectorAll('.map-walker').length;
+  ok(dots === onRoad && dots >= 1, '舆图绘制在途行走点', `在途 ${onRoad} / 绘制 ${dots}`);
+  dom.window.close();
+}
+
 console.log(fails ? `\n失败 ${fails} 项 ✗` : '\nNPC 流动通过 ✓');
 process.exit(fails ? 1 : 0);
