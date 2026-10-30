@@ -261,6 +261,10 @@ if (travelBtn && !travelBtn.disabled) {
   const before = app.st.player.cityId;
   travelBtn.click();
   await wait(60);
+  // 出行动画：点「跳过行程」立即结算剩余路段
+  const skipBtn = $('[data-act="skip-travel"]');
+  ok(!!skipBtn, '出行中显示跳过按钮');
+  if (skipBtn) { skipBtn.click(); await wait(80); }
   ok(app.st.player.cityId !== before, '旅行后换了城市');
   // 关闭可能出现的月度事件
   for (let i = 0; i < 6 && $('.modal'); i++) {

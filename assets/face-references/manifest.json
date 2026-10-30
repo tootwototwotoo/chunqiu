@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "purpose": "合成人像面部结构参考，不作为最终头像",
+  "source": "https://thispersondoesnotexist.com/random-person.jpeg",
+  "references": [
+    {
+      "id": "tpdne-0001",
+      "path": "assets/face-references/tpdne-0001.jpeg",
+      "format": "jpeg",
+      "sha256": "BB98CF4BA348A9F1A025190DAA22F57E86ED4CB94B64ECC33A2F78E2622057E4",
+      "assigned_npc": "guan_zhong",
+      "used_for": "面部结构参考测试",
+      "generated_test": "assets/portraits/guan_zhong-face-ref-test-512.png"
+    }
+  ]
+}

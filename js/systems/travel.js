@@ -26,6 +26,21 @@ function vehicleStaminaFactor(st) {
   return VEHICLES[id]?.stamina ?? 1;
 }
 
+// 逐段行程计划：把 path 拆成相邻城的腿，供动画播放
+export function travelLegs(st, toCityId) {
+  const plan = travelPlan(st, toCityId);
+  if (!plan) return null;
+  const legs = [];
+  for (let i = 1; i < plan.path.length; i++) {
+    const a = plan.path[i - 1], b = plan.path[i];
+    const d = shortestPath(a, b, st)?.days ?? 1;
+    legs.push({ from: a, to: b, days: Math.max(1, d) });
+  }
+  return { ...plan, legs };
+}
+
+// 单步行进：走完当前腿的剩余天数（供动画逐帧驱动）。
+// 返回 { arrived, notes, events, ... } 形式与 travelTo 一致。
 export function travelTo(st, toCityId) {
   const plan = travelPlan(st, toCityId);
   if (!plan) return { ok: false, msg: '无路可通。' };

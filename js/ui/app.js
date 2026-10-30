@@ -4,6 +4,7 @@ import { dateLabel, seasonOf } from '../systems/calendar.js';
 import { prepareEvent, resolveChoice, choiceAvailable, collectTimeline, pendingEvents, finishEvent, eventKindLabel } from '../systems/events.js';
 import { esc } from '../util.js';
 import { openNpc } from './npc.js';
+import { travelProgressPos } from './travelAnim.js';
 import { computeEnding } from '../systems/progression.js';
 
 import { sanitizeQuests, questRewardText } from '../systems/quests.js';
@@ -30,6 +31,7 @@ class App {
     this.modalHandle = null;
     this.endingShown = false;
     this.autosaveTimer = null;
+    this.travelState = null;   // 出行动画控制器（map 的 playerWalker 读取）
     this.bindShell();
   }
 
@@ -55,6 +57,7 @@ class App {
     if (this.autosaveTimer) return;
     this.autosaveTimer = setTimeout(() => {
       this.autosaveTimer = null;
+    this.travelState = null;   // 出行动画控制器（map 的 playerWalker 读取）
       this.autosaveNow();
     }, delay);
   }
@@ -127,6 +130,30 @@ class App {
       return;
     }
     this.render();
+  }
+
+  // 出行动画每帧回调：仅局部更新舆图上的玩家行走点
+  onTravelProgress(s) {
+    const svg = document.getElementById('map-svg');
+    if (!svg || !this.st) return;
+    const old = svg.querySelector('.map-walker-player');
+    if (old) old.remove();
+    const pos = travelProgressPos(s);
+    if (!pos) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'map-walker-player');
+    const c1 = document.createElementNS(NS, 'circle');
+    c1.setAttribute('cx', pos.x.toFixed(1)); c1.setAttribute('cy', pos.y.toFixed(1));
+    c1.setAttribute('r', '6'); c1.setAttribute('fill', '#9c2b26');
+    c1.setAttribute('stroke', '#f7efdc'); c1.setAttribute('stroke-width', '2');
+    const c2 = document.createElementNS(NS, 'circle');
+    c2.setAttribute('cx', pos.x.toFixed(1)); c2.setAttribute('cy', pos.y.toFixed(1));
+    c2.setAttribute('r', '11'); c2.setAttribute('fill', 'none');
+    c2.setAttribute('stroke', '#9c2b26'); c2.setAttribute('stroke-width', '1.2');
+    c2.setAttribute('opacity', '.6');
+    g.appendChild(c1); g.appendChild(c2);
+    svg.appendChild(g);
   }
 
   render() {

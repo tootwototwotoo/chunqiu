@@ -4,11 +4,12 @@ import { TIMELINE } from '../data/events.js';
 import { GOODS } from '../data/goods.js';
 import { biasName } from '../systems/debate.js';
 import { player, npcsHere, rel } from '../state.js';
-import { travelPlan, travelTo, shortestPath } from '../systems/travel.js';
+import { travelPlan, shortestPath } from '../systems/travel.js';
 
 import { onClick, stateColor, stateName, cityTag, stageLabel, avatar } from './common.js';
 import { drawTerritory } from './territory.js';
 import { positionOf } from '../systems/movement.js';
+import { travelProgressPos, playTravel } from './travelAnim.js';
 import { NPC_MAP } from '../data/npcs.js';
 import { esc } from '../util.js';
 import { policySummary } from '../systems/policy.js';
@@ -125,7 +126,6 @@ export function mount(root, st, app) {
   const cur = player(st).cityId;
   if (!selected) selected = cur;
   const plan = selected !== cur ? travelPlan(st, selected) : null;
-  const path = selected !== cur ? shortestPath(cur, selected, st) : null;
   const markFlags = { ...MARK_DEFAULTS, ...marksOf(st) };
   const marks = {
     ...markFlags,
@@ -147,7 +147,7 @@ export function mount(root, st, app) {
       </div>
       <div class="map-svg-box">
         <canvas id="map-territory" width="940" height="660"></canvas>
-        ${mapSvg(st, cur, selected, path, marks)}
+        ${mapSvg(st, cur, selected, marks, app)}
       </div>
       <div class="map-legend">
         <span><i class="lg-dot" style="background:#9c2b26"></i>所在</span>
@@ -163,7 +163,7 @@ export function mount(root, st, app) {
       </div>
     </div>
     <div class="map-side">
-      ${cityCardHtml(st, selected, plan, cur)}
+      ${cityCardHtml(st, selected, plan, cur, app)}
       ${npcHereHtml(st, selected, cur)}
       <div class="panel" style="padding:12px 14px">
         <div class="section-title">列国势力</div>
@@ -189,12 +189,23 @@ export function mount(root, st, app) {
     mount(root, st, app);
   });
   onClick(root, '[data-act="travel"]', () => {
-    const res = travelTo(st, selected);
-    if (!res.ok) { app.toast(res.msg, 'war'); return; }
-    app.log(`行${res.days}日，抵${CITY_MAP[selected].name}。`);
-    selected = st.player.cityId;
-    app.after(res);
-    app.render();
+    const dest = selected;
+    if (dest === st.player.cityId) { app.toast('你已在此城。', 'war'); return; }
+    // 播放出行动画：沿道路逐段快进，途中事件照常
+    const ctrl = playTravel(app, st, dest, (res) => {
+      app.travelState = null;
+      if (!res) { app.render(); return; }
+      app.log(`行${res.days}日，抵${CITY_MAP[dest].name}。`);
+      selected = st.player.cityId;
+      app.after(res);
+      app.render();
+    });
+    if (!ctrl) return;
+    app.travelState = ctrl;
+    app.render();               // 立即重绘，显示起点位置
+  });
+  onClick(root, '[data-act="skip-travel"]', () => {
+    app.travelState?.skip?.();
   });
   onClick(root, '[data-act="enter"]', () => { app.nav('city'); });
   onClick(root, '[data-act="center"]', () => { selected = cur; mount(root, st, app); });
@@ -235,7 +246,9 @@ function markMenuHtml(marks) {
       </button>`).join('')}`;
 }
 
-function mapSvg(st, cur, sel, path, marks) {
+function mapSvg(st, cur, sel, marks, app) {
+  // 高亮路线：选中城的行程
+  const path = sel !== cur ? shortestPath(cur, sel, st) : null;
   const roadSet = new Set((path?.path ?? []).map((id, i, arr) => i ? [arr[i - 1], id].sort().join('|') : null).filter(Boolean));
   const roads = marks.road ? ROADS.map(([a, b]) => {
     const A = CITY_MAP[a], B = CITY_MAP[b];
@@ -320,11 +333,44 @@ function mapSvg(st, cur, sel, path, marks) {
     ${roads}
     ${haulLines}
     ${cities}
+    ${playerWalker(app)}
     ${npcWalkers(st)}
     ${eventRings}
     ${shopGlyphs}
     ${questFlags}
   </svg>`;
+}
+
+// 出行动画进行中的提示条
+function travelBannerHtml(app) {
+  const s = app.travelState;
+  if (!s || s.finished) return '';
+  const plan = s.plan;
+  const total = plan.legs.length;
+  return `<div class="panel" style="padding:10px 12px;margin-top:10px;border-left:3px solid #9c2b26">
+    <div style="font-size:13px">行旅中：${CITY_MAP[s.from].name} → ${CITY_MAP[s.to].name}
+      <span style="color:#6d6052">（第 ${s.legIndex + 1}/${total} 程·全程 ${plan.days} 日）</span></div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn ghost" data-act="skip-travel">跳过行程</button>
+    </div>
+  </div>`;
+}
+
+// 玩家行走点：出行动画期间沿道路移动的朱红标记
+function playerWalker(app) {
+  const s = app.travelState;
+  if (!s || s.finished) return '';
+  const pos = travelProgressPos(s);
+  if (!pos) return '';
+  return `<g class="map-walker-player">
+    <circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="6"
+      fill="#9c2b26" stroke="#f7efdc" stroke-width="2"/>
+    <circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="10"
+      fill="none" stroke="#9c2b26" stroke-width="1.2" opacity=".7">
+      <animate attributeName="r" values="8;14;8" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values=".7;.15;.7" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>`;
 }
 
 // 行走中的 NPC：在两城之间按进度插值画点（相识者带名字）
@@ -348,7 +394,7 @@ function npcWalkers(st) {
   return dots.join('');
 }
 
-function cityCardHtml(st, cityId, plan, cur) {
+function cityCardHtml(st, cityId, plan, cur, app) {
   const c = CITY_MAP[cityId];
   const owner = st.world.owner[cityId];
   const tags = { market: '市集', academy: '学宫', barracks: '校场', court: '朝廷' };
@@ -382,6 +428,7 @@ function cityCardHtml(st, cityId, plan, cur) {
         : `<button class="btn primary" data-act="travel" ${plan ? '' : 'disabled'}>启程前往</button>`}
       ${cityId !== cur ? '<button class="btn ghost" data-act="center">回到所在</button>' : ''}
     </div>
+    ${travelBannerHtml(app)}
   </div>`;
 }
 
