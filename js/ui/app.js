@@ -6,7 +6,7 @@ import { esc } from '../util.js';
 import { computeEnding } from '../systems/progression.js';
 
 import { sanitizeQuests, questRewardText } from '../systems/quests.js';
-import { onClick } from './common.js';
+import { onClick, loadPortraits } from './common.js';
 import * as titleScreen from './title.js';
 import * as mapScreen from './map.js';
 import * as cityScreen from './city.js';
@@ -84,6 +84,8 @@ class App {
   }
 
   showTitle() {
+    // 肖像 manifest 惰性加载：assets/portraits/ 存在则后续头像用图，缺失回退字头像
+    loadPortraits();
     this.closeModal(false);
     mapScreen.resetSelection();
     this.queue = [];

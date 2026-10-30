@@ -284,6 +284,10 @@ button{font-family:var(--serif);cursor:pointer;}
 }
 .npc-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(90,70,40,.2);border-color:var(--gold);}
 .npc-card .avatar{width:56px;height:56px;font-size:24px;margin:0 auto 8px;}
+/* 肖像（渐进增强）：img 铺满圆角框；加载失败回退到字头像 */
+.avatar.has-portrait{overflow:hidden}
+.avatar.has-portrait img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.has-portrait .avatar-ch{display:none}
 .npc-card .c-name{font-size:15px;letter-spacing:1px;}
 .npc-card .c-title{font-size:11px;color:var(--ink-3);margin-top:3px;min-height:15px;}
 .npc-card .c-state{position:absolute;left:6px;top:6px;font-size:10px;color:#fff;padding:0 4px;border-radius:2px;}

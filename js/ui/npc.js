@@ -31,7 +31,7 @@ export function openNpc(app, st, npcId) {
     const evs = npcEvidence(st, npcId);
     handle.setBody(`
       <div class="dialog-line">
-        ${avatar(def.name, STATES[def.state].color)}
+        ${avatar(def.name, STATES[def.state].color, npcId)}
         <div class="dl-body">
           <div class="dl-name">${shownName} · ${stageLabel({ def, stage: st.npc[npcId]?.stage })}</div>
           <div class="dl-text">「${def.quote}」</div>

@@ -28,6 +28,7 @@ export default [
         HTMLElement: 'readonly', Element: 'readonly', Node: 'readonly',
         MouseEvent: 'readonly', KeyboardEvent: 'readonly', Event: 'readonly',
         DOMParser: 'readonly', Image: 'readonly', alert: 'readonly', navigator: 'readonly',
+        fetch: 'readonly',
         // Node（测试与构建脚本）
         process: 'readonly', Buffer: 'readonly', __dirname: 'readonly',
         globalThis: 'readonly',

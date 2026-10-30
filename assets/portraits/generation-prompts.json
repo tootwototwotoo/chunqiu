@@ -1,6 +1,6 @@
 {
   "generator": "built-in image_gen",
-  "style_reference": "kong_zi-512.png",
+  "style_reference": "assets/portraits/xi_shi-512.png",
   "requested_size": [
     512,
     512
@@ -13,67 +13,147 @@
     {
       "id": "sun_wu",
       "name": "孙武",
-      "prompt": "Create a single finished NPC portrait asset for the Chinese historical browser game 春秋·列国志. Requested output resolution: exactly 512 x 512 pixels, square 1:1.\nReference image role: STYLE / MATERIAL / PALETTE / COMPOSITION REFERENCE ONLY. It depicts Confucius. Replace that person with the specified DISTINCT character; do NOT reuse the reference face, age, beard or headwear indiscriminately. Preserve the cohesive art direction: warm ivory aged xuan-paper ground, restrained sepia and charcoal ink-wash, delicate naturalistic hand-painted facial modeling, subtle paper grain, dry-brush robe edges, quiet diffuse ink behind shoulders, softly lit readable eyes and face. Premium semi-realistic historical game illustration; no photorealistic camera effect, no anime, no 3D.\nComposition: one chest-up figure, face dominant and centered in upper-middle, whole hair/headwear visible with top clearance, broad readable shoulder silhouette. Same visual scale as reference; suitable for thumbnails and 512 portrait dialogs. Muted warm skin and historical clothing, gentle three-quarter view. Plain pale parchment background. Distinguish the person through facial structure, age, expression, headwear and clothing, not scenery.\nEastern Zhou / Spring and Autumn inspired clothing; imagined artistic character design, no claim of literal likeness. Avoid later winged official hats, Qing robes, modern clothes, fantasy jewelry, oversized armor, props held near face, elaborate scenery.\nNo text, calligraphy, seals, signatures, watermark, frames, borders, UI, multiple views or contact sheet. One character only. Final deliverable one 512 x 512 square portrait.\nCharacter specification:\nSun Wu (Sun Tzu), 吴之将军. A lean Chinese military strategist around 42, angular face, high cheekbones, sharp focused eyes, straight firm brows, short restrained black moustache and neat short pointed beard; disciplined, reserved, observant, no smile. Hair tied under a simple dark low-profile cloth military cap, a charcoal-brown robe with understated Eastern Zhou leather/lamellar shoulder protection and muted dark reddish-brown collar. A scholar-general, no helmet covering face, no weapons. Face visibly different from Confucius, younger and leaner.",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：孙武；称号：吴之将军；项目身份：general；国家编号：wu。项目人物简介：齐人而仕于吴，以兵法十三篇见阖闾，西破强楚，北威齐晋。\n\n外貌设计：约42岁成年男性，瘦削棱角脸，较高颧骨，平直紧眉与锐利目光，短髭和小型尖短须。保留已确认孙武头像的年轻精干轮廓。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：冷静、警觉、有谋略，保持克制而非怒吼。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：3/5（精致）。墨蓝黑色皮甲或小片甲，内配深朱领口，肩部结构清晰，少量暗铜钉与整齐系带表现精良军装；深色简洁军冠或军巾。甲片用墨线与赭金笔触表现，不画成三维金属。纹饰重点在装备结构，不使用女性金饰或满身花锦。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/sun_wu-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/sun_wu-512.png",
+      "output": "assets/portraits/sun_wu-512.png",
       "source_size": [
         1254,
         1254
-      ]
+      ],
+      "luxury_level": 3,
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "attire": {
+        "level": 3,
+        "label": "精致",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "墨蓝黑色皮甲或小片甲，内配深朱领口，肩部结构清晰，少量暗铜钉与整齐系带表现精良军装；深色简洁军冠或军巾。甲片用墨线与赭金笔触表现，不画成三维金属。纹饰重点在装备结构，不使用女性金饰或满身花锦。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
     },
     {
       "id": "guan_zhong",
       "name": "管仲",
-      "prompt": "Create one square 512 x 512 NPC portrait of Guan Zhong (管仲), chief minister of Qi, for 春秋·列国志. Use the final approved guan_zhong-512.png as identity and style reference when supplied.\nCharacter: vigorous mature Chinese man about 50, broad square face, low broad forehead, substantial cheeks, heavy square jaw, broad blunt nose, deep-set narrow eyes and thick straight brows. Preserve the astute, practical, quietly authoritative expression. Short close-cropped dark beard and separate short dense moustache, a few gray temple hairs; never a flowing Confucius-like long beard.\nAttire: dignified high-ranking Eastern Zhou minister attending court. A structured compact dark crown around the topknot, secured by a simple horizontal pin, with thin dark crown ties. Fine matte deep charcoal silk cross-collar court robe, smooth broad shoulders and controlled folds. Crisp ivory inner collar; restrained dark cinnabar-red woven edging with subtle antique-ochre angular geometric motifs. Expensive and sober, no rough travel shawl or utilitarian shoulder clasp. This is a conservative historical-game interpretation, not an exact reconstruction of Guan Zhong's personal clothing.\nComposition and style: single chest-up portrait, face large and readable at thumbnail size, complete crown within the frame with top clearance. Warm aged xuan-paper ground, faint diffuse gray ink wash, fine semi-realistic hand-painted facial shading, charcoal and warm earth palette, dry-brush edges at lower shoulders. Match the portrait set's restrained ink-and-paper aesthetic.\nNo text, seal, signature, watermark, border, UI, hands or props. No Ming/Qing side-wing official hat, crane rank badge, imperial dragon robe, beaded imperial crown, armor, flashy jewelry, modern clothing, fantasy effects, anime or plastic 3D. Target delivery PNG 512 x 512; verify actual tool output and resize if required.",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：管仲；称号：齐相；项目身份：minister；国家编号：qi。项目人物简介：齐之相国，通货积财，设轻重九府，齐以富强。\n\n外貌设计：约50岁成年男性，低而宽的额头、宽方脸、厚实面颊、沉重方下颌，宽直鼻梁和钝圆鼻尖；深目、粗直眉、紧贴下颌的浓短须与独立短髭。保留已确认管仲面容，不可恢复成长须孔子造型。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：精明务实、沉稳有权威，不做奸雄脸谱。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：5/5（华贵）。形制端正的深色先秦礼冠，以横簪固定，细冠缨不遮面；墨黑深褐细丝交领朝服，麻白内领，较宽深朱织锦缘边，赭金几何与卷曲纹饰清楚可读；肩身暗纹体现昂贵织物，叠领规整，可有小型素玉扣。明确是齐国卿相的正式服饰，华贵而非帝王龙袍。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/guan_zhong-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/guan_zhong-512.png",
+      "output": "assets/portraits/guan_zhong-512.png",
       "source_size": [
         1254,
         1254
       ],
-      "style_reference": "assets/portraits/guan_zhong-512.png",
-      "output": "assets/portraits/guan_zhong-512.png",
-      "operation": "generate",
-      "historical_reference": "https://www.chnmuseum.cn/yj/xscg/xszz/202408/t20240815_269916.shtml"
+      "luxury_level": 5,
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "attire": {
+        "level": 5,
+        "label": "华贵",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "形制端正的深色先秦礼冠，以横簪固定，细冠缨不遮面；墨黑深褐细丝交领朝服，麻白内领，较宽深朱织锦缘边，赭金几何与卷曲纹饰清楚可读；肩身暗纹体现昂贵织物，叠领规整，可有小型素玉扣。明确是齐国卿相的正式服饰，华贵而非帝王龙袍。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
     },
     {
       "id": "fan_li",
       "name": "范蠡",
-      "prompt": "Create a single finished NPC portrait asset for the Chinese historical browser game 春秋·列国志. Requested output resolution: exactly 512 x 512 pixels, square 1:1.\nReference image role: STYLE / MATERIAL / PALETTE / COMPOSITION REFERENCE ONLY. It depicts Confucius. Replace that person with the specified DISTINCT character; do NOT reuse the reference face, age, beard or headwear indiscriminately. Preserve the cohesive art direction: warm ivory aged xuan-paper ground, restrained sepia and charcoal ink-wash, delicate naturalistic hand-painted facial modeling, subtle paper grain, dry-brush robe edges, quiet diffuse ink behind shoulders, softly lit readable eyes and face. Premium semi-realistic historical game illustration; no photorealistic camera effect, no anime, no 3D.\nComposition: one chest-up figure, face dominant and centered in upper-middle, whole hair/headwear visible with top clearance, broad readable shoulder silhouette. Same visual scale as reference; suitable for thumbnails and 512 portrait dialogs. Muted warm skin and historical clothing, gentle three-quarter view. Plain pale parchment background. Distinguish the person through facial structure, age, expression, headwear and clothing, not scenery.\nEastern Zhou / Spring and Autumn inspired clothing; imagined artistic character design, no claim of literal likeness. Avoid later winged official hats, Qing robes, modern clothes, fantasy jewelry, oversized armor, props held near face, elaborate scenery.\nNo text, calligraphy, seals, signatures, watermark, frames, borders, UI, multiple views or contact sheet. One character only. Final deliverable one 512 x 512 square portrait.\nCharacter specification:\nFan Li, 越之上将军 and future merchant Tao Zhu Gong. A Chinese strategist around 38, slender oval face, straight nose, lively thoughtful eyes, elegant dark brows, a fine short moustache and small neat tapered beard. Composed self-assured expression with a faint knowing warmth; capable and worldly. Dark hair in a tidy topknot with a simple dark cloth wrap and plain wooden pin. Muted earth-brown cross-collar robe with a very subdued gray-green outer layer and ivory linen undercollar. Refined but practical clothing, no armor or wealth props. Clearly younger, more elegant facial silhouette than reference.",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：范蠡；称号：越之上将军；项目身份：merchant；国家编号：yue。项目人物简介：越国谋臣，佐勾践灭吴，功成身退，浮海至陶，三致千金，号陶朱公。\n\n外貌设计：约38岁成年男性，清俊长椭圆脸，挺直鼻梁、灵活而沉静的眼神，细髭与收束的尖短须，黑发整洁束起。保留已确认范蠡的从容、清雅和洞察力。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：从容敏锐，兼有谋士与行商气质。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：3/5（精致）。石绿偏深青的细密丝质交领锦袍，麻白内领配赭黄内缘，窄金色几何织边，衣身有疏朗同色暗纹；整齐发髻配一枚素玉或木簪。布料精致、衣褶从容，略有富贵感，但纹饰与冠饰明显少于管仲和西施。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/fan_li-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/fan_li-512.png",
+      "output": "assets/portraits/fan_li-512.png",
       "source_size": [
         1254,
         1254
-      ]
+      ],
+      "luxury_level": 3,
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "attire": {
+        "level": 3,
+        "label": "精致",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "石绿偏深青的细密丝质交领锦袍，麻白内领配赭黄内缘，窄金色几何织边，衣身有疏朗同色暗纹；整齐发髻配一枚素玉或木簪。布料精致、衣褶从容，略有富贵感，但纹饰与冠饰明显少于管仲和西施。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
     },
     {
       "id": "lao_zi",
       "name": "老子",
-      "prompt": "Create a single finished NPC portrait asset for the Chinese historical browser game 春秋·列国志. Requested output resolution: exactly 512 x 512 pixels, square 1:1.\nReference image role: STYLE / MATERIAL / PALETTE / COMPOSITION REFERENCE ONLY. It depicts Confucius. Replace that person with the specified DISTINCT character; do NOT reuse the reference face, age, beard or headwear indiscriminately. Preserve the cohesive art direction: warm ivory aged xuan-paper ground, restrained sepia and charcoal ink-wash, delicate naturalistic hand-painted facial modeling, subtle paper grain, dry-brush robe edges, quiet diffuse ink behind shoulders, softly lit readable eyes and face. Premium semi-realistic historical game illustration; no photorealistic camera effect, no anime, no 3D.\nComposition: one chest-up figure, face dominant and centered in upper-middle, whole hair/headwear visible with top clearance, broad readable shoulder silhouette. Same visual scale as reference; suitable for thumbnails and 512 portrait dialogs. Muted warm skin and historical clothing, gentle three-quarter view. Plain pale parchment background. Distinguish the person through facial structure, age, expression, headwear and clothing, not scenery.\nEastern Zhou / Spring and Autumn inspired clothing; imagined artistic character design, no claim of literal likeness. Avoid later winged official hats, Qing robes, modern clothes, fantasy jewelry, oversized armor, props held near face, elaborate scenery.\nNo text, calligraphy, seals, signatures, watermark, frames, borders, UI, multiple views or contact sheet. One character only. Final deliverable one 512 x 512 square portrait.\nCharacter specification:\nLao Zi (Laozi), 周之守藏史. An elderly Chinese archivist-philosopher about 78, long thin weathered face, high broad forehead with receding white hairline, softly drooping white eyebrows, warm deep-set contemplative eyes, long sparse white moustache and a soft flowing silver-white beard. Serene inward-looking expression with subtle humanity, not a supernatural wizard. White hair tied in a small loose topknot with a plain wooden hairpin; NO formal black scholar cap. Plain rough undyed gray-beige linen robe with a faded brown collar, modest and unadorned. A distinct pale silhouette and much older slender face than Confucius. No halo, no staff, no symbols.",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：老子；称号：周之守藏史；项目身份：scholar；国家编号：zhou。项目人物简介：周室守藏室之史，博古知今，其学以自隐无名为务。\n\n外貌设计：约78岁成年男性，清瘦长脸、宽高而略后退的前额，白色稀疏长须、略下垂的白眉，温和内敛的眼神，银白头发松束。保留已确认老子的高龄、清瘦轮廓，不添加仙人特效。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：温和内省、清静自如，以人间老学者表现。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：0/5（清简）。未染浅麻和暖灰粗布袍，外层淡灰青设色、朴素深褐领口，干笔表现麻布肌理；白发只用简单木簪松束。无礼冠、金纹、珠玉和装饰织边，保持清简而干净。用细线与留白表现白须，不以破烂衣服表达隐逸。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/lao_zi-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/lao_zi-512.png",
+      "output": "assets/portraits/lao_zi-512.png",
       "source_size": [
         1254,
         1254
-      ]
+      ],
+      "luxury_level": 0,
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "attire": {
+        "level": 0,
+        "label": "清简",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "未染浅麻和暖灰粗布袍，外层淡灰青设色、朴素深褐领口，干笔表现麻布肌理；白发只用简单木簪松束。无礼冠、金纹、珠玉和装饰织边，保持清简而干净。用细线与留白表现白须，不以破烂衣服表达隐逸。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
     },
     {
       "id": "xi_shi",
       "name": "西施",
-      "prompt": "Edit the supplied portrait of Xi Shi (西施) for the Chinese historical game 春秋·列国志. Upgrade ONLY her clothing and hair ornaments from plain everyday linen to refined, luxurious but tasteful Eastern Zhou / Wu-Yue court-inspired dress. This is an imagined artistic design, not a claim of exact archaeological reconstruction.\nEDIT TARGET: xi_shi-512.png.\nIDENTITY INVARIANTS: keep this exact adult woman's face, age approximately 23, graceful oval facial structure, straight delicate eyebrows, dark almond eyes, nose, lips, skin tone, calm reflective slightly wistful expression, gaze direction, head angle and pose. Preserve the dark hair color, overall pinned-up hair silhouette, chest-up framing and the existing hand-painted semi-realistic ink-and-paper style. Do not redesign her face, make the eyes bigger, add modern makeup, or change her into another person.\nCOSTUME UPGRADE:\nReplace ALL coarse, worn gray-green homespun fabric and plain brown lapels with finely woven matte silk. The outer cross-collar robe is a beautiful muted CELADON / gray-jade green with gentle lustrous folds, smooth shoulder planes and delicate tone-on-tone small angular cloud and curving water-inspired woven motifs. An overlapping inner collar in pale warm ivory with a second thin layer of DUSTY LOTUS-PINK silk. A narrow, elegant ANTIQUE GOLD and deep-teal patterned woven border follows the crossed lapels and shoulder/sleeve edge, fine repeated abstract geometric ornament rather than giant pictorial motifs. Keep gold accents small and softly aged, never glossy yellow metal. Introduce clear layered collar construction and carefully dressed folds so the garment looks costly and intentionally styled at portrait scale.\nThe chest and shoulders remain fully covered with modest traditional cross-collar construction. Broad sleeve shapes and subtle silken drape imply high-status clothing; elegance through textile quality, harmony and detail, not exposed skin. Remove the muddy patchwork / distressed cloak appearance entirely.\nHAIR ORNAMENT UPGRADE:\nRetain her recognizably pinned-up dark hairstyle but groom it with a few more deliberate neat strands. Replace the bare wooden stick with TWO delicate pale celadon-jade hairpins with tiny restrained antique-gold fittings, one with a small carved abstract curl or leaflike tip. Add a tiny understated jade ornament nestled in the bun, not a giant crown. One very small jade drop near the visible ear is acceptable if naturally readable. Avoid large pearl clusters, floating jewelry, hanging tassels over face, empress phoenix crowns, Ming/Qing hairpieces, modern tiaras and oversized flowers. Ornaments must read clearly at 512px without crowding face.\nOVERALL: Xi Shi as a famously beautiful, refined young woman dressed for court, with graceful dignity and a slightly wistful air. The fine silk, elegant jade and quiet gold give a noticeable upgrade over the rustic original, while her facial identity and restrained character remain unchanged.\nPALETTE / STYLE INVARIANTS: warm ivory aged xuan-paper background, faint soft gray ink wash, restrained sepia facial brushwork, natural warm skin, dry-brush feathering at lower shoulder edges. Celadon, dusty lotus-pink and antique gold are muted complementary accents, not bright fantasy colors. Match the existing portrait set. Soft diffuse lighting, crisp expressive eyes, no glossy plastic or photography.\nOne square 512 x 512 chest-up portrait. Keep the entire hair ornament and bun inside the frame with margin. No text, calligraphy, seal, signature, watermark, border or UI. No additional people, scenery, props, hands, visible cleavage, bare shoulders, armor, imperial dragon robes, oversized jewelry, anime, chibi, 3D or magic effects.",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：西施；称号：越之女；项目身份：noble；国家编号：yue。项目人物简介：越之苎萝山人。范蠡进于吴王夫差，吴亡后不知所终。\n\n外貌设计：约23岁成年女性，柔和鹅蛋脸、细直眉、清澈深色杏眼，鼻唇自然，神情清雅、安静略带忧思；黑发盘起。保留已确认西施的面容比例，不扩大眼睛或使用现代浓妆。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：端庄、清雅、略带忧思，华丽服饰与安静神情形成层次。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：5/5（华贵）。石绿青碧丝质华服，深朱内层与麻白叠领，肩袖和宽领缘有清晰密致的手绘金粉卷曲、几何与云水纹；衣身设色鲜明而保留笔触。精致金玉发梳、细金簪、白玉花形小饰和短垂饰组成完整发饰，配小型玉坠耳饰与玉扣。华丽程度保持已确认西施定稿，不退回粗麻素衣；金玉以绘画表现而非珠宝写真。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/xi_shi-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/xi_shi-512.png",
+      "output": "assets/portraits/xi_shi-512.png",
       "source_size": [
         1254,
         1254
       ],
-      "previous_versions": [
-        {
-          "id": "xi_shi",
-          "name": "西施",
-          "prompt": "Create a single finished NPC portrait asset for the Chinese historical browser game 春秋·列国志. Requested output resolution: exactly 512 x 512 pixels, square 1:1.\nReference image role: STYLE / MATERIAL / PALETTE / COMPOSITION REFERENCE ONLY. It depicts Confucius. Replace that person with the specified DISTINCT character; do NOT reuse the reference face, age, beard or headwear indiscriminately. Preserve the cohesive art direction: warm ivory aged xuan-paper ground, restrained sepia and charcoal ink-wash, delicate naturalistic hand-painted facial modeling, subtle paper grain, dry-brush robe edges, quiet diffuse ink behind shoulders, softly lit readable eyes and face. Premium semi-realistic historical game illustration; no photorealistic camera effect, no anime, no 3D.\nComposition: one chest-up figure, face dominant and centered in upper-middle, whole hair/headwear visible with top clearance, broad readable shoulder silhouette. Same visual scale as reference; suitable for thumbnails and 512 portrait dialogs. Muted warm skin and historical clothing, gentle three-quarter view. Plain pale parchment background. Distinguish the person through facial structure, age, expression, headwear and clothing, not scenery.\nEastern Zhou / Spring and Autumn inspired clothing; imagined artistic character design, no claim of literal likeness. Avoid later winged official hats, Qing robes, modern clothes, fantasy jewelry, oversized armor, props held near face, elaborate scenery.\nNo text, calligraphy, seals, signatures, watermark, frames, borders, UI, multiple views or contact sheet. One character only. Final deliverable one 512 x 512 square portrait.\nCharacter specification:\nXi Shi, 越之女. A young adult Chinese woman around 23, graceful oval face, natural warm skin, delicate straight brows, clear dark almond eyes, a calm reflective expression tinged with quiet sadness, softly closed lips. Beautiful and dignified through understated natural features, not glamorous or sexualized. Long black hair arranged in a simple Eastern Zhou inspired low coiled bun, a plain modest wooden hairpin, no ornate crown, no elaborate jewelry. Modest fully clothed cross-collar robe in desaturated gray-green and warm ivory with a very subtle muted brown trim; no exposed shoulders. Same precise painterly facial treatment and sepia paper harmony as male portraits, no modern makeup, no flowers, no fan. Close bust composition with hair fully inside canvas.",
-          "source_size": [
-            1254,
-            1254
-          ]
-        }
-      ],
-      "version": 2,
-      "operation": "edit",
-      "edit_target": "assets/portraits/xi_shi-512.png",
-      "style_reference": null,
-      "output": "assets/portraits/xi_shi-v2-512.png"
+      "luxury_level": 5,
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "attire": {
+        "level": 5,
+        "label": "华贵",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "石绿青碧丝质华服，深朱内层与麻白叠领，肩袖和宽领缘有清晰密致的手绘金粉卷曲、几何与云水纹；衣身设色鲜明而保留笔触。精致金玉发梳、细金簪、白玉花形小饰和短垂饰组成完整发饰，配小型玉坠耳饰与玉扣。华丽程度保持已确认西施定稿，不退回粗麻素衣；金玉以绘画表现而非珠宝写真。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
+    },
+    {
+      "id": "kong_zi",
+      "name": "孔子",
+      "prompt": "为历史人生养成游戏《春秋·列国志》绘制单人NPC头像，统一为已确认西施头像的“重彩工笔＋水墨”画风。以细密而有轻重变化的墨线勾勒五官、发须、衣褶和饰物；面部用薄层赭石与淡胭脂设色，保留可见线描和手绘色面。衣饰采用石青、石绿、朱砂、靛青、赭金等矿物色，色相清楚、浓淡有层次。人物衣料的贵贱由剪裁、织纹密度、叠领、配饰和设色共同表达，画风统一不等于服饰统一。\n\n保持真实比例但明确是绘画：发须用组织清楚的墨色块面与少量书写性细线表现；丝绸以工笔衣褶和矿物色色面体现细腻，金纹以手绘金粉线体现，玉饰以淡彩勾线体现，不靠摄影反光或三维光泽。平民粗麻可有干笔肌理，贵族锦袍可有清晰织纹，二者均有完成度，不把简朴画成脏旧。\n\n背景为干净暖米白宣纸，人物外侧以浅青灰和淡墨晕染形成疏密变化，脸旁保留安静的纸面空间；肩袖下缘可见适量飞白和水墨散边。人物本体保持工笔结构和清楚设色，不用满幅褐色滤镜，不把华丽衣饰处理得灰暗。\n\n人物：孔子；称号：鲁之学者；项目身份：scholar；国家编号：lu。项目人物简介：鲁国陬邑人，少而好学，设教阙里，弟子三千，贤者七十。\n\n外貌设计：约58岁成年男性，宽阔额头，端正有力的鼻梁，温厚而坚定的眼神；灰黑长须与整洁鬓发。保留已确认孔子头像的宽厚面容和师者气度。 外观年龄见设计描述，为固定头像的艺术设定，不随游戏年份自动变化。 气质：温厚坚定，有学者的思考与师者威望。 所有脸型、外观年龄和服饰细节为美术演绎，不声称还原真实容貌。\n\n衣饰复杂度：2/5（端整）。靛蓝色素净交领学者袍，麻白内领与一条极细暗朱缘边，衣面以完整色块和墨线衣褶表现；布料整洁、裁剪端整，黑蓝布冠。无大幅金纹、珠玉或繁复配饰，以师者威仪体现地位。 以细线描与矿物色表现金纹、甲片和织纹；配饰密度按身份控制，不把所有人物都画成宫廷华服。\n\n画风参考：assets/portraits/xi_shi-512.png，仅参考线描、矿物色、宣纸与水墨技法，不复制西施的面容、性别或服饰。如提供本角色已确认头像 assets/portraits/kong_zi-512.png，保留其面部结构、发须轮廓和神情；不得为了换风格改变角色身份。\n\n正方形单人胸像或上半身像，人物略侧身、面部为视觉重点，同时让肩部、领口与部分袖身有足够面积表现服饰。头发、冠帽和发饰完整入画，顶部留白，脸和双眼在48像素缩略图仍能辨识。无手持道具，无复杂情节背景。\n\n目标交付512×512像素PNG。尺寸是交付要求，不代表工具一定支持原生512输出；须核对实际尺寸，必要时缩放。",
+      "negative_prompt": "不要摄影写真、皮肤毛孔特写、玻璃感眼球、湿亮嘴唇、影视镜头光、景深灯光散景、三维金属反光、照片丝绸、3D塑料感；不要动漫大眼、Q版、现代妆造；不要满幅昏黄褐色或把全部衣服画成同一灰色粗麻；不要把所有男性画成孔子长须，也不要给所有角色套用西施的脸、女性发饰或华服；不要明清补服、乌纱帽侧翅、清代辫发、欧洲王冠、夸张帝王龙袍；不要魔法光效、盔甲尖刺、现代工具、裸肩露胸；不要文字、书法、印章、水印、签名、边框、UI、多人、拼图或被裁断的头冠。",
+      "operation": "generate",
+      "style_reference": "assets/portraits/xi_shi-512.png",
+      "identity_reference": "assets/portraits/kong_zi-512.png",
+      "output": "assets/portraits/kong_zi-512.png",
+      "target": {
+        "width": 512,
+        "height": 512,
+        "format": "png",
+        "path": "assets/portraits/kong_zi-512.png",
+        "existing": true
+      },
+      "luxury_level": 2,
+      "attire": {
+        "level": 2,
+        "label": "端整",
+        "basis": "依角色个性与已确认头像作专属设定",
+        "costume": "靛蓝色素净交领学者袍，麻白内领与一条极细暗朱缘边，衣面以完整色块和墨线衣褶表现；布料整洁、裁剪端整，黑蓝布冠。无大幅金纹、珠玉或繁复配饰，以师者威仪体现地位。",
+        "rule": "0—5仅为本项目美术复杂度量表，不是历史服制等级；朴素角色仍采用同一重彩工笔与水墨技法。"
+      },
+      "prompt_note": "当前复用提示词，仅更新文字；既有图片未重新生成。"
     }
-  ]
+  ],
+  "style": "重彩工笔＋水墨",
+  "style_version": "gongbi-inkcolor-v1",
+  "last_updated": "2026-10-29",
+  "update_mode": "prompt_text_only"
 }

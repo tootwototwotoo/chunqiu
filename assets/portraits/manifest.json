@@ -5,51 +5,50 @@
       "src": "assets/portraits/kong_zi-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 461736
+      "bytes": 548224,
+      "luxury_level": 2
     },
     "sun_wu": {
       "name": "孙武",
       "src": "assets/portraits/sun_wu-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 462353
+      "bytes": 545367,
+      "luxury_level": 3
     },
     "guan_zhong": {
       "name": "管仲",
       "src": "assets/portraits/guan_zhong-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 485717
+      "bytes": 556204,
+      "luxury_level": 5
     },
     "fan_li": {
       "name": "范蠡",
       "src": "assets/portraits/fan_li-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 456604
+      "bytes": 552646,
+      "luxury_level": 3
     },
     "lao_zi": {
       "name": "老子",
       "src": "assets/portraits/lao_zi-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 483316
+      "bytes": 562659,
+      "luxury_level": 0
     },
     "xi_shi": {
       "name": "西施",
-      "src": "assets/portraits/xi_shi-v2-512.png",
+      "src": "assets/portraits/xi_shi-512.png",
       "width": 512,
       "height": 512,
-      "bytes": 485372,
-      "previous_versions": [
-        {
-          "name": "西施",
-          "src": "assets/portraits/xi_shi-512.png",
-          "width": 512,
-          "height": 512,
-          "bytes": 483837
-        }
-      ]
+      "bytes": 570875,
+      "luxury_level": 5,
+      "approved_style_reference": true
     }
-  }
+  },
+  "style": "重彩工笔＋水墨"
 }

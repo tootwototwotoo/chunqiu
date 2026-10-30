@@ -6,9 +6,41 @@ import { SKILL_DEFS } from '../data/defs.js';
 export const stateColor = (id) => STATES[id]?.color ?? '#8a7f6d';
 export const stateName = (id) => STATES[id]?.name ?? id;
 
-export function avatar(name, color) {
+// 肖像：渐进增强——本地 assets/portraits/ 存在则显示图片，否则回退字头像。
+// manifest.json 是唯一约定：{ portraits: { [npcId]: { src, ... } } }。
+// 图片文件本身随时可改可换，代码只依赖 manifest；
+// 单文件版 fetch 相对路径失败，静默回退，零体积增长。
+let PORTRAIT_MANIFEST = null;   // 惰性加载缓存
+let PORTRAIT_TRIED = false;
+
+export async function loadPortraits() {
+  if (PORTRAIT_TRIED) return PORTRAIT_MANIFEST;
+  PORTRAIT_TRIED = true;
+  try {
+    const res = await fetch('assets/portraits/manifest.json', { cache: 'force-cache' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.portraits && typeof json.portraits === 'object') PORTRAIT_MANIFEST = json.portraits;
+    }
+  } catch { /* 单文件版或无素材：回退字头像 */ }
+  return PORTRAIT_MANIFEST;
+}
+
+// 同步查表（需先 loadPortraits）
+export const portraitOf = (npcId) => PORTRAIT_MANIFEST?.[npcId] ?? null;
+
+export function avatar(name, color, npcId = null) {
   const ch = (name || '？').trim()[0] || '？';
-  return `<div class="avatar" ${color ? `style="background:linear-gradient(160deg,${color},${shade(color)})"` : ''}>${esc(ch)}</div>`;
+  const tint = color ? `style="background:linear-gradient(160deg,${color},${shade(color)})"` : '';
+  const p = npcId ? portraitOf(npcId) : null;
+  if (p?.src) {
+    // 图片加载失败（如单文件版）时移除 img，露出底层的字头像
+    return `<div class="avatar has-portrait" ${tint} data-npc="${npcId}">`
+      + `<img src="${p.src}" alt="" loading="lazy" `
+      + `onerror="this.parentElement.classList.remove('has-portrait');this.remove()">`
+      + `<span class="avatar-ch">${esc(ch)}</span></div>`;
+  }
+  return `<div class="avatar" ${tint}>${esc(ch)}</div>`;
 }
 function shade(hex) {
   const n = parseInt(hex.slice(1), 16);
